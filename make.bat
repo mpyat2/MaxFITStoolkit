@@ -4,9 +4,9 @@ SET COMPILER="c:\lazarus\fpc\3.0.2\bin\i386-win32\fpc.exe" -MDELPHI -Xg -FuUnits
 SET A7z="c:\Program Files\7-zip\7z.exe"
 
 REM pfh.exe: Print FITS header: simple, nothing checked, single-file
-%COMPILER% FitsHeader\pfh.pas
-IF ERRORLEVEL 1 GOTO :ERROR
-ECHO .
+REM %COMPILER% FitsHeader\pfh.pas
+REM IF ERRORLEVEL 1 GOTO :ERROR
+REM ECHO .
 
 REM fihed.exe: Print/edit FITS header, multifile mode
 %COMPILER% FitsHeader2\fihed.pas
