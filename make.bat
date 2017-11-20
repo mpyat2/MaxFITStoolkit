@@ -40,3 +40,5 @@ GOTO :EOF
 
 :ERROR
 ECHO ***** ERROR! CANNOT COMPILE.
+
+pause
