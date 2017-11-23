@@ -22,9 +22,14 @@ begin
   WriteLn('  /H  Print this help and halt');
 end;
   
-procedure FileFormatError(N: integer);
+procedure FileFormatError;
 begin
-  raise Exception.Create('Line ' + IntToStr(N) + ': File format error');
+  raise Exception.Create('File format error');
+end;
+
+procedure InvalidFloatingPointValueError(const Value: string);
+begin
+  raise Exception.Create(QuotedStr(Value) + ' is not a valid floating-point value');
 end;
 
 const PhotModeKey    = 'Phot mode';
@@ -114,6 +119,7 @@ begin
     while not EOF(InF) or StringInBuffer do begin
       if not StringInBuffer then begin
         ReadLn(InF, S);
+        S := TrimRight(S);
         Inc(LineN);
         if not Quiet then Progress(LineN);
       end    
@@ -124,14 +130,14 @@ begin
         // Photometry block
         S := Copy(S, Length(PhotModeKey) + 1, MaxInt);
         N := Pos('-', S);
-        if N = 0 then FileFormatError(LineN);
+        if N = 0 then FileFormatError;
         TempS := Trim(Copy(S, 1, N - 1));
         PhotMode := StrToInt(TempS);
         S := Trim(Copy(S, N + 1, MaxInt));
-        if (S = '') or (S[1] <> '(') or (S[Length(S)] <> ')') then FileFormatError(LineN);
+        if (S = '') or (S[1] <> '(') or (S[Length(S)] <> ')') then FileFormatError;
         S := Copy(S, 2, Length(S) - 2);
         N := Pos(',', S);
-        if N = 0 then FileFormatError(LineN);
+        if N = 0 then FileFormatError;
         X := StrToInt(Trim(Copy(S, 1, N - 1)));
         Y := StrToInt(Trim(Copy(S, N + 1, MaxInt)));
         PixNumInner := 0;
@@ -141,6 +147,7 @@ begin
         BackLevel := 0.0;
         while not EOF(InF) do begin
           ReadLn(Inf, S);
+          S := TrimRight(S);
           Inc(LineN);
           if not Quiet then Progress(LineN);
           if AnsiSameStr(Copy(S, 1, Length(PhotModeKey)), PhotModeKey) then begin
@@ -158,22 +165,24 @@ begin
           if AnsiSameStr(Copy(S, 1, Length(IntensityKey)), IntensityKey) then begin
             S := Copy(S, Length(IntensityKey) + 1, MaxInt);
             N := Pos('-', S);
-            if N = 0 then FileFormatError(LineN);
+            if N = 0 then FileFormatError;
             TempS := Trim(Copy(S, 1, N - 1));
             Val(TempS, Intensity, ValError);
-            if ValError <> 0 then FileFormatError(LineN);
+            if ValError <> 0 then InvalidFloatingPointValueError(TempS);
             S := Trim(Copy(S, N + 1, MaxInt));
             if AnsiSameStr(Copy(S, 1, Length(MagnitudeKey)), MagnitudeKey) then begin
               S := Copy(S, Length(MagnitudeKey) + 1, MaxInt);
               TempS := Trim(S);
               Val(TempS, Magnitude, ValError);
-              if ValError <> 0 then FileFormatError(LineN);
-            end;
+              if ValError <> 0 then InvalidFloatingPointValueError(TempS);
+            end
+            else
+              FileFormatError;
           end;
           if AnsiSameStr(Copy(S, 1, Length(BackLevelKey)), BackLevelKey) then begin
             S := Copy(S, Length(BackLevelKey) + 1, MaxInt);
             Val(S, BackLevel, ValError);
-            if ValError <> 0 then FileFormatError(LineN);
+            if ValError <> 0 then InvalidFloatingPointValueError(S);
           end;
         end;
         
