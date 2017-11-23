@@ -70,7 +70,7 @@ var
   BitPix: Integer;
   BytePix: Integer;
   NaxisN: TIntArray;
-  Naxis1, Naxis2: Integer;
+  Naxis1, Naxis2, Naxis3: Integer;
   NblocksInHeader: Integer;
   NrecordsToRead: Integer;
   StartOfImage: Integer;
@@ -81,7 +81,8 @@ var
   Buf: array[0..31] of Char; // more than enough
   Pix1Addr: Integer;
   Pix2Addr: Integer;
-  N, I, II: Integer;
+  N, I, II, Planes: Integer;
+  Offset: Integer;
   IOcount: Integer;
 begin
   N := GetEndPosition(FITSfile);
@@ -90,49 +91,55 @@ begin
   NblocksInHeader := N div RecordsInBlock + 1;
   StartOfImage := NblocksInHeader * RecordsInBlock;
   GetBitPixAndNaxis(FITSfile, FITSfileName, BitPix, NaxisN);
-  if Length(NaxisN) <> 2 then
-    FileError('Cannot work with NAXIS other than 2, got ' + IntToStr(Length(NaxisN)) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
+  if (Length(NaxisN) < 2) or (Length(NaxisN) > 3) then
+    FileError('Cannot work with NAXIS other than 2 or 3, got ' + IntToStr(Length(NaxisN)) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
   BytePix := Abs(BitPix) div 8;
   if BytePix > SizeOf(Buf) then
     FileError('Cannot work with BITPIX=' + IntToStr(BitPix) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
 
   Naxis1 := NaxisN[0];
   Naxis2 := NaxisN[1];
-  NrecordsToRead := (Naxis1 * Naxis2 * BytePix - 1) div FITSRecordLen + 1;
+  if Length(NaxisN) = 3 then Naxis3 := NaxisN[2] else Naxis3 := 1;
+  NrecordsToRead := ((Naxis1 * Naxis2 * Naxis3 * BytePix - 1) div FITSRecordLen + 1);
   GetMem(Image, NrecordsToRead * FITSRecordLen);
   try
     FillChar(Image^, NrecordsToRead * FITSRecordLen, 0);
     Seek(FITSfile, StartOfImage);
     BlockRead(FITSfile, Image^, NrecordsToRead, IOcount);
     //if IOcount <> NrecordsToRead then WriteLn('Actual number of records in file differs from expected number');
-    Seek(FITSfile, StartOfImage);
-    if Vertically then begin
-      GetMem(Chunk, Naxis1 * BytePix);
-      try
-        for I := 0 to Naxis2 div 2 - 1 do begin
-          Chunk1addr := I * Naxis1 * BytePix;
-          Chunk2addr := (Naxis2 - I - 1) * Naxis1 * BytePix;
-          Move(Image[Chunk1addr], Chunk^, Naxis1 * BytePix);
-          Move(Image[Chunk2addr], Image[Chunk1addr], Naxis1 * BytePix);
-          Move(Chunk^, Image[Chunk2addr], Naxis1 * BytePix);
-        end;
-      finally
-        FreeMem(Chunk);
-        Chunk := nil;
-      end;
-    end
-    else begin
-      for I := 0 to Naxis2 - 1 do begin
-        for II := 0 to Naxis1 div 2 - 1 do begin
-          Pix1Addr := (I * Naxis1 * BytePix) + II * BytePix;
-          Pix2Addr := (I * Naxis1 * BytePix) + (Naxis1 - II - 1) * BytePix;
-          Move(Image[Pix1Addr], Buf, BytePix);
-          Move(Image[Pix2Addr], Image[Pix1Addr], BytePix);
-          Move(Buf, Image[Pix2Addr], BytePix);
+    
+    for Planes := 0 to Naxis3 - 1 do begin
+      Offset := Naxis1 * Naxis2 * BytePix * Planes; 
+      
+      if Vertically then begin
+        GetMem(Chunk, Naxis1 * BytePix);
+        try
+          for I := 0 to Naxis2 div 2 - 1 do begin
+            Chunk1addr := Offset + I * Naxis1 * BytePix;
+            Chunk2addr := Offset + (Naxis2 - I - 1) * Naxis1 * BytePix;
+            Move(Image[Chunk1addr], Chunk^, Naxis1 * BytePix);
+            Move(Image[Chunk2addr], Image[Chunk1addr], Naxis1 * BytePix);
+            Move(Chunk^, Image[Chunk2addr], Naxis1 * BytePix);
+          end;
+        finally
+          FreeMem(Chunk);
+          Chunk := nil;
+         end;
+      end
+      else begin
+        for I := 0 to Naxis2 - 1 do begin
+          for II := 0 to Naxis1 div 2 - 1 do begin
+            Pix1Addr := Offset + (I * Naxis1 * BytePix) + II * BytePix;
+            Pix2Addr := Offset + (I * Naxis1 * BytePix) + (Naxis1 - II - 1) * BytePix;
+            Move(Image[Pix1Addr], Buf, BytePix);
+            Move(Image[Pix2Addr], Image[Pix1Addr], BytePix);
+            Move(Buf, Image[Pix2Addr], BytePix);
+          end;
         end;
       end;
     end;
-
+    
+    Seek(FITSfile, StartOfImage);
     BlockWrite(FITSfile, Image^, NrecordsToRead, IOcount);
     if IOcount <> NrecordsToRead then FileError('Error writing file');
   finally
