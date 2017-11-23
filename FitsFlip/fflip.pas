@@ -8,16 +8,16 @@ uses
 procedure PrintVersion;
 begin
   WriteLn('FITS Flip  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2017.11.22.01');
+  WriteLn('Version 2017.11.23.01');
   WriteLn;
 end;
 
 procedure PrintHelp;
 begin
   WriteLn('Usage:');
-  WriteLn(ExtractFileName(ParamStr(0)), ' file_mask1[.fit] [file_mask2[.fit] ...] [/2]');
+  WriteLn(ExtractFileName(ParamStr(0)), ' file_mask1[.fit] [file_mask2[.fit] ...] [/1]');
   WriteLn;
-  WriteLn('/2         Flip horizontally, if not specified -- vertically');
+  WriteLn('/1         Flip horizontally, if not specified -- vertically');
   WriteLn('/V         print version');
   WriteLn('/H         print this help and halt');
 end;
@@ -113,7 +113,6 @@ begin
     FillChar(Image^, NrecordsToRead * FITSRecordLen, 0);
     Seek(FITSfile, StartOfImage);
     BlockRead(FITSfile, Image^, NrecordsToRead, IOcount);
-    //if IOcount <> NrecordsToRead then WriteLn('Actual number of records in file differs from expected number');
     
     for Planes := 0 to Naxis3 - 1 do begin
       Offset := Naxis1 * Naxis2 * BytePix * Planes; 
@@ -170,7 +169,9 @@ begin
   finally
     CloseFile(FITSfile);
   end;
-  WriteLn(': done.');
+  Write(': ');
+  if Vertically then Write('V') else Write('H');
+  WriteLn('-flip done.');
 end;
 
 type
@@ -250,7 +251,7 @@ begin
     if ExtractFileExt(InputFileMasks[I - 1]) = '' then InputFileMasks[I - 1] := ChangeFileExt(InputFileMasks[I - 1], '.fit');
   end;
 
-  Vertically := not CmdObj.CmdLine.IsCmdOption('2');
+  Vertically := not CmdObj.CmdLine.IsCmdOption('1');
 
   FileList := TStringListNaturalSort.Create;
   try
