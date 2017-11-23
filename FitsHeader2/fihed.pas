@@ -5,35 +5,43 @@ program FIHED;
 // https://fits.gsfc.nasa.gov/fits_primer.html
 
 uses
-  Windows, SysUtils, CmdObj, CmdObjStdSwitches, Classes, FITSUtils, EnumFiles, StringListNaturalSort;
+  Windows, SysUtils, CmdObj, Classes, FITSUtils, EnumFiles, StringListNaturalSort;
+// do not include CmdObjStdSwitches!
 
-procedure PrintHelp;
+procedure PrintVersion;
 begin
   WriteLn('FITS Header Viewer/Editor  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2017.11.15.01');
+  WriteLn('Version 2017.11.22.01');
+  WriteLn;
+end;  
+  
+procedure PrintHelp;
+begin
   WriteLn('Usage:');
-  WriteLn(ExtractFileName(ParamStr(0)), ' input_file_mask[.fit] [//CSV|//TAB] [/keyword1 [/keyword2 ...]]');
+  WriteLn(ExtractFileName(ParamStr(0)), ' file_mask1[.fit] [file_mask2[.fit] ...] [//CSV|//TAB] [/keyword1 [/keyword2 ...]]');
   WriteLn('or');  
-  WriteLn(ExtractFileName(ParamStr(0)), ' input_file_mask[.fit] [//SET] [/keyword1=value [/keyword2=value ...]]');  
+  WriteLn(ExtractFileName(ParamStr(0)), ' file_mask1[.fit] [file_mask2[.fit] ...] [//SET] [/keyword1=value [/keyword2=value ...]]');  
   WriteLn;
   WriteLn('//CSV       prints header values as CSV table.');
   WriteLn('            COMMENT, HISTORY and similar keywords without ''=''');
   WriteLn('            are ignored in this mode.');  
   WriteLn('            When /CSV parameter exists, at least one keyword must be specified');  
   WriteLn;
-  WriteLn('//SET       edit mode.');
+  WriteLn('//SET       edit mode');
   WriteLn;  
-  WriteLn('//CSV and //SET or //TAB and //SET parameters are mutually exclusive.');
-  WriteLn('If both //CSV and //TAB specified, //CSV is used.');
+  WriteLn('//CSV and //SET or //TAB and //SET parameters are mutually exclusive');
+  WriteLn('If both //CSV and //TAB specified, //CSV is used');
+  WriteLn;
+  WriteLn('//V         print version');  
+  WriteLn('//H         print this help and halt');
 end;
-
+ 
 procedure FileError(S: string);
 begin
   raise Exception.Create(S);
 end;
 
 var
-  ParamList: TStringList;
   Keywords: TStringList;
   CSVmode: Boolean;
   TABmode: Boolean;
@@ -88,7 +96,7 @@ begin
               if P > 0 then begin
                 Name := AnsiUpperCase(Trim(Copy(S, 1, P - 1)));
                 if (Length(Name) <= FITSKeywordLen) and (Name <> KeywordEND) and (Name <> KeywordHierarch) then begin
-                  Value := Trim(Copy(S, P + 1, MaxInt));
+                  Value := Copy(S, P + 1, MaxInt);
                   if (Name = '') or (Name = KeywordComment) or (Name = KeywordHistory) then begin
                     if AddCommentLikeKeyword(FITSfile, FileName, Name, Value, True) then begin
                       WriteLn('Added ', Name, ' ', Value);
@@ -152,9 +160,9 @@ begin
   Result := True;
 end;
 
-procedure ProcessInput(const FileMask: string);
+procedure ProcessInput(const FileMasks: array of string);
 var
-  I: Integer;
+  I, N: Integer;
 begin
   if (CSVmode or TABmode) and SETmode then begin
     WriteLn('**** //CSV and //SET are mutually exclusive');
@@ -169,10 +177,13 @@ begin
     WriteLn;
   end;
   try
-    FileEnum(FileMask, faArchive, False, TFileEnumClass.FileEnumProc);
-    FileList.NaturalSort;
-    for I := 0 to FileList.Count - 1 do begin
-      ProcessFile(FileList[I]);
+    for N := 0 to Length(FileMasks) - 1 do begin  
+      FileList.Clear;
+      FileEnum(FileMasks[N], faArchive, False, TFileEnumClass.FileEnumProc);
+      FileList.NaturalSort;
+      for I := 0 to FileList.Count - 1 do begin
+        ProcessFile(FileList[I]);
+      end;
     end;
   except
     on E: Exception do begin
@@ -185,18 +196,41 @@ begin
 end;
   
 var
-  InputFileMask: string;
-  S: string;
+  ParamList: TStringList;
+  InputFileMasks: array of string;
+  PrintVer: Boolean;  
+  S: string;  
+  N: Integer;
   I: Integer;
 
 begin
   FileMode := fmOpenRead;
-  if (CmdObj.CmdLine.FileCount <> 1) then begin
+  
+  PrintVer := (CmdObj.CmdLine.IsCmdOption('/V') or CmdObj.CmdLine.IsCmdOption('/version'));
+  if PrintVer then PrintVersion;
+   
+  if (CmdObj.CmdLine.IsCmdOption('/?') or CmdObj.CmdLine.IsCmdOption('/H') or CmdObj.CmdLine.IsCmdOption('/help')) then begin
     PrintHelp;
     Halt(1);
   end;
-  InputFileMask := ExpandFileName(CmdObj.CmdLine.ParamFile(1));
-  if ExtractFileExt(InputFileMask) = '' then InputFileMask := InputFileMask + '.fit';
+
+  N := CmdObj.CmdLine.FileCount;
+
+  if (N < 1) then begin
+    if not PrintVer then begin
+      WriteLn('**** At least one filemask must be specified');
+      WriteLn;
+      PrintHelp;
+    end;  
+    Halt(1);
+  end;
+
+  SetLength(InputFileMasks, N);
+  for I := 1 to N do begin
+    InputFileMasks[I - 1] := ExpandFileName(CmdObj.CmdLine.ParamFile(I));
+    if ExtractFileExt(InputFileMasks[I - 1]) = '' then InputFileMasks[I - 1] := ChangeFileExt(InputFileMasks[I - 1], '.fit');
+  end;
+
   ParamList := TStringList.Create;
   try
     Keywords := TStringList.Create;
@@ -205,7 +239,7 @@ begin
         S := CmdObj.CmdLine.ParamStr(I);
         if CmdObj.CmdLine.FirstCharIsSwitch(S) then begin
             Delete(S, 1, 1);
-            // There can be multiply /comment or /hystory parameters.
+            // There can be multiply /comment or /hystory parameters... (also several identical columns in CSV or TAB modes)
             {if ParamList.IndexOf(S) < 0 then }ParamList.Add(S);
         end;
       end;
@@ -213,7 +247,7 @@ begin
         S := TrimRight(ParamList[I]);
         // Empty keyword is allowed!
         if not CmdObj.CmdLine.FirstCharIsSwitch(S) then begin
-          if Keywords.IndexOf(S) < 0 then Keywords.Add(S);
+          {if Keywords.IndexOf(S) < 0 then }Keywords.Add(S);
         end;  
       end;
       CSVmode := ParamList.IndexOf('/CSV') >= 0;
@@ -221,7 +255,7 @@ begin
       SETmode := ParamList.IndexOf('/SET') >= 0;
       FileList := TStringListNaturalSort.Create;
       try    
-        ProcessInput(InputFileMask);
+        ProcessInput(InputFileMasks);
       finally
         FreeAndNil(FileList);
       end;

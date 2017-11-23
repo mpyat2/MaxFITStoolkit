@@ -1,5 +1,3 @@
-{$DENYPACKAGEUNIT} // Should be included in EXE only.
-
 unit CmdObjStdSwitches;
 
 interface

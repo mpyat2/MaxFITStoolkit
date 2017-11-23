@@ -2,25 +2,36 @@
 
 program IDOBS;
 
-uses Windows, SysUtils, Classes, CmdObj, CmdObjStdSwitches, EnumFiles, StringListNaturalSort, FITSUtils, FITSTimeUtils;
+uses Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, EnumFiles, StringListNaturalSort, FITSUtils, FITSTimeUtils;
+
+procedure PrintVersion;
+begin
+  WriteLn('Calculate mean DATE-OBS  Maksym Pyatnytskyy  2017');
+  WriteLn('Version 2017.11.22.01');
+  WriteLn;
+end;
 
 procedure PrintHelp;
 begin
-  WriteLn('Calculate mean DATE-OBS  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2017.11.17.01');
+  WriteLn('Usage:');
+  WriteLn(ExtractFileName(ParamStr(0)), ' file_mask1[.fit] [file_mask2[.fit] ...] [/E] [/P=filename]');
   WriteLn;
+  WriteLn('Where:');
+  WriteLn('  file_maskX   mask of input files to be processed (several masks are allowed)');
+  WriteLn('  /E           correct time by exposure');
+  WriteLn('  /P=filename  print FIHED command for filename (stacked image)');
+  WriteLn('  /V           print version');  
+  WriteLn('  /H           print this help and halt');
+  WriteLn;
+  WriteLn;  
   WriteLn('Date/Time is extracted from DATE-OBS first,');
   WriteLn('if DATE-OBS does contain time part, time is extracted from it,');
   WriteLn('otherwise TIME-OBS is used.');
   WriteLn('If TIME-OBS is missing, UT-START (IRIS-specific keyword) is searched.');
   WriteLn;
-  WriteLn('Usage:');
-  WriteLn(ExtractFileName(ParamStr(0)), ' input_file_mask[.fit] [/E] [/P=filename]');
   WriteLn;
-  WriteLn('Where:');
-  WriteLn('  input_file_mask    mask for input files to be processed');
-  WriteLn('  /E                 correct time by exposure');
-  WriteLn('  /P=filename        print FIHED command for filename (stacked image)');
+  WriteLn('Example:');
+  WriteLn(ExtractFileName(ParamStr(0)), ' ser1\calib* ser2\calib* ser3\calib* /E');  
 end;
 
 procedure FileError(S: string);
@@ -42,9 +53,9 @@ begin
   Result := True;
 end;
   
-procedure ProcessInput(const FileMask: string; PFH2file: string; CorrectByExposure: Boolean);
+procedure ProcessInput(const FileMasks: array of string; PFH2file: string; CorrectByExposure: Boolean);
 var
-  I: Integer;
+  I, II: Integer;
   P: Integer;
   FileName: string;
   FITSFile: FITSRecordFile;
@@ -66,75 +77,84 @@ begin
     SumExp := 0;
     SumDate := 0;
     N := 0;
-    FileEnum(FileMask, faArchive, False, TFileEnumClass.FileEnumProc);
-    FileList.NaturalSort;
-    for I := 0 to FileList.Count - 1 do begin
-      FileName := ExtractFileName(FileList[I]);
-      if PFH2file <> ''then Write('REM ');
-      Write('File:'^I, FileName);
-      AssignFile(FITSFile, FileList[I]);
-      Reset(FITSFile);
-      try
-        DateObsStr := '';
-        TimeObsStr := '';
-        ExpTimeStr := '';
-        ExpTime := 0;
-        TimeObsKeyUsed := False;
-        UtStartKeyUsed := False;
-        if (GetKeywordValue(FITSFile, 'DATE-OBS', DateObsStr, True, True) < 0) or (DateObsStr = '') then
-          FileError('DATE-OBS keyword is not found or is empty.');
-        DateObsStr := StripQuotes(DateObsStr);
-        P := Pos('T', DateObsStr);
-        if P <> 0 then begin
-          TimeObsStr := Copy(DateObsStr, P + 1, MaxInt);
-          DateObsStr := Copy(DateObsStr, 1, P - 1);
-        end;
-        if TimeObsStr = '' then begin
-          // There is no time part in DATE-OBS.
-          // Try to get time from TIME-OBS
-          TimeObsKeyUsed := (GetKeywordValue(FITSFile, 'TIME-OBS', TimeObsStr, True, True) >= 0) and (TimeObsStr <> '');
-          if not TimeObsKeyUsed then begin
-            // There is no TIME-OBS...
-            // Try to get time from UT-START (IRIS-specific)
-            UtStartKeyUsed := (GetKeywordValue(FITSFile, 'UT-START', TimeObsStr, True, True) >= 0) and (TimeObsStr <> '');
-            if not UtStartKeyUsed then
-              FileError('DATE-OBS value does not contain time part and there is no TIME-OBS nor UT-START keywords.');
+    
+    for II := 0 to Length(FileMasks) - 1 do begin
+      WriteLn;
+      if PFH2file <> ''then Write('REM ');      
+      WriteLn('[', FileMasks[II], ']');
+      FileList.Clear;
+      FileEnum(FileMasks[II], faArchive, False, TFileEnumClass.FileEnumProc);
+      FileList.NaturalSort;
+      for I := 0 to FileList.Count - 1 do begin
+        FileName := ExtractFileName(FileList[I]);
+        if PFH2file <> ''then Write('REM ');
+        Write('File:'^I, FileName);
+        AssignFile(FITSFile, FileList[I]);
+        Reset(FITSFile);
+        try
+          DateObsStr := '';
+          TimeObsStr := '';
+          ExpTimeStr := '';
+          ExpTime := 0;
+          TimeObsKeyUsed := False;
+          UtStartKeyUsed := False;
+          if (GetKeywordValue(FITSFile, 'DATE-OBS', DateObsStr, True, True) < 0) or (DateObsStr = '') then
+            FileError('DATE-OBS keyword is not found or is empty.');
+          DateObsStr := StripQuotes(DateObsStr);
+          P := Pos('T', DateObsStr);
+          if P <> 0 then begin
+            TimeObsStr := Copy(DateObsStr, P + 1, MaxInt);
+            DateObsStr := Copy(DateObsStr, 1, P - 1);
           end;
-          TimeObsStr := StripQuotes(TimeObsStr);
-        end;
+          if TimeObsStr = '' then begin
+            // There is no time part in DATE-OBS.
+            // Try to get time from TIME-OBS
+            TimeObsKeyUsed := (GetKeywordValue(FITSFile, 'TIME-OBS', TimeObsStr, True, True) >= 0) and (TimeObsStr <> '');
+            if not TimeObsKeyUsed then begin
+              // There is no TIME-OBS...
+              // Try to get time from UT-START (IRIS-specific)
+              UtStartKeyUsed := (GetKeywordValue(FITSFile, 'UT-START', TimeObsStr, True, True) >= 0) and (TimeObsStr <> '');
+              if not UtStartKeyUsed then
+                FileError('DATE-OBS value does not contain time part and there is no TIME-OBS nor UT-START keywords.');
+            end;
+            TimeObsStr := StripQuotes(TimeObsStr);
+          end;
 
-        ExposureKeywordExists := (GetKeywordValue(FITSFile, 'EXPTIME', ExpTimeStr, True, True) >= 0) or (GetKeywordValue(FITSFile, 'EXPOSURE', ExpTimeStr, True, True) >= 0);
-        if (ExpTimeStr <> '') then begin
-          Val(ExpTimeStr, ExpTime, ErrorPos);
-          if (ErrorPos <> 0) or (ExpTime < 0) then
-            FileError('EXPTIME/EXPOSURE keyword does exist however it contains invalid value: ' + ExpTimeStr);
-        end;
-        SumExp := SumExp + ExpTime;
+          ExposureKeywordExists := (GetKeywordValue(FITSFile, 'EXPTIME', ExpTimeStr, True, True) >= 0) or (GetKeywordValue(FITSFile, 'EXPOSURE', ExpTimeStr, True, True) >= 0);
+          if (ExpTimeStr <> '') then begin
+            Val(ExpTimeStr, ExpTime, ErrorPos);
+            if (ErrorPos <> 0) or (ExpTime < 0) then
+              FileError('EXPTIME/EXPOSURE keyword does exist however it contains invalid value: ' + ExpTimeStr);
+          end;
+          SumExp := SumExp + ExpTime;
 
-        TempExpTime := 0;
-        if CorrectByExposure then TempExpTime := ExpTime;
-        if not MakeDateObsFromIrisDate(DateTimeObs, DateObsStr, TimeObsStr, TempExpTime) then
-          FileError('Cannot determine date/time of observation. Date part = ' + DateObsStr + '; Time part = ' + TimeObsStr);
-        Write(^I, FormatDateTime('"Date:'^I'"YYYY-MM-DD" "hh:nn:ss', DateTimeObs));
-        Write(^I'Exposure: '^I, ExpTime:10:1);
-        if (ExpTime <> 0) and CorrectByExposure then begin
-          Write(^I'[Fixed by EXPTIME');
-          if UtStartKeyUsed then 
-            Write('. Original UT-START=', TimeObsStr)
-          else
-            Write('. Original TIME-OBS=', TimeObsStr);
-          Write(']');
-        end;
-        WriteLn;
+          TempExpTime := 0;
+          if CorrectByExposure then TempExpTime := ExpTime;
+          if not MakeDateObsFromIrisDate(DateTimeObs, DateObsStr, TimeObsStr, TempExpTime) then
+            FileError('Cannot determine date/time of observation. Date part = ' + DateObsStr + '; Time part = ' + TimeObsStr);
+          Write(^I, FormatDateTime('"Date:'^I'"YYYY-MM-DD" "hh:nn:ss', DateTimeObs));
+          Write(^I'Exposure: '^I, ExpTime:10:1);
+          if (ExpTime <> 0) and CorrectByExposure then begin
+            Write(^I'[Fixed by EXPTIME');
+            if UtStartKeyUsed then 
+              Write('. Original UT-START=', TimeObsStr)
+            else
+              Write('. Original TIME-OBS=', TimeObsStr);
+            Write(']');
+          end;
+          WriteLn;
         
-        SumDate := SumDate + DateTimeObs;
-        Inc(N);
-      finally
-        CloseFile(FITSFile);
+          SumDate := SumDate + DateTimeObs;
+          Inc(N);
+        finally
+          CloseFile(FITSFile);
+        end;
       end;
-    end;
+    end;  
+    
     if N < 1 then begin
-      WriteLn('No files found.');
+      WriteLn;
+      WriteLn('**** No files found.');
     end
     else begin
       WriteLn;
@@ -168,23 +188,47 @@ begin
 end;
 
 var
-  InputFileMask: string;
+  InputFileMasks: array of string;
   PFH2file: string;
   CorrectByExposure: Boolean;
+  PrintVer: Boolean;  
+  N: Integer;
+  I: Integer;
   
 begin
   FileMode := fmOpenRead;
-  if (CmdObj.CmdLine.FileCount <> 1) then begin
+  
+  PrintVer := (CmdObj.CmdLine.IsCmdOption('V') or CmdObj.CmdLine.IsCmdOption('version'));
+  if PrintVer then PrintVersion;
+   
+  if (CmdObj.CmdLine.IsCmdOption('?') or CmdObj.CmdLine.IsCmdOption('H') or CmdObj.CmdLine.IsCmdOption('help')) then begin
     PrintHelp;
     Halt(1);
   end;
-  InputFileMask := ExpandFileName(CmdObj.CmdLine.ParamFile(1));
-  if ExtractFileExt(InputFileMask) = '' then InputFileMask := InputFileMask + '.fit';
+
+  N := CmdObj.CmdLine.FileCount;
+  
+  if (N < 1) then begin
+    if not PrintVer then begin  
+      WriteLn('**** At least one filemask must be specified');
+      WriteLn;
+      PrintHelp;
+    end;  
+    Halt(1);    
+  end;
+
+  CorrectByExposure := CmdObj.CmdLine.IsCmdOption('E');   
   PFH2file := CmdObj.CmdLine.KeyValue('P=');
-  CorrectByExposure := CmdObj.CmdLine.IsCmdOption('E'); 
+  
+  SetLength(InputFileMasks, N);
+  for I := 1 to N do begin
+    InputFileMasks[I - 1] := ExpandFileName(CmdObj.CmdLine.ParamFile(I));
+    if ExtractFileExt(InputFileMasks[I - 1]) = '' then InputFileMasks[I - 1] := ChangeFileExt(InputFileMasks[I - 1], '.fit');
+  end;
+
   FileList := TStringListNaturalSort.Create;
   try
-    ProcessInput(InputFileMask, PFH2file, CorrectByExposure);
+    ProcessInput(InputFileMasks, PFH2file, CorrectByExposure);
   finally
     FreeAndNil(FileList);
   end;

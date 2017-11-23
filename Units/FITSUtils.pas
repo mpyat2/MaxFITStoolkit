@@ -17,7 +17,6 @@ const KeywordHistory= 'HISTORY';
 const KeywordHierarch='HIERARCH';
 const FITSRecordLen = Length(recordEND);
 const RecordsInBlock = 36;
-const HeaderBlockLen = FITSRecordLen * RecordsInBlock;
 const FITSKeywordLen = 8;
 const MinStringConstLen = 8;
 const FITSNumericAlign = 30;
@@ -35,6 +34,7 @@ function GetKeywordValue({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSR
 function SetKeywordValue({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordFile; const FITSfileName: string; const Keyword: string; const Value: string; AlignNumeric: Boolean; const Comment: string; CanResize: Boolean): Boolean;
 function AddCommentLikeKeyword({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordFile; const FITSfileName: string; const Keyword: string; const Value: string; CanResize: Boolean): Boolean;
 procedure GetHeader(const FITSfileName: string; const Header: TStrings);
+function GetEndPosition({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordFile): Integer;
 
 implementation
 
@@ -265,10 +265,11 @@ begin
   if Length(AKeyword) > FITSKeywordLen then FileError('Keyword ' + AKeyword + ' too long');
   AValue := Value;
   IsNumeric := False;
-  if Trim(AValue) <> '' then begin
+  
+  if (Trim(AValue) <> '') and (AValue <> 'T') and (AValue <> 'F') then begin
     Val(Trim(AValue), TempF, ErrorPos);
     IsNumeric := ErrorPos = 0;
-  end
+  end  
   else
     TempF := 0;  
   if IsNumeric and AlignNumeric then begin
@@ -280,9 +281,12 @@ begin
       Str(TempF : FITSNumericAlign - FITSKeywordLen - 2, AValue);
     end;  
   end;
-  if not IsNumeric and (AValue <> '') then begin
+  if not IsNumeric and (AValue <> 'T') and (AValue <> 'F') and (AValue <> '') then begin
     AValue := StripQuotes(AValue);
     AValue := QuotedStr(PadCh(AValue, MinStringConstLen, ' '));
+  end else begin
+    if (AValue = 'T') or (AValue = 'F') then
+      AValue := LeftPadCh(AValue, FITSNumericAlign - FITSKeywordLen - 2, ' ');
   end;
   if Comment <> '' then begin
     PC := 1;

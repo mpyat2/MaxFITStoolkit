@@ -9,6 +9,7 @@ begin
   WriteLn('the following commands without parameters:');
   WriteLn;
   WriteLn('fihed');
+  WriteLn('fflip');  
   WriteLn('idobs');
   WriteLn('iren');
   WriteLn('ipdat');

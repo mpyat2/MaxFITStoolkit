@@ -28,13 +28,18 @@ REM ipdat.exe: Convert IRIS photometry output to csv-file
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
+REM fflip.exe: Flips 2-dimensional FITS
+%COMPILER% FitsFlip\fflip.pas
+IF ERRORLEVEL 1 GOTO :ERROR
+ECHO .
+
 REM ...
 %COMPILER% Hello\HelloIRISFITS.pas
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
 del FITSutils_src.7z
-%A7z% a FITSutils_src.7z FitsHeader2\*.pas IrisDateObs\*.pas IrisRename\*.pas IPDAT\*.pas IPDAT\testdata\*.dat Hello\*.pas Units\*.pas Setup\*.iss Setup\output\dirinfo bin-out\dirinfo clean.bat clean2.bat make.bat
+%A7z% a FITSutils_src.7z FitsHeader2\*.pas FitsFlip\*.pas IrisDateObs\*.pas IrisRename\*.pas IPDAT\*.pas IPDAT\testdata\*.dat Hello\*.pas Units\*.pas Setup\*.iss Setup\output\dirinfo bin-out\dirinfo clean.bat clean2.bat make.bat
 
 GOTO :EOF
 

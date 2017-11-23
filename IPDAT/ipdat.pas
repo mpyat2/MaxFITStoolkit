@@ -3,22 +3,23 @@
 program IPDAT;
 
 uses
-  Windows, SysUtils, CmdObj, CmdObjStdSwitches;
+  Windows, SysUtils, CmdObj{, CmdObjStdSwitches};
 
 procedure PrintVersion;
 begin
   WriteLn('IRIS photometry log parser  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2017.10.09.01');
+  WriteLn('Version 2017.11.21.01');
 end;
   
 procedure PrintHelp;
 begin
   WriteLn('Usage:');
-  WriteLn(ExtractFileName(ParamStr(0)), ' [options] input_filename[.dat]  [output_filename[.csv]]');
+  WriteLn(ExtractFileName(ParamStr(0)), ' [options] input_filename[.dat]  [output_filename[.csv|.txt]]');
   WriteLn;
-  WriteLn('  -q  Quiet mode');
-  WriteLn('  -v  Print version');
-  WriteLn('  -h  Print this help and halt');
+  WriteLn('  /T  Tabbed output instead of CSV (.txt output file)');
+  WriteLn('  /Q  Quiet mode');
+  WriteLn('  /V  Print version');
+  WriteLn('  /H  Print this help and halt');
 end;
   
 procedure FileFormatError(N: integer);
@@ -33,9 +34,14 @@ const IntensityKey   = 'Intensity =';
 const MagnitudeKey   = 'Magnitude =';
 const BackLevelKey   = 'Background mean level = ';
 
+const
+  OutExt: array[Boolean] of string = ('.csv', '.txt');
+  Delimiter: array[Boolean] of char = (';', ^I);
+
 var
   InFileNamePrintable: string = '';
-
+  TabbedOutput: Boolean = False; 
+  
 procedure Progress(LineN: Integer);
 var
   I: Integer;
@@ -57,7 +63,8 @@ var
   InF: TextFile;
   OutF: TextFile;
   S, S2, TempS: string;
-  TempN: Integer;
+  PhotMode: Integer;
+  X, Y: Integer;
   PixNumInner: Integer;
   PixNumBack: Integer;
   Intensity: Double;
@@ -93,7 +100,16 @@ begin
     S := '';
     LineN := 0;
     StarN := 0;
-    WriteLn(OutF, 'StarN;"Phot mode";X;Y;"Pixel number in the inner circle";"Pixel number for background evaluation";Intensity;Magnitude;"Background mean level"');
+    Write(OutF, 'StarN');
+    Write(OutF, Delimiter[TabbedOutput], 'Magnitude');    
+    Write(OutF, Delimiter[TabbedOutput], '"Phot mode"');
+    Write(OutF, Delimiter[TabbedOutput], 'X');
+    Write(OutF, Delimiter[TabbedOutput], 'Y');
+    Write(OutF, Delimiter[TabbedOutput], '"Pixel number in the inner circle"');
+    Write(OutF, Delimiter[TabbedOutput], '"Pixel number for background evaluation"');
+    Write(OutF, Delimiter[TabbedOutput], 'Intensity');
+    Write(OutF, Delimiter[TabbedOutput], '"Background mean level"');
+    WriteLn(OutF);
     StringInBuffer := False;
     while not EOF(InF) or StringInBuffer do begin
       if not StringInBuffer then begin
@@ -103,25 +119,21 @@ begin
       end    
       else
         StringInBuffer := False;
-    
+
       if AnsiSameStr(Copy(S, 1, Length(PhotModeKey)), PhotModeKey) then begin
         // Photometry block
-        S2 := IntToStr(StarN);
         S := Copy(S, Length(PhotModeKey) + 1, MaxInt);
         N := Pos('-', S);
         if N = 0 then FileFormatError(LineN);
         TempS := Trim(Copy(S, 1, N - 1));
-        TempN := StrToInt(TempS);
-        S2 := S2 + ';' + IntToStr(TempN);
+        PhotMode := StrToInt(TempS);
         S := Trim(Copy(S, N + 1, MaxInt));
         if (S = '') or (S[1] <> '(') or (S[Length(S)] <> ')') then FileFormatError(LineN);
         S := Copy(S, 2, Length(S) - 2);
         N := Pos(',', S);
         if N = 0 then FileFormatError(LineN);
-        TempN := StrToInt(Trim(Copy(S, 1, N - 1)));
-        S2 := S2 + ';' + IntToStr(TempN);
-        TempN := StrToInt(Trim(Copy(S, N + 1, MaxInt)));
-        S2 := S2 + ';' + IntToStr(TempN);
+        X := StrToInt(Trim(Copy(S, 1, N - 1)));
+        Y := StrToInt(Trim(Copy(S, N + 1, MaxInt)));
         PixNumInner := 0;
         PixNumBack := 0;
         Magnitude := 0.0;
@@ -164,11 +176,16 @@ begin
             if ValError <> 0 then FileFormatError(LineN);
           end;
         end;
-        S2 := S2 + ';' + IntToStr(PixNumInner);
-        S2 := S2 + ';' + IntToStr(PixNumBack);
-        S2 := S2 + ';' + FloatToStr(Intensity);
-        S2 := S2 + ';' + FloatToStr(Magnitude);
-        S2 := S2 + ';' + FloatToStr(BackLevel);
+        
+        S2 := IntToStr(StarN);
+        S2 := S2 + Delimiter[TabbedOutput] + FloatToStr(Magnitude);
+        S2 := S2 + Delimiter[TabbedOutput] + IntToStr(PhotMode);
+        S2 := S2 + Delimiter[TabbedOutput] + IntToStr(X);
+        S2 := S2 + Delimiter[TabbedOutput] + IntToStr(Y);
+        S2 := S2 + Delimiter[TabbedOutput] + IntToStr(PixNumInner);
+        S2 := S2 + Delimiter[TabbedOutput] + IntToStr(PixNumBack);
+        S2 := S2 + Delimiter[TabbedOutput] + FloatToStr(Intensity);
+        S2 := S2 + Delimiter[TabbedOutput] + FloatToStr(BackLevel);
         WriteLn(OutF, S2);
         Inc(StarN);
       end;
@@ -184,6 +201,8 @@ begin
       Halt(1);
     end;
   end;
+  if not Quiet then
+    WriteLn(ExtractFileName(OutFile), ' created.');
 end;
   
 var
@@ -194,8 +213,8 @@ var
   OutputFileName: string;
 
 begin
-  PrintVer := CmdObj.CmdLine.IsCmdOption('v') or CmdObj.CmdLine.IsCmdOption('version');
-  PrintHlp := CmdObj.CmdLine.IsCmdOption('?') or CmdObj.CmdLine.IsCmdOption('h') or CmdObj.CmdLine.IsCmdOption('help');
+  PrintVer := CmdObj.CmdLine.IsCmdOption('V') or CmdObj.CmdLine.IsCmdOption('version');
+  PrintHlp := CmdObj.CmdLine.IsCmdOption('?') or CmdObj.CmdLine.IsCmdOption('H') or CmdObj.CmdLine.IsCmdOption('help');
   if PrintVer then begin
     PrintVersion;
     if (CmdObj.CmdLine.FileCount = 0) and not PrintHlp then Halt(1);
@@ -204,17 +223,18 @@ begin
     PrintHelp;
     Halt(1);
   end;
-  Quiet := CmdObj.CmdLine.IsCmdOption('q');  
+  Quiet := CmdObj.CmdLine.IsCmdOption('Q');
+  TabbedOutput := CmdObj.CmdLine.IsCmdOption('T');
   InputFileName := ExpandFileName(CmdObj.CmdLine.ParamFile(1));
   if ExtractFileExt(InputFileName) = '' then
     InputFileName := ChangeFileExt(InputFileName, '.dat');
   InFileNamePrintable := ExtractFileName(InputFileName);
   if CmdObj.CmdLine.FileCount < 2 then begin
-    OutputFileName := ChangeFileExt(InputFileName, '.csv');
+    OutputFileName := ChangeFileExt(InputFileName, OutExt[TabbedOutput]);
   end
   else begin
     OutputFileName := ExpandFileName(CmdObj.CmdLine.ParamFile(2));
-    if ExtractFileExt(OutputFileName) = '' then OutputFileName := OutputFileName + '.csv';
+    if ExtractFileExt(OutputFileName) = '' then OutputFileName := OutputFileName + OutExt[TabbedOutput];
   end;
   if AnsiCompareFileName(InputFileName, OutputFileName) = 0 then begin
     WriteLn('Output file cannot be the same as input one.');

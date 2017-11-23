@@ -62,7 +62,7 @@ begin
   TempMask := ExtractFileName(TempMask);
   if TempMask = '' then TempMask := '*.*';
 
-  // Обрабатываем файлы в текущем каталоге (включая в список подкаталоги, если в Attr задан faDirectory)
+  // Process files in the current directory (including subdirectories if faDirectory is in Attr)
   FoundResult := FindFirst(TempRootDir + TempMask, Attr, F);
   try
     while FoundResult = 0 do begin
@@ -76,7 +76,7 @@ begin
   end;
 
   if SubDirs then begin
-    // получаем список всех подкаталогов и обрабатываем их
+    // get list of subdirectories and process them
     FoundResult := FindFirst(TempRootDir + '*.*', Attr or faDirectory, F);
     try
       while FoundResult = 0 do begin
