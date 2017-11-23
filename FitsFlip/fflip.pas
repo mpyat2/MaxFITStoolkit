@@ -99,7 +99,14 @@ begin
 
   Naxis1 := NaxisN[0];
   Naxis2 := NaxisN[1];
-  if Length(NaxisN) = 3 then Naxis3 := NaxisN[2] else Naxis3 := 1;
+  Write(' [', Naxis1, 'x', Naxis2);
+  if Length(NaxisN) = 3 then begin
+    Naxis3 := NaxisN[2];
+    Write('x', Naxis3);
+  end
+  else 
+    Naxis3 := 1;
+  Write(']');  
   NrecordsToRead := ((Naxis1 * Naxis2 * Naxis3 * BytePix - 1) div FITSRecordLen + 1);
   GetMem(Image, NrecordsToRead * FITSRecordLen);
   try
@@ -151,11 +158,14 @@ end;
 procedure ProcessFile(const FileName: string; Vertically: Boolean);
 var
   FITSfile: FITSRecordFile;
+  Value: string;
 begin
   Write('Processing ', ExtractFileName(FileName));
   AssignFile(FITSfile, FileName);
   Reset(FITSfile);
   try
+    if (GetKeywordValue(FITSfile, KeywordSimple, Value, True, True) <> 0) or ((Value <> 'T') and (Value <> 'F')) then
+      FileError('Not a valid FITS file: ' + AnsiQuotedStr(FileName, '"'));
     FITSflip(FITSfile, FileName, Vertically);
   finally
     CloseFile(FITSfile);
