@@ -1,3 +1,10 @@
+{*****************************************************************************}
+{                                                                             }
+{ FITSUtils                                                                   }
+{ (c) 2017 Maksym Pyatnytskyy                                                 }
+{                                                                             }
+{*****************************************************************************}
+
 {$R+}
 
 unit FITSUtils;
@@ -24,7 +31,26 @@ const FITSNumericAlign = 30;
 type
   FITSRecordType = array[1..FITSRecordLen] of Char;
   FITSRecordFile = File of FITSRecordType;
-  
+
+type
+  TIntArray = array of Integer;
+
+type
+  TFITSValue = record
+    case Integer of
+      0: (A: array[0..7] of Byte);
+      1: (B: Byte);
+      2: (I: SmallInt);
+      3: (L: LongInt);
+      4: (H: Int64);     // Currently unsupported FITS value, used to store result.
+      5: (S: Single);
+      6: (D: Double);
+      7: (E: Extended);  // Currently unsupported FITS value, used to store result.
+  end;
+
+type
+  EFITSerror = class(Exception);
+
 function PadCh(const S: string; L: Integer; Ch: Char): string;
 function LeftPadCh(const S: string; L: Integer; Ch: Char): string;
 function StripQuotes(const S: string): string;
@@ -35,12 +61,14 @@ function SetKeywordValue({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSR
 function AddCommentLikeKeyword({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordFile; const FITSfileName: string; const Keyword: string; const Value: string; CanResize: Boolean): Boolean;
 procedure GetHeader(const FITSfileName: string; const Header: TStrings);
 function GetEndPosition({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordFile): Integer;
+procedure GetBitPixAndNaxis({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordfile; const FITSfileName: string; out BitPix: Integer; out NaxisN: TIntArray);
+procedure RevertBytes(var FITSvalue: TFITSValue; BitPix: Integer);
 
 implementation
 
 procedure FileError(S: string);
 begin
-  raise Exception.Create(S);
+  raise EFITSerror.Create(S);
 end;
 
 function PadCh(const S: string; L: Integer; Ch: Char): string;
@@ -406,5 +434,48 @@ begin
     CloseFile(FITSfile);
   end;  
 end;
-  
+
+procedure GetBitPixAndNaxis({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordfile; const FITSfileName: string; out BitPix: Integer; out NaxisN: TIntArray);
+var
+  Value: string;
+  Naxis: Integer;
+  N: Integer;
+  I: Integer;
+  ErrorPos: Integer;
+begin
+  BitPix := 0;
+  NaxisN := nil;
+  if GetKeywordValue(FITSfile, 'BITPIX', Value, True, True) < 0 then
+    FileError('Cannot get value of BITPIX. File ' + AnsiQuotedStr(FITSfileName, '"'));
+  Val(Value, BitPix, ErrorPos);
+  if (ErrorPos <> 0) or (BitPix = 0) or (Abs(BitPix) mod 8 <> 0) then
+    FileError('BITPIX has invalid value. File ' + AnsiQuotedStr(FITSfileName, '"'));
+  if GetKeywordValue(FITSfile, 'NAXIS', Value, True, True) < 0 then
+    FileError('Cannot get value of NAXIS. File ' + AnsiQuotedStr(FITSfileName, '"'));
+  Val(Value, Naxis, ErrorPos);
+  if (ErrorPos <> 0) or (Naxis < 0) or (Naxis > 999) then
+    FileError('NAXIS has invalid value. File ' + AnsiQuotedStr(FITSfileName, '"'));
+  if Naxis = 0 then Exit;
+  SetLength(NaxisN, Naxis);
+  for I := 0 to Naxis - 1 do begin
+    if GetKeywordValue(FITSfile, 'NAXIS' + IntToStr(I + 1), Value, True, True) < 0 then
+      FileError('Cannot get value of NAXIS' + IntToStr(I + 1) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
+    Val(Value, N, ErrorPos);
+    if (ErrorPos <> 0) or (N < 0) then
+      FileError('NAXIS' + IntToStr(I + 1) + ' has invalid value. File ' + AnsiQuotedStr(FITSfileName, '"'));
+    NaxisN[I] := N;
+  end;
+end;
+
+procedure RevertBytes(var FITSvalue: TFITSValue; BitPix: Integer);
+var
+  TempFITSvalue: TFITSvalue;
+  I, N: Integer;
+begin
+  N := Abs(BitPix) div 8;
+  for I := 0 to N - 1 do
+    TempFITSvalue.A[N - 1 - I] := FITSvalue.A[I];
+  FITSvalue := TempFITSvalue;
+end;
+
 end.

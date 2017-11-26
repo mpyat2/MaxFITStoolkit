@@ -1,1 +1,1 @@
-del /S *.dcu *.ppu *.o *.a *.rsj *.dbg
+del /S *.dcu *.ppu *.o *.a *.rsj *.dbg *.bak

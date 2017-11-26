@@ -10,6 +10,7 @@ begin
   WriteLn;
   WriteLn('fihed');
   WriteLn('fflip');  
+  WriteLn('fitscfa');
   WriteLn('idobs');
   WriteLn('iren');
   WriteLn('ipdat');

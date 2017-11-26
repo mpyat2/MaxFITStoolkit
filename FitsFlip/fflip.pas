@@ -8,7 +8,7 @@ uses
 procedure PrintVersion;
 begin
   WriteLn('FITS Flip  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2017.11.23.01');
+  WriteLn('Version 2017.11.26.01');
   WriteLn;
 end;
 
@@ -28,41 +28,6 @@ var
 procedure FileError(S: string);
 begin
   raise Exception.Create(S);
-end;
-
-type
-  TIntArray = array of Integer;
-
-procedure GetBitPixAndNaxis({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordfile; const FITSfileName: string; out BitPix: Integer; out NaxisN: TIntArray);
-var
-  Value: string;
-  Naxis: Integer;
-  N: Integer;
-  I: Integer;
-  ErrorPos: Integer;
-begin
-  BitPix := 0;
-  NaxisN := nil;
-  if GetKeywordValue(FITSfile, 'BITPIX', Value, True, True) < 0 then
-    FileError('Cannot get value of BITPIX. File ' + AnsiQuotedStr(FITSfileName, '"'));
-  Val(Value, BitPix, ErrorPos);
-  if (ErrorPos <> 0) or (BitPix = 0) or (BitPix mod 8 <> 0) then
-    FileError('BITPIX has invalid value. File ' + AnsiQuotedStr(FITSfileName, '"'));
-  if GetKeywordValue(FITSfile, 'NAXIS', Value, True, True) < 0 then
-    FileError('Cannot get value of NAXIS. File ' + AnsiQuotedStr(FITSfileName, '"'));
-  Val(Value, Naxis, ErrorPos);
-  if (ErrorPos <> 0) or (Naxis < 0) or (Naxis > 999) then
-    FileError('NAXIS has invalid value. File ' + AnsiQuotedStr(FITSfileName, '"'));
-  if Naxis = 0 then Exit;
-  SetLength(NaxisN, Naxis);
-  for I := 0 to Naxis - 1 do begin
-    if GetKeywordValue(FITSfile, 'NAXIS' + IntToStr(I + 1), Value, True, True) < 0 then
-      FileError('Cannot get value of NAXIS' + IntToStr(I + 1) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
-    Val(Value, N, ErrorPos);
-    if (ErrorPos <> 0) or (N < 0) then
-      FileError('NAXIS' + IntToStr(I + 1) + ' has invalid value. File ' + AnsiQuotedStr(FITSfileName, '"'));
-    NaxisN[I] := N;
-  end;
 end;
 
 procedure FITSflip({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordfile; const FITSfileName: string; Vertically: Boolean);

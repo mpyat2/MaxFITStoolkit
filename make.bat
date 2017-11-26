@@ -33,6 +33,12 @@ REM fflip.exe: Flips 2-dimensional FITS
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
+REM fitscfa.exe: Splits CFA to color channels
+%COMPILER% FitsCfa\FitsCfa.lpr
+IF ERRORLEVEL 1 GOTO :ERROR
+copy FitsCfa\FitsCfa.ini bin-out\
+ECHO .
+
 REM ...
 %COMPILER% Hello\HelloIRISFITS.pas
 IF ERRORLEVEL 1 GOTO :ERROR

@@ -1,1 +1,2 @@
-del /S *.dcu *.ppu *.o *.a *.rsj *.dbg *.exe *.7z
+del /S *.dcu *.ppu *.o *.a *.rsj *.dbg *.bak *.exe *.7z
+del bin-out\*.ini
