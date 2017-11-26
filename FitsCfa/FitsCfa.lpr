@@ -7,7 +7,7 @@ uses
 
 procedure PrintVersion;
 begin
-  WriteLn('FITS Flip  Maksym Pyatnytskyy  2017');
+  WriteLn('FITS CFA splitter  Maksym Pyatnytskyy  2017');
   WriteLn('Version 2017.11.26.01');
   WriteLn;
 end;
@@ -17,22 +17,40 @@ begin
   WriteLn('Usage:');
   WriteLn(ExtractFileName(ParamStr(0)), ' /P=<profile> file_mask1[.fit] [file_mask2[.fit] ...]');
   WriteLn;
-  WriteLn('Correspondence between individual colors and Buyer''s pattern');
+  WriteLn('Correspondence between individual color channels and Buyer''s pattern');
   WriteLn('should be defined in ', ChangeFileExt(ExtractFileName(ParamStr(0)), '.INI'), ' file.');
-  WriteLn('For example, for Canon EOS 600D / IRIS the file should be:');
+  WriteLn('For example, for Canon EOS 600D .CR2 files converted by IRIS one can use the following profile:');
   WriteLn;
-  WriteLn('[DEFAULT]');
+  WriteLn('[PROFILE1]');
   WriteLn('1 = R');
   WriteLn('2 = G1');
   WriteLn('3 = G2');
   WriteLn('4 = B');
   WriteLn;
-  WriteLn('Name of a INI-file''s section to be used can be specified in the command line');
-  WriteLn('by "/P=" option.');
-  WriteLn('If no profile specified, DEFAULT will be used.');
+  WriteLn('Values to the right of equation sign are the perfixes of individual output files.');
+  WriteLn('If some prefixes are the same, corresponding colors will be combined together (averaged)');
   WriteLn;
-  WriteLn('The profile affects output file names only (prefixes of the names),');
-  WriteLn('not files'' content.');
+  WriteLn('Example 1 (two green channels are averaged):');
+  WriteLn;
+  WriteLn(';G1 and G2 a combined: TG=(G1+G2)/2 because they have identical ID');
+  WriteLn('[RGB1]');
+  WriteLn('1 = TR');
+  WriteLn('2 = TG');
+  WriteLn('3 = TG');
+  WriteLn('4 = TB');
+  WriteLn;  
+  WriteLn('Example 2 (all channels are averaged):');
+  WriteLn;
+  WriteLn('[GRAY]');
+  WriteLn('1 = N');
+  WriteLn('2 = N');
+  WriteLn('3 = N');
+  WriteLn('4 = N');
+  WriteLn;  
+  WriteLn('Name of a profile (INI-file''s section) to be used should be specified in the command line');
+  WriteLn('by "/P=" option.');
+  WriteLn('If no profile specified, DEFAULT profile will be used.');
+  WriteLn;
   WriteLn('If INI-file is missing or it does not contain specified section,');
   WriteLn('output files will get numeric prefixes: "p1-", "p2-", "p3-", and "p4-".');
 end;
@@ -47,7 +65,6 @@ begin
 end;
 
 type
-  TIntArray = array of Integer;
   TPCharArray = array of PChar;
 
 procedure AverageLayers(const Layers: TPCharArray; Len: Integer; BitPix: Integer);
@@ -64,8 +81,8 @@ begin
   NLayers := Length(Layers);
   for NN := 0 to Len div BytePix do begin
     FillChar(Asum, SizeOf(Asum), 0);
+    Addr := NN * BytePix;
     for N := 0 to NLayers - 1 do begin
-      Addr := NN * BytePix;
       Move(Layers[N][Addr], A1, BytePix);
       RevertBytes(A1, BitPix);
       case BitPix of
