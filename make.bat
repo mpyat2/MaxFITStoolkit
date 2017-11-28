@@ -24,7 +24,7 @@ IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
 REM ipdat.exe: Convert IRIS photometry output to csv-file
-%COMPILER% IPDAT\ipdat.pas
+%COMPILER% IPDAT\ipdat.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
@@ -44,8 +44,8 @@ REM ...
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
-del FITSutils_src.7z
-%A7z% a FITSutils_src.7z FitsHeader2\*.pas FitsFlip\*.pas IrisDateObs\*.pas IrisRename\*.pas IPDAT\*.pas IPDAT\testdata\*.dat FitsCfa\* Hello\*.pas Units\*.pas Setup\*.iss Setup\output\dirinfo bin-out\dirinfo clean.bat clean2.bat make.bat
+del FITSutils_src.zip
+%A7z% a FITSutils_src.zip FitsHeader2\*.pas FitsFlip\*.pas IrisDateObs\*.pas IrisRename\*.pas IPDAT\*.* IPDAT\testdata\*.dat FitsCfa\* Hello\*.pas Units\*.pas Setup\*.iss Setup\output\dirinfo bin-out\dirinfo clean.bat clean2.bat make.bat
 
 GOTO :EOF
 
