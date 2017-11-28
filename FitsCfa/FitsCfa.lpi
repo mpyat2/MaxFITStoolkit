@@ -29,7 +29,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="test.fit /profile=rgb"/>
+        <CommandLineParams Value="/profile=rgb  test"/>
       </local>
     </RunParams>
     <Units Count="1">

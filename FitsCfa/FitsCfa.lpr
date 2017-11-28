@@ -15,11 +15,20 @@ end;
 procedure PrintHelp;
 begin
   WriteLn('Usage:');
-  WriteLn(ExtractFileName(ParamStr(0)), ' /P=<profile> file_mask1[.fit] [file_mask2[.fit] ...]');
+  WriteLn(ExtractFileName(ParamStr(0)), ' /P=<profile> file_mask1[.fit] [file_mask2[.fit] ...] [/O=<output_dir>] [/F]');
+  WriteLn('or');
+  WriteLn(ExtractFileName(ParamStr(0)), ' /PI');
+  WriteLn;
+  WriteLn('Where:');
+  WriteLn('/O=<output_dir>    set output directory (instead of the current one)');
+  WriteLn('/F                 force overwrite existing files');
+  WriteLn('/P=<profile>       profile to be used (see below)');
+  WriteLn('/PI                print INI-file with profiles (see below)');
+  WriteLn;
   WriteLn;
   WriteLn('Correspondence between individual color channels and Buyer''s pattern');
   WriteLn('should be defined in ', ChangeFileExt(ExtractFileName(ParamStr(0)), '.INI'), ' file.');
-  WriteLn('For example, for Canon EOS 600D .CR2 files converted by IRIS one can use the following profile:');
+  WriteLn('For example, for RAW files converted by IRIS one can use the following profile:');
   WriteLn;
   WriteLn('[PROFILE1]');
   WriteLn('1 = R');
@@ -53,6 +62,38 @@ begin
   WriteLn;
   WriteLn('If INI-file is missing or it does not contain specified section,');
   WriteLn('output files will get numeric prefixes: "p1-", "p2-", "p3-", and "p4-".');
+  WriteLn;
+  WriteLn('When started with /PI switch, the program prints INI file and terminates.');
+end;
+
+procedure PrintIni;
+var
+  IniName: string;
+  Ini: Text;
+  S: string;
+begin
+  IniName := ChangeFileExt(ParamStr(0), '.INI');
+  WriteLn('; **** [' + IniName + '] ****');
+  WriteLn;
+  try
+    AssignFile(Ini, IniName);
+    Reset(Ini);
+    try
+      while not EOF(Ini) do begin
+        ReadLn(Ini, S);
+        WriteLn(S);
+      end;
+    finally
+      CloseFile(Ini);
+    end;
+  except
+    on E: Exception do begin
+      WriteLn;
+      WriteLn('**** Error:');
+      WriteLn(E.Message);
+      Halt(1);
+    end;
+  end;
 end;
 
 var
@@ -105,7 +146,7 @@ begin
   end;
 end;
 
-procedure FITSSplit({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordfile; const FITSfileName: string; const Profile: string);
+procedure FITSSplit({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordfile; const FITSfileName: string; const Profile: string; const OutputDir: string; Overwrite: Boolean);
 var
   N: Integer;
   BitPix: Integer;
@@ -145,7 +186,7 @@ begin
   BytePix := Abs(BitPix) div 8;
   Naxis1 := NaxisN[0];
   Naxis2 := NaxisN[1];
-  Write(' [', Naxis1, 'x', Naxis2, ']');
+  Write(' [', Naxis1, 'x', Naxis2, '] [BITPIX=', BitPix, '] -> ');
   NrecordsToRead := ((Naxis1 * Naxis2 * BytePix - 1) div FITSRecordLen + 1);
   NRecordsToWrite := (((Naxis1 div 2) * (Naxis2 div 2) * BytePix - 1) div FITSRecordLen + 1);
   GetMem(Header, StartOfImage * FITSRecordLen);
@@ -215,7 +256,14 @@ begin
 
         for ColorL := 0 to 3 do begin
           if ImageNames[ColorL] <> '' then begin
-            OutFileName := ExtractFilePath(FITSfileName) + ImageNames[ColorL] + '-' + ExtractFileName(FITSfileName);
+            OutFileName := ImageNames[ColorL] + '-' + ExtractFileName(FITSfileName);
+            if OutputDir = '' then
+              OutFileName := ExtractFilePath(FITSfileName) + OutFileName
+            else
+              OutFileName := IncludeTrailingPathDelimiter(OutputDir) + OutFileName;
+            Write(' ', ExtractFileName(OutFileName));
+            if not Overwrite and FileExists(OutFileName) then
+              FileError('File ' + AnsiQuotedStr(OutFileName, '"') + ' already exists.');
             AssignFile(OutFile, OutFileName);
             FileModeSaved := FileMode;
             FileMode := fmOpenReadWrite;
@@ -252,7 +300,7 @@ begin
   end;
 end;
 
-procedure ProcessFile(const FileName: string; const Profile: string);
+procedure ProcessFile(const FileName: string; const Profile: string; const OutputDir: string; Overwrite: Boolean);
 var
   FITSfile: FITSRecordFile;
   Value: string;
@@ -263,7 +311,7 @@ begin
   try
     if (GetKeywordValue(FITSfile, KeywordSimple, Value, True, True) <> 0) or ((Value <> 'T') and (Value <> 'F')) then
       FileError('Not a valid FITS file: ' + AnsiQuotedStr(FileName, '"'));
-    FITSSplit(FITSfile, FileName, Profile);
+    FITSSplit(FITSfile, FileName, Profile, OutputDir, Overwrite);
   finally
     CloseFile(FITSfile);
   end;
@@ -281,7 +329,7 @@ begin
   Result := True;
 end;
 
-procedure ProcessInput(const FileMasks: array of string; const Profile: string);
+procedure ProcessInput(const FileMasks: array of string; const Profile: string; const OutputDir: string; Overwrite: Boolean);
 var
   I, N, Ntotal: Integer;
 begin
@@ -295,7 +343,7 @@ begin
       FileEnum(FileMasks[N], faArchive, False, TFileEnumClass.FileEnumProc);
       FileList.NaturalSort;
       for I := 0 to FileList.Count - 1 do begin
-        ProcessFile(FileList[I], Profile);
+        ProcessFile(FileList[I], Profile, OutputDir, Overwrite);
         Inc(Ntotal);
       end;
     end;
@@ -315,7 +363,9 @@ end;
 
 var
   InputFileMasks: array of string;
+  OutputDir: string;
   PrintVer: Boolean;
+  Overwrite: Boolean;
   Profile: string;
   ProfileDefined: Boolean;
   S: string;
@@ -330,6 +380,11 @@ begin
 
   if (CmdObj.CmdLine.IsCmdOption('?') or CmdObj.CmdLine.IsCmdOption('H') or CmdObj.CmdLine.IsCmdOption('help')) then begin
     PrintHelp;
+    Halt(1);
+  end;
+
+  if (CmdObj.CmdLine.IsCmdOption('PI')) then begin
+    PrintIni;
     Halt(1);
   end;
 
@@ -353,6 +408,11 @@ begin
   Profile := Trim(CmdObj.CmdLine.KeyValue('P='));
   if Profile = '' then Profile := 'DEFAULT';
 
+  OutputDir := Trim(CmdObj.CmdLine.KeyValue('O='));
+  if OutputDir <> '' then OutputDir := ExpandFileName(OutputDir);
+
+  Overwrite := CmdObj.CmdLine.IsCmdOption('F');
+
   Ini := TMemIniFile.Create(ChangeFileExt(ParamStr(0), '.INI'));
   try
     // Check section
@@ -368,7 +428,7 @@ begin
       WriteLn('**** WARNING: profile ', Profile, ' is not defined or partially undefined.');
     FileList := TStringListNaturalSort.Create;
     try
-      ProcessInput(InputFileMasks, Profile);
+      ProcessInput(InputFileMasks, Profile, OutputDir, Overwrite);
     finally
       FreeAndNil(FileList);
     end;
