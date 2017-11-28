@@ -10,18 +10,19 @@ begin
   WriteLn('IRIS photometry log parser  Maksym Pyatnytskyy  2017');
   WriteLn('Version 2017.11.21.01');
 end;
-  
+
 procedure PrintHelp;
 begin
   WriteLn('Usage:');
   WriteLn(ExtractFileName(ParamStr(0)), ' [options] input_filename[.dat]  [output_filename[.csv|.txt]]');
   WriteLn;
+  WriteLn('  /2  Alternative output mode');
   WriteLn('  /T  Tabbed output instead of CSV (.txt output file)');
   WriteLn('  /Q  Quiet mode');
   WriteLn('  /V  Print version');
   WriteLn('  /H  Print this help and halt');
 end;
-  
+
 procedure FileFormatError;
 begin
   raise Exception.Create('File format error');
@@ -45,8 +46,8 @@ const
 
 var
   InFileNamePrintable: string = '';
-  TabbedOutput: Boolean = False; 
-  
+  TabbedOutput: Boolean = False;
+
 procedure Progress(LineN: Integer);
 var
   I: Integer;
@@ -57,13 +58,13 @@ begin
   for I := 1 to Length(InFileNamePrintable) + Length(IntToStr(MaxInt)) + 1 do begin
     S := S + ' ';
   end;
-  Write(S);    
+  Write(S);
   Write(#13);
   S := InFileNamePrintable + '(' + IntToStr(LineN) + ')';
   Write(S);
 end;
-  
-procedure ProcessInput(const InFile: string; const OutFile: string; Quiet: boolean); 
+
+procedure ProcessInput(const InFile: string; const OutFile: string; Quiet: boolean; Mode2: Boolean);
 var
   InF: TextFile;
   OutF: TextFile;
@@ -80,6 +81,8 @@ var
   N: Integer;
   StarN: integer;
   LineN: Integer;
+  Mode2Header: string;
+  Mode2Line: string;
 begin
   AssignFile(InF, InFile);
   AssignFile(OutF, OutFile);
@@ -91,8 +94,8 @@ begin
       WriteLn(E.Message);
       Halt(1);
     end;
-  end;  
-  try  
+  end;
+  try
     Rewrite(OutF);
   except
     on E: Exception do begin
@@ -102,19 +105,26 @@ begin
     end;
   end;
   try
+    Mode2Header := '';
+    Mode2Line := '';
     S := '';
     LineN := 0;
     StarN := 0;
-    Write(OutF, 'StarN');
-    Write(OutF, Delimiter[TabbedOutput], 'Magnitude');    
-    Write(OutF, Delimiter[TabbedOutput], '"Phot mode"');
-    Write(OutF, Delimiter[TabbedOutput], 'X');
-    Write(OutF, Delimiter[TabbedOutput], 'Y');
-    Write(OutF, Delimiter[TabbedOutput], '"Pixel number in the inner circle"');
-    Write(OutF, Delimiter[TabbedOutput], '"Pixel number for background evaluation"');
-    Write(OutF, Delimiter[TabbedOutput], 'Intensity');
-    Write(OutF, Delimiter[TabbedOutput], '"Background mean level"');
-    WriteLn(OutF);
+    if not Mode2 then begin
+      Write(OutF, 'StarN');
+      Write(OutF, Delimiter[TabbedOutput], 'Magnitude');
+      Write(OutF, Delimiter[TabbedOutput], '"Phot mode"');
+      Write(OutF, Delimiter[TabbedOutput], 'X');
+      Write(OutF, Delimiter[TabbedOutput], 'Y');
+      Write(OutF, Delimiter[TabbedOutput], '"Pixel number in the inner circle"');
+      Write(OutF, Delimiter[TabbedOutput], '"Pixel number for background evaluation"');
+      Write(OutF, Delimiter[TabbedOutput], 'Intensity');
+      Write(OutF, Delimiter[TabbedOutput], '"Background mean level"');
+      WriteLn(OutF);
+    end
+    else begin
+      //
+    end;
     StringInBuffer := False;
     while not EOF(InF) or StringInBuffer do begin
       if not StringInBuffer then begin
@@ -122,7 +132,7 @@ begin
         S := TrimRight(S);
         Inc(LineN);
         if not Quiet then Progress(LineN);
-      end    
+      end
       else
         StringInBuffer := False;
 
@@ -185,19 +195,33 @@ begin
             if ValError <> 0 then InvalidFloatingPointValueError(S);
           end;
         end;
-        
-        S2 := IntToStr(StarN);
-        S2 := S2 + Delimiter[TabbedOutput] + FloatToStr(Magnitude);
-        S2 := S2 + Delimiter[TabbedOutput] + IntToStr(PhotMode);
-        S2 := S2 + Delimiter[TabbedOutput] + IntToStr(X);
-        S2 := S2 + Delimiter[TabbedOutput] + IntToStr(Y);
-        S2 := S2 + Delimiter[TabbedOutput] + IntToStr(PixNumInner);
-        S2 := S2 + Delimiter[TabbedOutput] + IntToStr(PixNumBack);
-        S2 := S2 + Delimiter[TabbedOutput] + FloatToStr(Intensity);
-        S2 := S2 + Delimiter[TabbedOutput] + FloatToStr(BackLevel);
-        WriteLn(OutF, S2);
+
+        if not Mode2 then begin
+          S2 := IntToStr(StarN);
+          S2 := S2 + Delimiter[TabbedOutput] + FloatToStr(Magnitude);
+          S2 := S2 + Delimiter[TabbedOutput] + IntToStr(PhotMode);
+          S2 := S2 + Delimiter[TabbedOutput] + IntToStr(X);
+          S2 := S2 + Delimiter[TabbedOutput] + IntToStr(Y);
+          S2 := S2 + Delimiter[TabbedOutput] + IntToStr(PixNumInner);
+          S2 := S2 + Delimiter[TabbedOutput] + IntToStr(PixNumBack);
+          S2 := S2 + Delimiter[TabbedOutput] + FloatToStr(Intensity);
+          S2 := S2 + Delimiter[TabbedOutput] + FloatToStr(BackLevel);
+          WriteLn(OutF, S2);
+        end
+        else begin
+          if StarN <> 0 then begin
+            Mode2Header := Mode2Header + Delimiter[TabbedOutput];
+            Mode2Line := Mode2Line + Delimiter[TabbedOutput];
+          end;
+          Mode2Header := Mode2Header + 'Star' + IntToStr(StarN);
+          Mode2Line := Mode2Line + FloatToStr(Magnitude);
+        end;
         Inc(StarN);
       end;
+    end;
+    if Mode2 then begin
+      WriteLn(OutF, Mode2Header);
+      WriteLn(OutF, Mode2Line);
     end;
     if not Quiet then WriteLn;
     CloseFile(OutF);
@@ -213,13 +237,14 @@ begin
   if not Quiet then
     WriteLn(ExtractFileName(OutFile), ' created.');
 end;
-  
+
 var
   Quiet: Boolean;
   PrintVer: Boolean;
   PrintHlp: Boolean;
   InputFileName: string;
   OutputFileName: string;
+  Mode2: Boolean;
 
 begin
   PrintVer := CmdObj.CmdLine.IsCmdOption('V') or CmdObj.CmdLine.IsCmdOption('version');
@@ -234,6 +259,7 @@ begin
   end;
   Quiet := CmdObj.CmdLine.IsCmdOption('Q');
   TabbedOutput := CmdObj.CmdLine.IsCmdOption('T');
+  Mode2 := CmdObj.CmdLine.IsCmdOption('2');
   InputFileName := ExpandFileName(CmdObj.CmdLine.ParamFile(1));
   if ExtractFileExt(InputFileName) = '' then
     InputFileName := ChangeFileExt(InputFileName, '.dat');
@@ -249,5 +275,6 @@ begin
     WriteLn('Output file cannot be the same as input one.');
     Halt(1);
   end;
-  ProcessInput(InputFileName, OutputFileName, Quiet);
+  ProcessInput(InputFileName, OutputFileName, Quiet, Mode2);
 end.
+

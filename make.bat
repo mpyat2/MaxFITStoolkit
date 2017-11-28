@@ -1,6 +1,6 @@
 @ECHO OFF
 rem SET COMPILER="C:\PERSONAL\DC\DCC32" -UUnits\ -Ebin-out\
-SET COMPILER="c:\Personal\lazarus\fpc\3.0.2\bin\i386-win32\fpc.exe" -MDELPHI -Xg -FuUnits\ -FEbin-out\
+SET COMPILER="c:\lazarus\fpc\3.0.2\bin\i386-win32\fpc.exe" -MDELPHI -Xg -FuUnits\ -FEbin-out\
 SET A7z="c:\Program Files\7-zip\7z.exe"
 
 REM pfh.exe: Print FITS header: simple, nothing checked, single-file
