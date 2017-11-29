@@ -209,8 +209,9 @@ begin
             ImageNames[ColorL] := Trim(Ini.ReadString(Profile, IntToStr(ColorL + 1), ''));
             if ImageNames[ColorL] = '' then ImageNames[ColorL] := 'p' + IntToStr(ColorL + 1);
             GetMem(ImageC[ColorL], Image2MemSize);
-            FillChar(ImageC[ColorL]^, Image2MemSize, ' ');
-            FillChar(ImageC[ColorL]^, (Naxis1 div 2) * (Naxis2 div 2) * BytePix, 0);
+            //FillChar(ImageC[ColorL]^, Image2MemSize, ' ');
+            //FillChar(ImageC[ColorL]^, (Naxis1 div 2) * (Naxis2 div 2) * BytePix, 0);
+            FillChar(ImageC[ColorL]^, Image2MemSize, 0);
             for C := 0 to Naxis1 - 1 do begin
               for R := 0 to Naxis2 - 1 do begin
                 C2 := C + ShiftH;

@@ -165,7 +165,7 @@ var
   I, N: Integer;
 begin
   if (CSVmode or TABmode) and SETmode then begin
-    WriteLn('**** //CSV and //SET are mutually exclusive');
+    WriteLn('**** //CSV (or //TAB) and //SET are mutually exclusive');
   Halt(1);
   end;
   if (CSVmode or TABmode) then begin
