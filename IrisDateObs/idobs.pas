@@ -2,7 +2,7 @@
 
 program IDOBS;
 
-uses Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, EnumFiles, StringListNaturalSort, FITSUtils, FITSTimeUtils;
+uses Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, EnumFiles, StringListNaturalSort, FITSUtils, FITSTimeUtils, CommonIni;
 
 procedure PrintVersion;
 begin

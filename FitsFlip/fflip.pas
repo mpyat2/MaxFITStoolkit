@@ -3,7 +3,7 @@
 program FFLIP;
 
 uses
-  SysUtils, CmdObj{, CmdObjStdSwitches}, FITSUtils, EnumFiles, StringListNaturalSort;
+  SysUtils, CmdObj{, CmdObjStdSwitches}, FITSUtils, EnumFiles, StringListNaturalSort, CommonIni;
 
 procedure PrintVersion;
 begin

@@ -45,7 +45,7 @@ IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
 del FITSutils_src.zip
-%A7z% a FITSutils_src.zip FitsHeader2\*.pas FitsFlip\*.pas IrisDateObs\*.pas IrisRename\*.pas IPDAT\*.* IPDAT\testdata\*.dat FitsCfa\* Hello\*.pas Units\*.pas Setup\*.iss Setup\output\dirinfo bin-out\dirinfo clean.bat clean2.bat make.bat
+%A7z% a FITSutils_src.zip FitsHeader2\*.pas FitsFlip\*.pas IrisDateObs\*.pas IrisRename\*.pas IPDAT\*.* IPDAT\testdata\*.dat FitsCfa\* Hello\*.pas Units\*.pas Setup\*.iss Setup\output\dirinfo bin-out\dirinfo bin-out\fitsutils.ini clean.bat clean2.bat make.bat
 
 GOTO :EOF
 

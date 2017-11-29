@@ -2,7 +2,7 @@
 
 program IREN;
 
-uses Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, EnumFiles, StringListNaturalSort;
+uses Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, EnumFiles, StringListNaturalSort, CommonIni;
 
 procedure PrintVersion;
 begin

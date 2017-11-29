@@ -3,7 +3,7 @@
 program IPDAT;
 
 uses
-  Windows, SysUtils, CmdObj{, CmdObjStdSwitches};
+  Windows, SysUtils, CmdObj{, CmdObjStdSwitches}, CommonIni;
 
 procedure PrintVersion;
 begin

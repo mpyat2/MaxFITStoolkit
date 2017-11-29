@@ -42,6 +42,7 @@ Source: "..\bin-out\ipdat.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\iren.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitscfa.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitscfa.ini"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin-out\fitsutils.ini"; DestDir: "{app}"; Flags: ignoreversion
 
 ;Source: "..\bin-out\pfh.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files

@@ -5,7 +5,7 @@ program FIHED;
 // https://fits.gsfc.nasa.gov/fits_primer.html
 
 uses
-  Windows, SysUtils, CmdObj, Classes, FITSUtils, EnumFiles, StringListNaturalSort;
+  Windows, SysUtils, CmdObj, Classes, FITSUtils, EnumFiles, StringListNaturalSort, CommonIni;
 // do not include CmdObjStdSwitches!
 
 procedure PrintVersion;

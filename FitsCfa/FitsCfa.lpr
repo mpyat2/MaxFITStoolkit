@@ -3,7 +3,7 @@
 program FITSCFA;
 
 uses
-  SysUtils, CmdObj{, CmdObjStdSwitches}, FITSUtils, EnumFiles, StringListNaturalSort, IniFiles;
+  SysUtils, CmdObj{, CmdObjStdSwitches}, FITSUtils, EnumFiles, StringListNaturalSort, IniFiles, CommonIni;
 
 procedure PrintVersion;
 begin
