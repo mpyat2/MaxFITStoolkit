@@ -57,7 +57,7 @@ begin
       BlockRead(InF, Buf, SizeOf(Buf), NReadWrite);
       if NReadWrite <> HeaderRecordLen then FileError('Invalid FITS record in file ' + AnsiQuotedStr(InFile, '"'));
       if (ParamList.Count < 1) or (ParamList.IndexOf(Copy(Buf, 1, FITSKeywordLen)) >= 0) then
-        WriteLn(Buf);
+        WriteLn(TrimRight(Buf));
       if Buf = recordEND then Break;
     end;
     CloseFile(InF);

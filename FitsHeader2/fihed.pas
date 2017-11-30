@@ -74,7 +74,7 @@ begin
           GetHeader(FileName, Header);
           for I := 0 to Header.Count - 1 do begin
             if (Keywords.Count < 1) or (Keywords.IndexOf(TrimRight(Copy(Header[I], 1, FITSKeywordLen))) >= 0) then
-              WriteLn(Header[I]);
+              WriteLn(TrimRight(Header[I]));
           end;
         finally
           FreeAndNil(Header);
