@@ -4,15 +4,15 @@
     <PathDelim Value="\"/>
     <Version Value="10"/>
     <BuildModes Active="Default"/>
-    <Units Count="6">
+    <Units Count="7">
       <Unit0>
         <Filename Value="FitsCfa.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="FITSCFA"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="364"/>
         <CursorPos Y="376"/>
-        <UsageCount Value="21"/>
-        <Loaded Value="True"/>
+        <UsageCount Value="22"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
       <Unit1>
@@ -38,12 +38,10 @@
       </Unit3>
       <Unit4>
         <Filename Value="..\Units\CommonIni.pas"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="1"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="4"/>
         <CursorPos X="52" Y="20"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit4>
       <Unit5>
@@ -54,94 +52,17 @@
         <UsageCount Value="10"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit5>
+      <Unit6>
+        <Filename Value="..\APDAT\apdat.lpr"/>
+        <UnitName Value="APDAT"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="56"/>
+        <CursorPos X="30" Y="63"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit6>
     </Units>
-    <JumpHistory Count="22" HistoryIndex="21">
-      <Position1>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="256" TopLine="245"/>
-      </Position1>
-      <Position2>
-        <Filename Value="FitsCfa.lpr"/>
-      </Position2>
-      <Position3>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="412" TopLine="390"/>
-      </Position3>
-      <Position4>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="417" TopLine="389"/>
-      </Position4>
-      <Position5>
-        <Filename Value="FitsCfa.lpr"/>
-      </Position5>
-      <Position6>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="111" Column="72" TopLine="105"/>
-      </Position6>
-      <Position7>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="121" Column="24" TopLine="105"/>
-      </Position7>
-      <Position8>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="128" Column="29" TopLine="105"/>
-      </Position8>
-      <Position9>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="177" Column="48" TopLine="149"/>
-      </Position9>
-      <Position10>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="6" Column="102"/>
-      </Position10>
-      <Position11>
-        <Filename Value="..\Units\CommonIni.pas"/>
-        <Caret Line="18"/>
-      </Position11>
-      <Position12>
-        <Filename Value="..\Units\CommonIni.pas"/>
-        <Caret Line="16"/>
-      </Position12>
-      <Position13>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="105" TopLine="93"/>
-      </Position13>
-      <Position14>
-        <Filename Value="..\Units\CommonIni.pas"/>
-        <Caret Line="18"/>
-      </Position14>
-      <Position15>
-        <Filename Value="..\Units\CommonIni.pas"/>
-        <Caret Line="16"/>
-      </Position15>
-      <Position16>
-        <Filename Value="..\Units\CommonIni.pas"/>
-        <Caret Line="18" Column="8"/>
-      </Position16>
-      <Position17>
-        <Filename Value="..\Units\CommonIni.pas"/>
-        <Caret Line="16"/>
-      </Position17>
-      <Position18>
-        <Filename Value="..\Units\CommonIni.pas"/>
-        <Caret Line="18"/>
-      </Position18>
-      <Position19>
-        <Filename Value="..\Units\CommonIni.pas"/>
-        <Caret Line="16"/>
-      </Position19>
-      <Position20>
-        <Filename Value="..\Units\CommonIni.pas"/>
-        <Caret Line="20" Column="31"/>
-      </Position20>
-      <Position21>
-        <Filename Value="..\Units\CommonIni.pas"/>
-        <Caret Line="6" Column="13" TopLine="4"/>
-      </Position21>
-      <Position22>
-        <Filename Value="..\Units\CommonIni.pas"/>
-        <Caret Line="20" TopLine="4"/>
-      </Position22>
-    </JumpHistory>
+    <JumpHistory HistoryIndex="-1"/>
   </ProjectSession>
 </CONFIG>

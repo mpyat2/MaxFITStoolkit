@@ -39,9 +39,12 @@ Source: "..\bin-out\fihed.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fflip.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\idobs.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\ipdat.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin-out\apdat.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\iren.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitscfa.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitscfa.ini"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin-out\iconvraw.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin-out\FreeImage.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitsutils.ini"; DestDir: "{app}"; Flags: ignoreversion
 
 ;Source: "..\bin-out\pfh.exe"; DestDir: "{app}"; Flags: ignoreversion
