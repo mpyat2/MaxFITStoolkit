@@ -13,7 +13,7 @@ begin
   WriteLn(ExtractFileName(ParamStr(0)), ' input_filename [/T]');
 end;
 
-procedure FileError(S: string);
+procedure FileError(const S: string);
 begin
   raise Exception.Create(S);
 end;

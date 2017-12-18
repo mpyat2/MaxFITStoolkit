@@ -3,7 +3,7 @@
 program FFLIP;
 
 uses
-  SysUtils, CmdObj{, CmdObjStdSwitches}, FITSUtils, EnumFiles, StringListNaturalSort, CommonIni;
+  SysUtils, CmdObj{, CmdObjStdSwitches}, FITSUtils, EnumFiles, StringListNaturalSort, FitsUtilsHelp, CommonIni;
 
 procedure PrintVersion;
 begin
@@ -12,20 +12,10 @@ begin
   WriteLn;
 end;
 
-procedure PrintHelp;
-begin
-  WriteLn('Usage:');
-  WriteLn(ExtractFileName(ParamStr(0)), ' file_mask1[.fit] [file_mask2[.fit] ...] [/1]');
-  WriteLn;
-  WriteLn('/1         Flip horizontally, if not specified -- vertically');
-  WriteLn('/V         print version');
-  WriteLn('/H         print this help and halt');
-end;
-
 var
   FileList: TStringListNaturalSort;
 
-procedure FileError(S: string);
+procedure FileError(const S: string);
 begin
   raise Exception.Create(S);
 end;
@@ -48,7 +38,6 @@ var
   Pix2Addr: Integer;
   N, I, II, Planes: Integer;
   Offset: Integer;
-  IOcount: Integer;
 begin
   N := GetEndPosition(FITSfile);
   if N < 0 then
@@ -77,7 +66,7 @@ begin
   try
     FillChar(Image^, NrecordsToRead * FITSRecordLen, 0);
     Seek(FITSfile, StartOfImage);
-    BlockRead(FITSfile, Image^, NrecordsToRead, IOcount);
+    BlockRead(FITSfile, Image^, NrecordsToRead);
     
     for Planes := 0 to Naxis3 - 1 do begin
       Offset := Naxis1 * Naxis2 * BytePix * Planes; 
@@ -111,8 +100,7 @@ begin
     end;
     
     Seek(FITSfile, StartOfImage);
-    BlockWrite(FITSfile, Image^, NrecordsToRead, IOcount);
-    if IOcount <> NrecordsToRead then FileError('Error writing file');
+    BlockWrite(FITSfile, Image^, NrecordsToRead);
   finally
     FreeMem(Image);
     Image := nil;

@@ -46,6 +46,7 @@ Source: "..\bin-out\fitscfa.ini"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\iconvraw.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\FreeImage.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitsutils.ini"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin-out\fitsutils.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 ;Source: "..\bin-out\pfh.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files

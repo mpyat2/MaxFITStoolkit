@@ -3,24 +3,12 @@
 program IPDAT;
 
 uses
-  Windows, SysUtils, CmdObj{, CmdObjStdSwitches}, CommonIni;
+  Windows, SysUtils, CmdObj{, CmdObjStdSwitches}, FitsUtilsHelp, CommonIni;
 
 procedure PrintVersion;
 begin
   WriteLn('IRIS photometry log parser  Maksym Pyatnytskyy  2017');
   WriteLn('Version 2017.11.21.01');
-end;
-
-procedure PrintHelp;
-begin
-  WriteLn('Usage:');
-  WriteLn(ExtractFileName(ParamStr(0)), ' [options] input_filename[.dat]  [output_filename[.csv|.txt]]');
-  WriteLn;
-  WriteLn('  /2  Alternative output mode');
-  WriteLn('  /T  Tabbed output instead of CSV (.txt output file)');
-  WriteLn('  /Q  Quiet mode');
-  WriteLn('  /V  Print version');
-  WriteLn('  /H  Print this help and halt');
 end;
 
 procedure FileFormatError;

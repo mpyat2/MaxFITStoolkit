@@ -53,6 +53,7 @@ type
 
 function PadCh(const S: string; L: Integer; Ch: Char): string;
 function LeftPadCh(const S: string; L: Integer; Ch: Char): string;
+function FITSQuotedValue(const S: string): string;
 function StripQuotes(const S: string): string;
 
 function IsFITS(const FITSfileName: string): Boolean;
@@ -66,7 +67,7 @@ procedure RevertBytes(var FITSvalue: TFITSValue; BitPix: Integer);
 
 implementation
 
-procedure FileError(S: string);
+procedure FileError(const S: string);
 begin
   raise EFITSerror.Create(S);
 end;
@@ -81,6 +82,31 @@ function LeftPadCh(const S: string; L: Integer; Ch: Char): string;
 begin
   Result := S;
   while Length(Result) < L do Result := Ch + Result;
+end;
+
+function GetQuotedLen(const S: string; MaxLen: Integer): Integer;
+var
+  I, L: Integer;
+begin
+  Result := 0;
+  L := Length(S);
+  if L > MaxLen then L := MaxLen;
+  for I := 1 to L do begin
+    Inc(Result);
+    if S[I] = '''' then Inc(Result);
+  end;
+end;
+
+function FITSQuotedValue(const S: string): string;
+var
+  TempS: string;
+  L: Integer;
+begin
+  TempS := PadCh(S, MinStringConstLen, ' ');
+  L := Length(TempS);
+  while GetQuotedLen(TempS, L) > SizeOf(FITSRecordType) - 10 do
+    Dec(L);
+  Result := QuotedStr(Copy(TempS, 1, L));
 end;
 
 function StripQuotes(const S: string): string;
@@ -311,7 +337,7 @@ begin
   end;
   if not IsNumeric and (AValue <> 'T') and (AValue <> 'F') and (AValue <> '') then begin
     AValue := StripQuotes(AValue);
-    AValue := QuotedStr(PadCh(AValue, MinStringConstLen, ' '));
+    AValue := FITSQuotedValue(AValue);
   end else begin
     if (AValue = 'T') or (AValue = 'F') then
       AValue := LeftPadCh(AValue, FITSNumericAlign - FITSKeywordLen - 2, ' ');

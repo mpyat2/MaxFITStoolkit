@@ -2,32 +2,13 @@
 
 program IREN;
 
-uses Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, EnumFiles, StringListNaturalSort, CommonIni;
+uses Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, EnumFiles, StringListNaturalSort, FitsUtilsHelp, CommonIni;
 
 procedure PrintVersion;
 begin
   WriteLn('Rename files accorting to IRIS standard  Maksym Pyatnytskyy  2017');
   WriteLn('Version 2017.11.22.01');
   WriteLn;
-end;
-
-procedure PrintHelp;
-begin
-  WriteLn('Usage:');
-  WriteLn(ExtractFileName(ParamStr(0)), ' in_file_mask1[.fit] [in_file_mask2[.fit] ...] /G=generic_name /O=out_dir [/B=nn] [/F]');
-  WriteLn;
-  WriteLn('Where:');
-  WriteLn('  in_file_maskX   masks of input files to be processed, i.e. IMG*.CR2');
-  WriteLn('  generic_name    prefix to be used to construct new file name');
-  WriteLn('  out_dir         directory for files having new names');
-  WriteLn('  nn              base file number (default = 1); must be >= 0');
-  WriteLn('  /F              overwrite existing files in output directory');
-  WriteLn('  /V              print version');
-  WriteLn('  /H              print this help and halt');
-  
-  WriteLn;
-  WriteLn('Example:');
-  WriteLn(ExtractFileName(ParamStr(0)), ' dir1\IMG*.CR2 dir2\IMG*.CR2 dir3\IMG*.CR2 /G=src /O=C:\SKY\ /F /B=1');  
 end;
 
 type

@@ -2,7 +2,7 @@
 
 program IDOBS;
 
-uses Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, EnumFiles, StringListNaturalSort, FITSUtils, FITSTimeUtils, CommonIni;
+uses Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, EnumFiles, StringListNaturalSort, FITSUtils, FITSTimeUtils, FitsUtilsHelp, CommonIni;
 
 procedure PrintVersion;
 begin
@@ -11,30 +11,7 @@ begin
   WriteLn;
 end;
 
-procedure PrintHelp;
-begin
-  WriteLn('Usage:');
-  WriteLn(ExtractFileName(ParamStr(0)), ' file_mask1[.fit] [file_mask2[.fit] ...] [/E] [/P=filename]');
-  WriteLn;
-  WriteLn('Where:');
-  WriteLn('  file_maskX   mask of input files to be processed (several masks are allowed)');
-  WriteLn('  /E           correct time by exposure');
-  WriteLn('  /P=filename  print FIHED command for filename (stacked image)');
-  WriteLn('  /V           print version');  
-  WriteLn('  /H           print this help and halt');
-  WriteLn;
-  WriteLn;  
-  WriteLn('Date/Time is extracted from DATE-OBS first,');
-  WriteLn('if DATE-OBS does contain time part, time is extracted from it,');
-  WriteLn('otherwise TIME-OBS is used.');
-  WriteLn('If TIME-OBS is missing, UT-START (IRIS-specific keyword) is searched.');
-  WriteLn;
-  WriteLn;
-  WriteLn('Example:');
-  WriteLn(ExtractFileName(ParamStr(0)), ' ser1\calib* ser2\calib* ser3\calib* /E');  
-end;
-
-procedure FileError(S: string);
+procedure FileError(const S: string);
 begin
   raise Exception.Create(S);
 end;

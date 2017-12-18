@@ -5,7 +5,7 @@ program FIHED;
 // https://fits.gsfc.nasa.gov/fits_primer.html
 
 uses
-  Windows, SysUtils, CmdObj, Classes, FITSUtils, EnumFiles, StringListNaturalSort, CommonIni;
+  Windows, SysUtils, CmdObj, Classes, FITSUtils, EnumFiles, StringListNaturalSort, FitsUtilsHelp, CommonIni;
 // do not include CmdObjStdSwitches!
 
 procedure PrintVersion;
@@ -15,28 +15,7 @@ begin
   WriteLn;
 end;  
   
-procedure PrintHelp;
-begin
-  WriteLn('Usage:');
-  WriteLn(ExtractFileName(ParamStr(0)), ' file_mask1[.fit] [file_mask2[.fit] ...] [//CSV|//TAB] [/keyword1 [/keyword2 ...]]');
-  WriteLn('or');  
-  WriteLn(ExtractFileName(ParamStr(0)), ' file_mask1[.fit] [file_mask2[.fit] ...] [//SET] [/keyword1=value [/keyword2=value ...]]');  
-  WriteLn;
-  WriteLn('//CSV       prints header values as CSV table.');
-  WriteLn('            COMMENT, HISTORY and similar keywords without ''=''');
-  WriteLn('            are ignored in this mode.');  
-  WriteLn('            When /CSV parameter exists, at least one keyword must be specified');  
-  WriteLn;
-  WriteLn('//SET       edit mode');
-  WriteLn;  
-  WriteLn('//CSV and //SET or //TAB and //SET parameters are mutually exclusive');
-  WriteLn('If both //CSV and //TAB specified, //CSV is used');
-  WriteLn;
-  WriteLn('//V         print version');  
-  WriteLn('//H         print this help and halt');
-end;
- 
-procedure FileError(S: string);
+procedure FileError(const S: string);
 begin
   raise Exception.Create(S);
 end;

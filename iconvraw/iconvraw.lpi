@@ -18,6 +18,9 @@
       <EnableI18N LFM="False"/>
     </i18n>
     <VersionInfo>
+      <AutoIncrementBuild Value="True"/>
+      <MajorVersionNr Value="1"/>
+      <BuildNr Value="9"/>
       <StringTable ProductVersion=""/>
     </VersionInfo>
     <BuildModes Count="1">
@@ -29,7 +32,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="TEST.CR2 /F"/>
+        <CommandLineParams Value="TEST.CR2 /F /R"/>
       </local>
     </RunParams>
     <Units Count="1">

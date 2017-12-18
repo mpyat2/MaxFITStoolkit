@@ -4,22 +4,23 @@
     <PathDelim Value="\"/>
     <Version Value="10"/>
     <BuildModes Active="Default"/>
-    <Units Count="7">
+    <Units Count="10">
       <Unit0>
         <Filename Value="FitsCfa.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="FITSCFA"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="364"/>
-        <CursorPos Y="376"/>
-        <UsageCount Value="22"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="348"/>
+        <CursorPos X="11" Y="379"/>
+        <UsageCount Value="23"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
       <Unit1>
         <Filename Value="..\Units\FITSUtils.pas"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="49"/>
-        <CursorPos Y="58"/>
+        <TopLine Value="298"/>
+        <CursorPos Y="317"/>
         <UsageCount Value="10"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit1>
@@ -55,14 +56,101 @@
       <Unit6>
         <Filename Value="..\APDAT\apdat.lpr"/>
         <UnitName Value="APDAT"/>
-        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="-1"/>
+        <WindowIndex Value="-1"/>
         <TopLine Value="56"/>
         <CursorPos X="30" Y="63"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit6>
+      <Unit7>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.2\source\rtl\inc\systemh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="1173"/>
+        <CursorPos X="11" Y="1192"/>
+        <UsageCount Value="10"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.2\source\rtl\inc\file.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="151"/>
+        <CursorPos X="14" Y="182"/>
+        <UsageCount Value="10"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="..\Units\FitsUtilsHelp.pas"/>
+        <UnitName Value="FITSUtilsHelp"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit9>
     </Units>
-    <JumpHistory HistoryIndex="-1"/>
+    <JumpHistory Count="17" HistoryIndex="16">
+      <Position1>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="379" Column="11" TopLine="352"/>
+      </Position1>
+      <Position2>
+        <Filename Value="FitsCfa.lpr"/>
+      </Position2>
+      <Position3>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="40" Column="11" TopLine="9"/>
+      </Position3>
+      <Position4>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="309" Column="11" TopLine="278"/>
+      </Position4>
+      <Position5>
+        <Filename Value="FitsCfa.lpr"/>
+      </Position5>
+      <Position6>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="40" Column="11" TopLine="9"/>
+      </Position6>
+      <Position7>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="309" Column="11" TopLine="278"/>
+      </Position7>
+      <Position8>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="333" Column="9" TopLine="302"/>
+      </Position8>
+      <Position9>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="338" Column="9" TopLine="307"/>
+      </Position9>
+      <Position10>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="349" Column="9" TopLine="318"/>
+      </Position10>
+      <Position11>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="378" Column="21" TopLine="348"/>
+      </Position11>
+      <Position12>
+        <Filename Value="FitsCfa.lpr"/>
+      </Position12>
+      <Position13>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="40" Column="11" TopLine="9"/>
+      </Position13>
+      <Position14>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="309" Column="11" TopLine="278"/>
+      </Position14>
+      <Position15>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="333" Column="9" TopLine="302"/>
+      </Position15>
+      <Position16>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="338" Column="9" TopLine="307"/>
+      </Position16>
+      <Position17>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="349" Column="9" TopLine="318"/>
+      </Position17>
+    </JumpHistory>
   </ProjectSession>
 </CONFIG>

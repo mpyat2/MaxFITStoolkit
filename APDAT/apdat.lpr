@@ -3,29 +3,13 @@
 program APDAT;
 
 uses
-  Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, CommonIni, Math;
+  Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, Math, FitsUtilsHelp, CommonIni;
 
 procedure PrintVersion;
 begin
   WriteLn('AIJ photometry log parser  Maksym Pyatnytskyy  2017');
   WriteLn('Version 2017.12.05.01');
 end;
-
-procedure PrintHelp;
-begin
-  WriteLn('Usage:');
-  WriteLn(ExtractFileName(ParamStr(0)), ' [options] input_filename[.dat] [output_filename[.csv|.txt]]');
-  WriteLn;
-  WriteLn('  /T  Tabbed output instead of CSV (.txt output file)');
-  WriteLn('  /Q  Quiet mode');
-  WriteLn('  /V  Print version');
-  WriteLn('  /H  Print this help and halt');
-end;
-
-//procedure FileFormatError;
-//begin
-//  raise Exception.Create('File format error');
-//end;
 
 procedure InvalidFloatingPointValueError(const Value: string);
 begin

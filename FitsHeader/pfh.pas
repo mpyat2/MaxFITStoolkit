@@ -15,7 +15,7 @@ begin
   WriteLn(ExtractFileName(ParamStr(0)), ' input_filename[.fit] [/keyword1 [/keyword2 ...]]');
 end;
   
-procedure FileError(S: string);
+procedure FileError(const S: string);
 begin
   raise Exception.Create(S);
 end;

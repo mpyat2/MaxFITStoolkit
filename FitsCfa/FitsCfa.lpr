@@ -3,67 +3,13 @@
 program FITSCFA;
 
 uses
-  SysUtils, CmdObj{, CmdObjStdSwitches}, FITSUtils, EnumFiles, StringListNaturalSort, IniFiles, CommonIni;
+  SysUtils, CmdObj{, CmdObjStdSwitches}, FITSUtils, EnumFiles, StringListNaturalSort, IniFiles, FitsUtilsHelp, CommonIni;
 
 procedure PrintVersion;
 begin
   WriteLn('FITS CFA splitter  Maksym Pyatnytskyy  2017');
   WriteLn('Version 2017.11.26.01');
   WriteLn;
-end;
-
-procedure PrintHelp;
-begin
-  WriteLn('Usage:');
-  WriteLn(ExtractFileName(ParamStr(0)), ' /P=<profile> file_mask1[.fit] [file_mask2[.fit] ...] [/O=<output_dir>] [/F]');
-  WriteLn('or');
-  WriteLn(ExtractFileName(ParamStr(0)), ' /PI');
-  WriteLn;
-  WriteLn('Where:');
-  WriteLn('/O=<output_dir>    set output directory (instead of the current one)');
-  WriteLn('/F                 force overwrite existing files');
-  WriteLn('/P=<profile>       profile to be used (see below)');
-  WriteLn('/PI                print INI-file with profiles (see below)');
-  WriteLn;
-  WriteLn;
-  WriteLn('Correspondence between individual color channels and Buyer''s pattern');
-  WriteLn('should be defined in ', ChangeFileExt(ExtractFileName(ParamStr(0)), '.INI'), ' file.');
-  WriteLn('For example, for RAW files converted by IRIS one can use the following profile:');
-  WriteLn;
-  WriteLn('[PROFILE1]');
-  WriteLn('1 = R');
-  WriteLn('2 = G1');
-  WriteLn('3 = G2');
-  WriteLn('4 = B');
-  WriteLn;
-  WriteLn('Values to the right of equation sign are the perfixes of individual output files.');
-  WriteLn('If some prefixes are the same, corresponding colors will be combined together (averaged)');
-  WriteLn;
-  WriteLn('Example 1 (two green channels are averaged):');
-  WriteLn;
-  WriteLn(';G1 and G2 a combined: TG=(G1+G2)/2 because they have identical ID');
-  WriteLn('[RGB1]');
-  WriteLn('1 = TR');
-  WriteLn('2 = TG');
-  WriteLn('3 = TG');
-  WriteLn('4 = TB');
-  WriteLn;  
-  WriteLn('Example 2 (all channels are averaged):');
-  WriteLn;
-  WriteLn('[GRAY]');
-  WriteLn('1 = N');
-  WriteLn('2 = N');
-  WriteLn('3 = N');
-  WriteLn('4 = N');
-  WriteLn;  
-  WriteLn('Name of a profile (INI-file''s section) to be used should be specified in the command line');
-  WriteLn('by "/P=" option.');
-  WriteLn('If no profile specified, DEFAULT profile will be used.');
-  WriteLn;
-  WriteLn('If INI-file is missing or it does not contain specified section,');
-  WriteLn('output files will get numeric prefixes: "p1-", "p2-", "p3-", and "p4-".');
-  WriteLn;
-  WriteLn('When started with /PI switch, the program prints INI file and terminates.');
 end;
 
 procedure PrintIni;
@@ -100,7 +46,7 @@ var
   FileList: TStringListNaturalSort;
   Ini: TMemIniFile;
 
-procedure FileError(S: string);
+procedure FileError(const S: string);
 begin
   raise Exception.Create(S);
 end;
@@ -168,7 +114,6 @@ var
   ShiftV, ShiftH: Integer;
   ColorL, ColorL2, LL: Integer;
   PixAddr, PixAddr2: Integer;
-  IOcount: Integer;
   OutFile: FITSRecordfile;
   OutFileName: string;
   FileModeSaved: Integer;
@@ -189,17 +134,18 @@ begin
   Write(' [', Naxis1, 'x', Naxis2, '] [BITPIX=', BitPix, '] -> ');
   NrecordsToRead := ((Naxis1 * Naxis2 * BytePix - 1) div FITSRecordLen + 1);
   NRecordsToWrite := (((Naxis1 div 2) * (Naxis2 div 2) * BytePix - 1) div FITSRecordLen + 1);
+  NRecordsToWrite := ((NRecordsToWrite - 1) div RecordsInBlock + 1) * RecordsInBlock;
   GetMem(Header, StartOfImage * FITSRecordLen);
   try
     FillChar(Header^, StartOfImage * FITSRecordLen, 0);
     Seek(FITSFile, 0);
-    BlockRead(FITSFile, Header^, StartOfImage, IOcount);
+    BlockRead(FITSFile, Header^, StartOfImage);
     ImageMemSize := NrecordsToRead * FITSRecordLen;
     GetMem(Image, ImageMemSize);
     try
       FillChar(Image^, ImageMemSize, 0);
       Seek(FITSfile, StartOfImage);
-      BlockRead(FITSfile, Image^, NrecordsToRead, IOcount);
+      BlockRead(FITSfile, Image^, NrecordsToRead);
       Image2MemSize := NrecordsToWrite * FITSRecordLen;
       for ColorL := 0 to 3 do ImageC[ColorL] := nil;
       try
@@ -271,12 +217,12 @@ begin
             try
               Rewrite(OutFile);
               try
-                BlockWrite(OutFile, Header^, StartOfImage, IOcount);
+                BlockWrite(OutFile, Header^, StartOfImage);
                 SetKeywordValue(OutFile, OutFileName, 'NAXIS1', IntToStr(Naxis1 div 2), True, '', False);
                 SetKeywordValue(OutFile, OutFileName, 'NAXIS2', IntToStr(Naxis2 div 2), True, '', False);
-                SetKeywordValue(OutFile, OutFileName, 'FILTER', QuotedStr(' ' + ImageNames[ColorL]), False, '', False);
                 Seek(OutFile, StartOfImage);
-                BlockWrite(OutFile, ImageC[ColorL]^, NrecordsToWrite, IOcount);
+                BlockWrite(OutFile, ImageC[ColorL]^, NrecordsToWrite);
+                SetKeywordValue(OutFile, OutFileName, 'FILTER', FITSQuotedValue(' ' + ImageNames[ColorL]), False, 'Color Layer', True);
               finally
                 CloseFile(OutFile);
               end;
@@ -425,8 +371,10 @@ begin
         Break;
       end;
     end;
-    if not ProfileDefined then
-      WriteLn('**** WARNING: profile ', Profile, ' is not defined or partially undefined.');
+    if not ProfileDefined then begin
+      WriteLn('**** Error: Profile ' + Profile + ' is not defined or partially undefined!');
+      Halt(1);
+    end;
     FileList := TStringListNaturalSort.Create;
     try
       ProcessInput(InputFileMasks, Profile, OutputDir, Overwrite);
