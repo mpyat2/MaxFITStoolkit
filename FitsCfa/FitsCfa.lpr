@@ -92,7 +92,7 @@ begin
   end;
 end;
 
-procedure FITSSplit({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordfile; const FITSfileName: string; const Profile: string; const OutputDir: string; Overwrite: Boolean);
+procedure FITSSplit(var FITSfile: FITSRecordfile; const FITSfileName: string; const Profile: string; const OutputDir: string; Overwrite: Boolean);
 var
   N: Integer;
   BitPix: Integer;

@@ -1,0 +1,186 @@
+@iconvraw
+
+Usage:
+iconvraw in_file_mask1 [in_file_mask2 ...] [/G=generic_name] [/O=out_dir] [/B=nn] [/F] [/E] [/L]
+
+Where:
+
+  in_file_maskX   masks of input files to be processed, i.e. IMG*.CR2
+
+  generic_name    prefix to be used to construct new file name
+                  (original filename will be used if no prefix specified)
+
+  out_dir         directory for files having new names
+                  (original directory will be used if no prefix specified)
+
+  nn              base file number (default = 1); must be >= 0 (only when generic_name is specified)
+
+  /X=<ext>        extension for output files (.fit by default)
+
+  /F              overwrite existing files in output directory
+
+  /E              correct DATE-OBS by exposure
+
+  /TS<xxxxx>      shift DATE-OBS by xxxxx seconds (the value can be negative or positive)
+                  Example: /TS-10800 shifts DATE-OBS by three hours backwards
+
+  /L              do not truncate image (show full RAW image)
+
+  /V              print version
+
+  /H              print help and halt
+
+
+Example:
+iconvraw dir1\IMG*.CR2 dir2\IMG*.CR2 dir3\IMG*.CR2 /G=src /O=C:\SKY\ /F /B=1 /E /TS-7200 /X=fits
+
+In an example shown above, all files having .CR2 extensions
+in directories dir1, dir2, dir3 will be converted to files
+src1.fits, src2.fits, and so on.
+Output files will be placed in C:\SKY\ directory.
+Existing ones (if any) will be overwritten (due to /F switch).
+DATE-OBS will be shifted backwards by 2 hours (due to /TS-7200 option).
+DATE-OBS will be corrected by half of exposure time (due to /E switch).
+
+@fflip
+
+Usage:
+fflip file_mask1[.fit] [file_mask2[.fit] ...] [/1]
+
+  /1         Flip horizontally, if not specified -- vertically
+  /V         print version
+  /H         print this help and halt
+
+@apdat
+
+Usage:
+apdat [options] input_filename[.dat] [output_filename[.csv|.txt]]
+
+  /T  Tabbed output instead of CSV (.txt output file)
+  /Q  Quiet mode
+  /V  Print version
+  /H  Print this help and halt
+
+@fihed
+
+Usage:
+fihed file_mask1[.fit] [file_mask2[.fit] ...] [//CSV|//TAB] [/keyword1 [/keyword2 ...]]
+or   
+fihed file_mask1[.fit] [file_mask2[.fit] ...] [//SET] [/keyword1=value [/keyword2=value ...]]
+
+  //CSV       prints header values as CSV table.
+              COMMENT, HISTORY and similar keywords without '='
+              are ignored in this mode.
+              When /CSV parameter exists, at least one keyword must be specified
+
+  //SET       edit mode
+
+  //V         print version
+
+  //H         print this help and halt
+
+//CSV and //SET or //TAB and //SET parameters are mutually exclusive
+If both //CSV and //TAB specified, //CSV is used
+
+@fitscfa
+
+Usage:
+fitscfa /P=<profile> file_mask1[.fit] [file_mask2[.fit] ...] [/O=<output_dir>] [/F]
+or
+fitscfa /PI
+
+Where:
+  /O=<output_dir>    set output directory (instead of the current one)
+  /F                 force overwrite existing files
+  /P=<profile>       profile to be used (see below)
+  /PI                print INI-file with profiles (see below)
+
+
+Correspondence between individual color channels and Buyer's pattern
+should be defined in fitscfa.INI file.
+For example, for RAW files converted by IRIS one can use the following profile:
+
+[PROFILE1]
+1 = R
+2 = G1
+3 = G2
+4 = B
+
+Values to the right of equation sign are the perfixes of individual output files.
+If some prefixes are the same, corresponding colors will be combined together (averaged)
+
+Example 1 (two green channels are averaged):
+
+;G1 and G2 will be combined: TG=(G1+G2)/2 because they have identical ID
+[RGB]
+1 = TR
+2 = TG
+3 = TG
+4 = TB
+
+Example 2 (all channels will be averaged):
+
+[GRAY]
+1 = N
+2 = N
+3 = N
+4 = N
+
+Name of a profile (INI-file's section) to be used should be specified in the command line
+by "/P=" option.
+If no profile specified, DEFAULT profile will be used.
+
+If INI-file is missing or it does not contain specified section,
+output files will get numeric prefixes: "p1-", "p2-", "p3-", and "p4-".
+
+When started with /PI switch, the program prints INI file and terminates.
+
+@idobs
+
+Usage:
+idobs file_mask1[.fit] [file_mask2[.fit] ...] [/E] [/P=filename]
+
+Where:
+  file_maskX   mask of input files to be processed (several masks are allowed)
+  /E           correct time by exposure
+  /P=filename  print FIHED command for filename (stacked image)
+  /V           print version
+  /H           print this help and halt
+
+
+Date/Time is extracted from DATE-OBS first,
+if DATE-OBS does contain time part, time is extracted from it,
+otherwise TIME-OBS is used.
+If TIME-OBS is missing, UT-START (IRIS-specific keyword) is searched.
+
+
+Example:
+idobs ser1\calib* ser2\calib* ser3\calib* /E
+
+@ipdat
+
+Usage:
+ipdat [options] input_filename[.dat]  [output_filename[.csv|.txt]]
+
+  /2  Alternative output mode
+  /T  Tabbed output instead of CSV (.txt output file)
+  /Q  Quiet mode
+  /V  Print version
+  /H  Print this help and halt
+
+@iren
+
+Usage:
+iren in_file_mask1[.fit] [in_file_mask2[.fit] ...] /G=generic_name /O=out_dir [/B=nn] [/F]
+
+Where:
+  in_file_maskX   masks of input files to be processed, i.e. IMG*.CR2
+  generic_name    prefix to be used to construct new file name
+  out_dir         directory for files having new names
+  nn              base file number (default = 1); must be >= 0
+  /F              overwrite existing files in output directory
+  /V              print version
+  /H              print this help and halt
+
+Example:
+iren dir1\IMG*.CR2 dir2\IMG*.CR2 dir3\IMG*.CR2 /G=src /O=C:\SKY\ /F /B=1

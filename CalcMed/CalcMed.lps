@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <PathDelim Value="\"/>
+    <Version Value="10"/>
+    <BuildModes Active="Default"/>
+    <Units Count="9">
+      <Unit0>
+        <Filename Value="CalcMed.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <CursorPos X="30" Y="11"/>
+        <UsageCount Value="29"/>
+        <Bookmarks Count="1">
+          <Item0 Y="121" ID="1"/>
+        </Bookmarks>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="23"/>
+        <CursorPos X="11" Y="43"/>
+        <UsageCount Value="14"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.2\source\rtl\win\sysutils.pp"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="9"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="..\Units\StringListNaturalSort.pas"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.2\source\rtl\objpas\classes\classesh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="715"/>
+        <CursorPos X="3" Y="735"/>
+        <UsageCount Value="10"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.2\source\rtl\objpas\classes\streams.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="503"/>
+        <CursorPos X="3" Y="506"/>
+        <UsageCount Value="10"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="..\Units\EnumFiles.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="12"/>
+        <CursorPos X="72" Y="44"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.2\source\rtl\objpas\sysutils\syshelph.inc"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="3" Y="5"/>
+        <UsageCount Value="10"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.2\source\rtl\objpas\objpas.pp"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="15"/>
+        <CursorPos X="8" Y="35"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit8>
+    </Units>
+    <JumpHistory Count="30" HistoryIndex="29">
+      <Position1>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="291" TopLine="274"/>
+      </Position1>
+      <Position2>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="292" TopLine="274"/>
+      </Position2>
+      <Position3>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="293" TopLine="274"/>
+      </Position3>
+      <Position4>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="294" TopLine="274"/>
+      </Position4>
+      <Position5>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="295" TopLine="274"/>
+      </Position5>
+      <Position6>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="296" TopLine="274"/>
+      </Position6>
+      <Position7>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="297" TopLine="274"/>
+      </Position7>
+      <Position8>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="75" Column="6" TopLine="56"/>
+      </Position8>
+      <Position9>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="76" TopLine="56"/>
+      </Position9>
+      <Position10>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="75" Column="12" TopLine="56"/>
+      </Position10>
+      <Position11>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="69" Column="23" TopLine="56"/>
+      </Position11>
+      <Position12>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="54" Column="51" TopLine="47"/>
+      </Position12>
+      <Position13>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="60" Column="6" TopLine="47"/>
+      </Position13>
+      <Position14>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="36" Column="3" TopLine="16"/>
+      </Position14>
+      <Position15>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="100" Column="16" TopLine="92"/>
+      </Position15>
+      <Position16>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="114" Column="16" TopLine="92"/>
+      </Position16>
+      <Position17>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="121" Column="49" TopLine="92"/>
+      </Position17>
+      <Position18>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="142" Column="21" TopLine="131"/>
+      </Position18>
+      <Position19>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="147" Column="14" TopLine="131"/>
+      </Position19>
+      <Position20>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="150" Column="12" TopLine="131"/>
+      </Position20>
+      <Position21>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="409" Column="32" TopLine="370"/>
+      </Position21>
+      <Position22>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="114" TopLine="87"/>
+      </Position22>
+      <Position23>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="383" Column="51" TopLine="360"/>
+      </Position23>
+      <Position24>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="141" Column="24" TopLine="133"/>
+      </Position24>
+      <Position25>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="271" Column="26" TopLine="252"/>
+      </Position25>
+      <Position26>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="126" Column="15" TopLine="106"/>
+      </Position26>
+      <Position27>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="147" Column="53" TopLine="115"/>
+      </Position27>
+      <Position28>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="141" Column="24" TopLine="123"/>
+      </Position28>
+      <Position29>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="302" Column="31" TopLine="274"/>
+      </Position29>
+      <Position30>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="363" Column="97" TopLine="349"/>
+      </Position30>
+    </JumpHistory>
+  </ProjectSession>
+</CONFIG>

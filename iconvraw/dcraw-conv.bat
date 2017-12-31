@@ -1,0 +1,1 @@
+c:\Personal\Work\dcraw\dcraw.exe -D -4 -c %1 | C:\personal\Work\NetPBM-10.68\bin\pnmtofits >%1.fits

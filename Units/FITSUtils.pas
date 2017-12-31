@@ -57,12 +57,12 @@ function FITSQuotedValue(const S: string): string;
 function StripQuotes(const S: string): string;
 
 function IsFITS(const FITSfileName: string): Boolean;
-function GetKeywordValue({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordFile; const Keyword: string; out Value: string; RemoveComment: Boolean; TrimVal: Boolean): Integer;
-function SetKeywordValue({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordFile; const FITSfileName: string; const Keyword: string; const Value: string; AlignNumeric: Boolean; const Comment: string; CanResize: Boolean): Boolean;
-function AddCommentLikeKeyword({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordFile; const FITSfileName: string; const Keyword: string; const Value: string; CanResize: Boolean): Boolean;
+function GetKeywordValue(var FITSfile: FITSRecordFile; const Keyword: string; out Value: string; RemoveComment: Boolean; TrimVal: Boolean): Integer;
+function SetKeywordValue(var FITSfile: FITSRecordFile; const FITSfileName: string; const Keyword: string; const Value: string; AlignNumeric: Boolean; const Comment: string; CanResize: Boolean): Boolean;
+function AddCommentLikeKeyword(var FITSfile: FITSRecordFile; const FITSfileName: string; const Keyword: string; const Value: string; CanResize: Boolean): Boolean;
 procedure GetHeader(const FITSfileName: string; const Header: TStrings);
-function GetEndPosition({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordFile): Integer;
-procedure GetBitPixAndNaxis({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordfile; const FITSfileName: string; out BitPix: Integer; out NaxisN: TIntArray);
+function GetEndPosition(var FITSfile: FITSRecordFile): Integer;
+procedure GetBitPixAndNaxis(var FITSfile: FITSRecordfile; const FITSfileName: string; out BitPix: Integer; out NaxisN: TIntArray);
 procedure RevertBytes(var FITSvalue: TFITSValue; BitPix: Integer);
 
 implementation
@@ -95,6 +95,7 @@ begin
     Inc(Result);
     if S[I] = '''' then Inc(Result);
   end;
+  Inc(Result, 2);
 end;
 
 function FITSQuotedValue(const S: string): string;
@@ -124,7 +125,7 @@ begin
         Exit;
       end
       else begin
-        if S[I + 1] <> '''' then begin
+        if Result[I + 1] <> '''' then begin
           Delete(Result, I + 1, MaxInt);
           Exit;
         end
@@ -137,7 +138,7 @@ begin
   end;
 end;
 
-function GetEndPosition({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordFile): Integer;
+function GetEndPosition(var FITSfile: FITSRecordFile): Integer;
 // Position is zero-based
 var
   Buf: FITSRecordType;
@@ -149,7 +150,7 @@ begin
   while not EOF(FITSfile) do begin
     BlockRead(FITSfile, Buf, 1);
     Inc(NRecord);
-    if string(Buf) = recordEND then begin
+    if Buf = recordEND then begin
       Result := NRecord;
       Exit;
     end;
@@ -167,7 +168,7 @@ begin
   Reset(FITSfile);
   try
     if FileSize(FITSfile) < 2 then Exit;
-    // at least 2 records!
+    // at least 2 records (however for correct FITS should be more...)
     if GetKeywordValue(FITSfile, KeywordSimple, Value, True, True) <> 0 then Exit;
     if (Value <> 'T') and (Value <> 'F') then Exit;
     EndPosition := GetEndPosition(FITSfile);
@@ -178,7 +179,7 @@ begin
   Result := True;
 end;
 
-function GetHeaderRecordPosition({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordFile; const Keyword: string): Integer;
+function GetHeaderRecordPosition(var FITSfile: FITSRecordFile; const Keyword: string): Integer;
 // For keywords, which may occupy several nines, returns first occurence.
 // Position is zero-based
 var
@@ -188,6 +189,7 @@ var
 begin
   Result := -1;
   NRecord := -1;
+  if Length(Keyword) > FITSKeywordLen then Exit;
   S := AnsiUpperCase(PadCh(Keyword, FITSKeywordLen, ' '));
   Seek(FITSfile, 0);
   while not EOF(FITSfile) do begin
@@ -197,11 +199,12 @@ begin
       Result := NRecord;
       Exit;
     end;
-    if string(Buf) = recordEND then Exit;
+    if Buf = recordEND then
+      Exit;
   end;
 end;
 
-function GetKeywordValue({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordFile; const Keyword: string; out Value: string; RemoveComment: Boolean; TrimVal: Boolean): Integer;
+function GetKeywordValue(var FITSfile: FITSRecordFile; const Keyword: string; out Value: string; RemoveComment: Boolean; TrimVal: Boolean): Integer;
 // Only for keywords with '='
 var
   Buf: FITSRecordType;
@@ -251,54 +254,32 @@ begin
   end;  
 end;
 
-procedure InsertHeaderBlock({$IFDEF FPC} var {$ELSE} const {$ENDIF} InF: FITSRecordFile; const FITSfileName: string);
+procedure InsertHeaderBlock(var InF: FITSRecordFile; const FITSfileName: string);
 var
-  OutF: FITSRecordFile;
-  OutFname: string;
-  Buf2: array[1..RecordsInBlock] of FITSRecordType;
-  ENDPosition: Integer;
   HeaderBlockCount: Integer;
-  I, N: Integer;
+  FileImage: array of FITSRecordType;
+  ENDPosition: Integer;
+  N: Integer;
 begin
-  OutFname := FITSfileName + '.$$$';  
-  ENDPosition := GetEndPosition(InF); 
-  if ENDPosition < 0 then begin
+  ENDPosition := GetEndPosition(InF);
+  if ENDPosition < 0 then
     FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSfileName, '"'));
-  end;
-  HeaderBlockCount := (ENDPosition div RecordsInBlock) + 1;  
   N := FileSize(InF);
-  // Increase space, using temporary file.
+  SetLength(FileImage, N + RecordsInBlock);
+  FillChar(FileImage[0], (N + RecordsInBlock) * FITSRecordLen, 0);
+  HeaderBlockCount := (ENDPosition div RecordsInBlock) + 1;
+  FillChar(FileImage[0], (HeaderBlockCount + 1) * RecordsInBlock * FITSRecordLen, ' ');
   Seek(InF, 0);
-  AssignFile(OutF, OutFname);
-  Rewrite(OutF);
-  try
-    for I := 0 to HeaderBlockCount - 1 do begin
-      BlockRead(InF, Buf2, RecordsInBlock);
-      if (I = HeaderBlockCount - 1) then FillChar(Buf2[ENDPosition mod RecordsInBlock + 1], SizeOf(FITSRecordType), ' ');
-      BlockWrite(OutF, Buf2, RecordsInBlock);
-    end;
-    FillChar(Buf2, SizeOf(Buf2), ' ');
-    Buf2[1] := recordEND;
-    BlockWrite(OutF, Buf2, RecordsInBlock);
-    for I := 0 to N div RecordsInBlock - HeaderBlockCount - 1 do begin
-      BlockRead(InF, Buf2, RecordsInBlock);
-      BlockWrite(OutF, Buf2, RecordsInBlock);
-    end;
-    N := FileSize(OutF);  
-    Seek(OutF, 0);
-    Seek(InF, 0);
-    Truncate(InF);
-    for I := 0 to N div RecordsInBlock - 1 do begin
-      BlockRead(OutF, Buf2, RecordsInBlock);
-      BlockWrite(InF, Buf2, RecordsInBlock);
-    end;
-  finally
-    CloseFile(OutF);
-   end;
-  DeleteFile(OutFname);
+  BlockRead(InF, FileImage[0], HeaderBlockCount * RecordsInBlock);
+  BlockRead(InF, FileImage[(HeaderBlockCount + 1) * RecordsInBlock], N - HeaderBlockCount * RecordsInBlock);
+  FillChar(FileImage[ENDPosition], FITSRecordLen, ' ');
+  FileImage[HeaderBlockCount * RecordsInBlock] := recordEND;
+  Seek(InF, 0);
+  Truncate(InF);
+  BlockWrite(InF, FileImage[0], N + RecordsInBlock);
 end;
 
-function SetKeywordValue({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordFile; const FITSfileName: string; const Keyword: string; const Value: string; AlignNumeric: Boolean; const Comment: string; CanResize: Boolean): Boolean;
+function SetKeywordValue(var FITSfile: FITSRecordFile; const FITSfileName: string; const Keyword: string; const Value: string; AlignNumeric: Boolean; const Comment: string; CanResize: Boolean): Boolean;
 // Only for keywords with '='
 var
   Buf: FITSRecordType;
@@ -402,7 +383,7 @@ begin
   Result := True;
 end;
 
-function AddCommentLikeKeyword({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordFile; const FITSfileName: string; const Keyword: string; const Value: string; CanResize: Boolean): Boolean;
+function AddCommentLikeKeyword(var FITSfile: FITSRecordFile; const FITSfileName: string; const Keyword: string; const Value: string; CanResize: Boolean): Boolean;
 // Only for keywords with '='
 var
   Buf: FITSRecordType;
@@ -449,19 +430,21 @@ begin
   AssignFile(FITSfile, FITSfileName);
   Reset(FITSfile);
   try
-    if GetEndPosition(FITSfile) < 0 then FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSfileName, '"'));
+    if GetEndPosition(FITSfile) < 0 then
+      FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSfileName, '"'));
     Seek(FITSfile, 0);
     while not EOF(FITSfile) do begin
       BlockRead(FITSfile, Buf, 1);
       Header.Add(Buf);
-      if string(Buf) = recordEND then Exit;
+      if Buf = recordEND then
+        Exit;
     end;
   finally
     CloseFile(FITSfile);
   end;  
 end;
 
-procedure GetBitPixAndNaxis({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordfile; const FITSfileName: string; out BitPix: Integer; out NaxisN: TIntArray);
+procedure GetBitPixAndNaxis(var FITSfile: FITSRecordfile; const FITSfileName: string; out BitPix: Integer; out NaxisN: TIntArray);
 var
   Value: string;
   Naxis: Integer;

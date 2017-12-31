@@ -20,7 +20,7 @@ begin
   raise Exception.Create(S);
 end;
 
-procedure FITSflip({$IFDEF FPC} var {$ELSE} const {$ENDIF} FITSfile: FITSRecordfile; const FITSfileName: string; Vertically: Boolean);
+procedure FITSflip(var FITSfile: FITSRecordfile; const FITSfileName: string; Vertically: Boolean);
 var
   BitPix: Integer;
   BytePix: Integer;

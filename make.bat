@@ -1,25 +1,20 @@
 @ECHO OFF
 rem SET COMPILER="C:\PERSONAL\DC\DCC32" -UUnits\ -UFreeImage\ -Ebin-out\
-SET COMPILER="c:\lazarus\fpc\3.0.2\bin\i386-win32\fpc.exe" -MDELPHI -Xg -FuUnits\ -FuFreeImage\ -FEbin-out\
+SET COMPILER="c:\lazarus\fpc\3.0.4\bin\i386-win32\fpc.exe" -MDELPHI -Xg -FuUnits\ -FuFreeImage\ -FEbin-out\
 SET A7z="c:\Program Files\7-zip\7z.exe"
 
-REM pfh.exe: Print FITS header: simple, nothing checked, single-file
-REM %COMPILER% FitsHeader\pfh.pas
-REM IF ERRORLEVEL 1 GOTO :ERROR
-REM ECHO .
-
 REM fihed.exe: Print/edit FITS header, multifile mode
-%COMPILER% FitsHeader2\fihed.pas
+%COMPILER% FitsHeader2\fihed.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
 REM idobs.exe: calculate mean DATE-OBS for set of files to be stacked 
-%COMPILER% IrisDateObs\idobs.pas
+%COMPILER% IrisDateObs\idobs.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
 REM iren.exe: rename files according to IRIS naming convention
-%COMPILER% IrisRename\iren.pas
+%COMPILER% IrisRename\iren.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
@@ -34,7 +29,7 @@ IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
 REM fflip.exe: Flips 2-dimensional FITS
-%COMPILER% FitsFlip\fflip.pas
+%COMPILER% FitsFlip\fflip.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
@@ -56,7 +51,7 @@ IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
 del FITSutils_src.zip
-%A7z% a FITSutils_src.zip FitsHeader2\*.pas FitsFlip\*.pas IrisDateObs\*.pas IrisRename\*.pas IPDAT\ipdat.* IPDAT\testdata\*.dat APDAT\apdat.* APDAT\testdata\*.dat FitsCfa\* iconvraw\iconvraw.* iconvraw\FreeImage.dll Hello\*.pas Units\*.pas FreeImage\* Setup\*.iss Setup\output\dirinfo bin-out\dirinfo bin-out\fitsutils.ini bin-out\fitsutils.txt clean.bat clean2.bat make.bat
+%A7z% a FITSutils_src.zip FitsHeader2\fihed.* FitsFlip\fflip.* IrisDateObs\idobs.* IrisRename\iren.* IPDAT\ipdat.* IPDAT\testdata\*.dat APDAT\apdat.* APDAT\testdata\*.dat FitsCfa\fitscfa.* iconvraw\iconvraw.* iconvraw\FreeImage.dll Hello\*.pas Units\*.pas FreeImage\* Setup\*.iss Setup\output\dirinfo bin-out\dirinfo bin-out\fitsutils.ini bin-out\fitsutils.txt clean.bat clean2.bat make.bat
 
 GOTO :EOF
 
