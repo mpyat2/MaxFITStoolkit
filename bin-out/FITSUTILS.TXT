@@ -135,6 +135,15 @@ output files will get numeric prefixes: "p1-", "p2-", "p3-", and "p4-".
 
 When started with /PI switch, the program prints INI file and terminates.
 
+@fitsrgb
+
+Usage:
+fitsrgb file_mask1[.fit] [file_mask2[.fit] ...] [/O=<output_dir>] [/F]
+
+Where:
+  /O=<output_dir>    set output directory (instead of the current one)
+  /F                 force overwrite existing files
+
 @idobs
 
 Usage:

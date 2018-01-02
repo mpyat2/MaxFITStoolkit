@@ -210,7 +210,7 @@ begin
               OutFileName := IncludeTrailingPathDelimiter(OutputDir) + OutFileName;
             Write(' ', ExtractFileName(OutFileName));
             if not Overwrite and FileExists(OutFileName) then
-              FileError('File ' + AnsiQuotedStr(OutFileName, '"') + ' already exists.');
+              FileError('File ' + AnsiQuotedStr(OutFileName, '"') + ' already exists. Use /F switch to overwrite.');
             AssignFile(OutFile, OutFileName);
             FileModeSaved := FileMode;
             FileMode := fmOpenReadWrite;

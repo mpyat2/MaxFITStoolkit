@@ -190,7 +190,7 @@ begin
   TimeShifted := False;
   TimeCorrected := False;
   if CheckExistence and FileExists(NewFileName) then
-    FileError('File already exists. Use /F option to overwrite existing files.');
+    FileError('File already exists. Use /F switch to overwrite existing files.');
   //fif := FreeImage_GetFileType(PChar(FileName), 0);
   //if (fif <> FIF_RAW) or not FreeImage_FIFSupportsReading(fif) then
   //  FileError('Unsupported file.');

@@ -296,7 +296,7 @@ var
 begin
   try
     if CheckExistence and FileExists(OutputFileName) then
-      FileError('Output file already exists. Use /F option to overwrite.');
+      FileError('Output file already exists. Use /F switch to overwrite.');
     for N := 0 to Length(FileMasks) - 1 do begin
       WriteLn;
       WriteLn('[', FileMasks[N], ']');

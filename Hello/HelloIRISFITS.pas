@@ -11,6 +11,7 @@ begin
   WriteLn('fihed');
   WriteLn('fflip');  
   WriteLn('fitscfa');
+  WriteLn('fitsrgb');
   WriteLn('idobs');
   WriteLn('iren');
   WriteLn('ipdat');

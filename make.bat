@@ -1,6 +1,6 @@
 @ECHO OFF
 rem SET COMPILER="C:\PERSONAL\DC\DCC32" -UUnits\ -UFreeImage\ -Ebin-out\
-SET COMPILER="c:\lazarus\fpc\3.0.4\bin\i386-win32\fpc.exe" -MDELPHI -Xg -FuUnits\ -FuFreeImage\ -FEbin-out\
+SET COMPILER="c:\personal\lazarus\fpc\3.0.2\bin\i386-win32\fpc.exe" -MDELPHI -Xg -FuUnits\ -FuFreeImage\ -FEbin-out\
 SET A7z="c:\Program Files\7-zip\7z.exe"
 
 REM fihed.exe: Print/edit FITS header, multifile mode
@@ -39,6 +39,11 @@ IF ERRORLEVEL 1 GOTO :ERROR
 copy FitsCfa\FitsCfa.ini bin-out\
 ECHO .
 
+REM fitsrgb.exe: Splits RGB to color channels
+%COMPILER% FitsRGB\FitsRGB.lpr
+IF ERRORLEVEL 1 GOTO :ERROR
+ECHO .
+
 REM iconvraw.exe: RAW->FITS converter
 %COMPILER% iconvraw\iconvraw.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
@@ -51,7 +56,7 @@ IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
 del FITSutils_src.zip
-%A7z% a FITSutils_src.zip FitsHeader2\fihed.* FitsFlip\fflip.* IrisDateObs\idobs.* IrisRename\iren.* IPDAT\ipdat.* IPDAT\testdata\*.dat APDAT\apdat.* APDAT\testdata\*.dat FitsCfa\fitscfa.* iconvraw\iconvraw.* iconvraw\FreeImage.dll Hello\*.pas Units\*.pas FreeImage\* Setup\*.iss Setup\output\dirinfo bin-out\dirinfo bin-out\fitsutils.ini bin-out\fitsutils.txt clean.bat clean2.bat make.bat
+%A7z% a FITSutils_src.zip FitsHeader2\fihed.* FitsFlip\fflip.* IrisDateObs\idobs.* IrisRename\iren.* IPDAT\ipdat.* IPDAT\testdata\*.dat APDAT\apdat.* APDAT\testdata\*.dat FitsCfa\fitscfa.* FitsRGB\fitsrgb.* iconvraw\iconvraw.* iconvraw\FreeImage.dll Hello\*.pas Units\*.pas FreeImage\* Setup\*.iss Setup\output\dirinfo bin-out\dirinfo bin-out\fitsutils.ini bin-out\fitsutils.txt clean.bat clean2.bat make.bat
 
 GOTO :EOF
 

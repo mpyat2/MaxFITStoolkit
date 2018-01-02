@@ -8,13 +8,14 @@
       <Unit0>
         <Filename Value="iconvraw.lpr"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="296"/>
-        <CursorPos X="25" Y="315"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="161"/>
+        <CursorPos X="50" Y="193"/>
         <UsageCount Value="45"/>
         <Bookmarks Count="1">
           <Item0 Y="251" ID="1"/>
         </Bookmarks>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
       <Unit1>
@@ -120,12 +121,23 @@
       <Unit15>
         <Filename Value="..\FitsFlip\fflip.lpr"/>
         <UnitName Value="FFLIP"/>
-        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="-1"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit15>
     </Units>
-    <JumpHistory HistoryIndex="-1"/>
+    <JumpHistory Count="3" HistoryIndex="2">
+      <Position1>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="315" Column="25" TopLine="296"/>
+      </Position1>
+      <Position2>
+        <Filename Value="iconvraw.lpr"/>
+      </Position2>
+      <Position3>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="192" Column="35" TopLine="160"/>
+      </Position3>
+    </JumpHistory>
   </ProjectSession>
 </CONFIG>
