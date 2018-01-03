@@ -14,7 +14,7 @@ unit FITSUtils;
 interface
 
 uses
-  Windows, SysUtils, CmdObj, CmdObjStdSwitches, Classes;
+  Windows, SysUtils, Classes;
 
 const recordEND     = 'END                                                                             ';    
 const KeywordEND    = 'END';
