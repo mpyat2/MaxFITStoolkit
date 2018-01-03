@@ -56,7 +56,7 @@ IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
 del FITSutils_src.zip
-%A7z% a FITSutils_src.zip FitsHeader2\fihed.* FitsFlip\fflip.* IrisDateObs\idobs.* IrisRename\iren.* IPDAT\ipdat.* IPDAT\testdata\*.dat APDAT\apdat.* APDAT\testdata\*.dat FitsCfa\fitscfa.* FitsRGB\fitsrgb.* iconvraw\iconvraw.* iconvraw\FreeImage.dll Hello\*.pas Units\*.pas FreeImage\* Setup\*.iss Setup\output\dirinfo bin-out\dirinfo bin-out\fitsutils.ini bin-out\fitsutils.txt clean.bat clean2.bat make.bat
+%A7z% a FITSutils_src.zip FitsHeader2\fihed.* FitsFlip\fflip.* IrisDateObs\idobs.* IrisRename\iren.* IPDAT\ipdat.* IPDAT\testdata\*.dat APDAT\apdat.* APDAT\testdata\*.dat FitsCfa\fitscfa.* FitsRGB\fitsrgb.* iconvraw\iconvraw.* iconvraw\FreeImage.dll Hello\*.pas Units\*.pas FreeImage\* Setup\*.iss Setup\output\dirinfo bin-out\dirinfo bin-out\fitsutils.ini Samples\* bin-out\fitsutils.txt clean.bat clean2.bat make.bat
 
 GOTO :EOF
 
