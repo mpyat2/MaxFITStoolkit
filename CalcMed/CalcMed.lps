@@ -9,8 +9,8 @@
         <Filename Value="CalcMed.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="267"/>
-        <CursorPos X="59" Y="299"/>
+        <TopLine Value="385"/>
+        <CursorPos X="20" Y="397"/>
         <UsageCount Value="29"/>
         <Bookmarks Count="1">
           <Item0 Y="121" ID="1"/>
@@ -81,11 +81,39 @@
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit9>
     </Units>
-    <JumpHistory Count="1">
+    <JumpHistory Count="8" HistoryIndex="7">
       <Position1>
         <Filename Value="CalcMed.lpr"/>
         <Caret Line="11" Column="30"/>
       </Position1>
+      <Position2>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="299" Column="59" TopLine="267"/>
+      </Position2>
+      <Position3>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="396" Column="15" TopLine="389"/>
+      </Position3>
+      <Position4>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="397" Column="20" TopLine="389"/>
+      </Position4>
+      <Position5>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="396" Column="15" TopLine="377"/>
+      </Position5>
+      <Position6>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="394" Column="12" TopLine="377"/>
+      </Position6>
+      <Position7>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="395" Column="9" TopLine="373"/>
+      </Position7>
+      <Position8>
+        <Filename Value="CalcMed.lpr"/>
+        <Caret Line="396" Column="15" TopLine="385"/>
+      </Position8>
     </JumpHistory>
   </ProjectSession>
 </CONFIG>

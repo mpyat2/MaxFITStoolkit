@@ -116,6 +116,7 @@ var
   Sum: Extended;
   I: Integer;
 begin
+  Result := 0;
   Sum := 0;
   if Length(data) = 0 then Exit;
   for I := 0 to Length(data) - 1 do
@@ -128,6 +129,7 @@ var
   Sum: Int64;
   I: Integer;
 begin
+  Result := 0;
   Sum := 0;
   if Length(data) = 0 then Exit;
   for I := 0 to Length(data) - 1 do
@@ -392,9 +394,9 @@ begin
           -64: SetLength(Data, FileListFull.Count);
         end;
         for II := 0 to SizeOf(OutputImageBlock) div BytePix - 1 do begin
+          Idx := II * BytePix;
           for I := 0 to FileListFull.Count - 1 do begin
             P := PChar(@(TFileInfo(FileListFull.Objects[I]).Chunk));
-            Idx := II * BytePix;
             for III := 0 to BytePix - 1 do
               FITSValue0.A[BytePix - 1 - III] := Byte(P[Idx + III]);
             case BitPix0 of
