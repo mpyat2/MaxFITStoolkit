@@ -34,6 +34,7 @@ var
   FITSFile: FITSRecordFile;
   Name: string;
   Value: string;
+  TempValue: string;
   S: string;
   P: Integer;
   Success: Boolean;
@@ -84,9 +85,12 @@ begin
                   end
                   else begin
                     if SetKeywordValue(FITSfile, FileName, Name, Value, True, '', True) then begin
-                      if (GetKeywordValue(FITSfile, Name, Value, False, False) < 0) and (Value <> '') then  
-                        FileError('Cannot get value of keyword ' + Name);
-                      WriteLn('Keyword ', Name, ' set to ', Value);
+                      TempValue := '';
+                      if GetKeywordValue(FITSfile, Name, TempValue, False, False) < 0 then begin
+                        if (Value <> '') or (TempValue <> '') then                      
+                          FileError('Internal Error: setting value of keyword ' + Name + ' failed.');
+                      end;  
+                      WriteLn('Keyword ', Name, ' set to ', TempValue);
                       Success := True;
                     end;
                   end;  

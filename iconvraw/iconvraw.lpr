@@ -50,6 +50,7 @@ procedure ConvertFile(const FileName: string;
                       DontTruncate: Boolean;
                       TimeShiftInSeconds: Integer;
                       PixelRealNumber: Boolean;
+                      FITSParams: TStrings;
                       out TimeCorrected, TimeShifted: Boolean);
 var
   //fif: FREE_IMAGE_FORMAT;
@@ -94,6 +95,10 @@ var
   FITSHeader: TFITSRecordArray;
   Comments: TStringArray;
   Axes: TIntArray;
+  Success: Boolean;
+  S: string;
+  I, P: Integer;
+  Name, Value, TempValue: string;
 begin
   TimeShifted := False;
   TimeCorrected := False;
@@ -303,6 +308,38 @@ begin
       Rewrite(FITSFile);
       try
         BlockWrite(FITSFile, FITSHeader[0], Length(FITSHeader));
+        //
+        for I := 0 to FITSParams.Count - 1 do begin
+          Success := False;
+          S := FITSParams[I];
+          P := Pos('=', S);
+          if P > 0 then begin
+            Name := AnsiUpperCase(Trim(Copy(S, 1, P - 1)));
+            if (Length(Name) <= FITSKeywordLen) and (Name <> KeywordEND) and (Name <> KeywordHierarch) then begin
+              Value := Copy(S, P + 1, MaxInt);
+              if (Name = '') or (Name = KeywordComment) or (Name = KeywordHistory) then begin
+                if AddCommentLikeKeyword(FITSfile, NewFileName, Name, Value, True) then begin
+                  WriteLn('Added ', Name, ' ', Value);
+                  Success := True;
+                end;
+              end
+              else begin
+                if SetKeywordValue(FITSfile, NewFileName, Name, Value, True, '', True) then begin
+                  TempValue := '';
+                  if GetKeywordValue(FITSfile, NewFileName, TempValue, False, False) < 0 then begin
+                    if (Value <> '') or (TempValue <> '') then
+                      FileError('Internal Error: setting value of keyword ' + Name + ' failed.');
+                  end;
+                  WriteLn('Keyword ', Name, ' set to ', TempValue);
+                  Success := True;
+                end;
+              end;
+            end;
+            if not Success then
+              WriteLn('**** Keyword ', Name, ' cannot be set');
+          end;
+        end;
+        //
         BlockWrite(FITSFile, Image[0], ImageSize div SizeOf(FITSRecordType));
       finally
         CloseFile(FITSFile);
@@ -326,6 +363,7 @@ procedure ProcessInput(const FileMasks: array of string;
                        DontTruncate: Boolean;
                        TimeShiftInSeconds: Integer;
                        PixelRealNumber: Boolean;
+                       FITSParams: TStrings;
                        const OutputExt: string);
 var
   I, N: Integer;
@@ -354,7 +392,7 @@ begin
           NewFileName := TempOutputDir + FileName;
         NewFileName := ChangeFileExt(NewFileName, OutputExt);
         Write(FileName, ^I'->'^I, NewFileName);
-        ConvertFile(FileList[I], NewFileName, not Overwrite, TimeByExposureCorrection, DontTruncate, TimeShiftInSeconds, PixelRealNumber, TimeCorrected, TimeShifted);
+        ConvertFile(FileList[I], NewFileName, not Overwrite, TimeByExposureCorrection, DontTruncate, TimeShiftInSeconds, PixelRealNumber, FITSParams, TimeCorrected, TimeShifted);
         if TimeShifted then Write(' DATE-OBS shifted by ', TimeShiftInSeconds, ' seconds');
         if TimeCorrected then Write(' DATE-OBS corrected by exposure');
         WriteLn;
@@ -388,6 +426,7 @@ var
   OutputExt: string;
   ErrorPos: Integer;
   PrintVer: Boolean;
+  FITSparams: TStringList;
   S: string;
   N: Integer;
   I: Integer;
@@ -476,12 +515,24 @@ begin
 
   FreeImage_SetOutputMessageStdCall(FreeImageErrorHandler);
 
-  FileList := TStringListNaturalSort.Create;
+  FITSparams := TStringList.Create;
   try
-    ProcessInput(InputFileMasks, GenericName, OutputDir, Overwrite, BaseNumber, TimeByExposureCorrection, DontTruncate, TimeShiftInSeconds, PixelRealNumber, OutputExt);
-    WriteLn;
+    for I := 1 to CmdObj.CmdLine.ParamCount do begin
+      S := CmdObj.CmdLine.ParamStr(I);
+      if CmdObj.CmdLine.FirstCharIsSwitch(S) and (Copy(S, 2, 1) = '$') and (Pos('=', S) <> 0) then begin
+          Delete(S, 1, 2);
+          FITSparams.Add(S);
+      end;
+    end;
+    FileList := TStringListNaturalSort.Create;
+    try
+      ProcessInput(InputFileMasks, GenericName, OutputDir, Overwrite, BaseNumber, TimeByExposureCorrection, DontTruncate, TimeShiftInSeconds, PixelRealNumber, FITSParams, OutputExt);
+      WriteLn;
+    finally
+      FreeAndNil(FileList);
+    end;
   finally
-    FreeAndNil(FileList);
+    FreeAndNil(FITSparams);
   end;
 end.
 

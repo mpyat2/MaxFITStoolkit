@@ -4,16 +4,16 @@
     <PathDelim Value="\"/>
     <Version Value="10"/>
     <BuildModes Active="Default"/>
-    <Units Count="16">
+    <Units Count="18">
       <Unit0>
         <Filename Value="iconvraw.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="161"/>
-        <CursorPos X="50" Y="193"/>
-        <UsageCount Value="45"/>
+        <TopLine Value="307"/>
+        <CursorPos X="11" Y="316"/>
+        <UsageCount Value="50"/>
         <Bookmarks Count="1">
-          <Item0 Y="251" ID="1"/>
+          <Item0 Y="256" ID="1"/>
         </Bookmarks>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -23,7 +23,7 @@
         <UnitName Value="FITSUtilsHelp"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="13" Y="39"/>
-        <UsageCount Value="23"/>
+        <UsageCount Value="22"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit1>
       <Unit2>
@@ -31,32 +31,32 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="3"/>
         <CursorPos X="29" Y="27"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
       </Unit2>
       <Unit3>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.2\source\rtl\inc\systemh.inc"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="12"/>
+        <UsageCount Value="11"/>
       </Unit3>
       <Unit4>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.2\source\rtl\win\wininc\base.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="208"/>
         <CursorPos X="6" Y="226"/>
-        <UsageCount Value="15"/>
+        <UsageCount Value="14"/>
       </Unit4>
       <Unit5>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.2\source\rtl\objpas\sysutils\datih.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="136"/>
         <CursorPos X="10" Y="154"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
       </Unit5>
       <Unit6>
         <Filename Value="..\Units\FITSUtils.pas"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="5"/>
-        <CursorPos X="3" Y="17"/>
+        <TopLine Value="214"/>
+        <CursorPos Y="225"/>
         <UsageCount Value="12"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit6>
@@ -65,14 +65,14 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="189"/>
         <CursorPos X="66" Y="193"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit7>
       <Unit8>
         <Filename Value="..\..\TestExposure\TestTime.pas"/>
         <UnitName Value="NCount"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="8"/>
+        <UsageCount Value="7"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit8>
       <Unit9>
@@ -80,7 +80,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="282"/>
         <CursorPos X="13" Y="313"/>
-        <UsageCount Value="18"/>
+        <UsageCount Value="17"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit9>
       <Unit10>
@@ -88,27 +88,28 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="15"/>
         <CursorPos X="3" Y="33"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
       </Unit10>
       <Unit11>
         <Filename Value="..\Units\FitsUtilsHelp.pas"/>
         <UnitName Value="FITSUtilsHelp"/>
         <EditorIndex Value="-1"/>
+        <CursorPos X="3" Y="6"/>
         <UsageCount Value="10"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit11>
       <Unit12>
         <Filename Value="C:\lazarus\fpc\3.0.2\source\rtl\inc\systemh.inc"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="566"/>
-        <CursorPos X="3" Y="577"/>
+        <TopLine Value="1187"/>
+        <CursorPos X="11" Y="1198"/>
         <UsageCount Value="10"/>
       </Unit12>
       <Unit13>
         <Filename Value="..\Units\CmdObj.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="6" Y="12"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="11"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit13>
       <Unit14>
@@ -116,28 +117,143 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="54"/>
         <CursorPos X="6" Y="65"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
       </Unit14>
       <Unit15>
         <Filename Value="..\FitsFlip\fflip.lpr"/>
         <UnitName Value="FFLIP"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit15>
+      <Unit16>
+        <Filename Value="C:\lazarus\fpc\3.0.2\source\rtl\inc\file.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="249"/>
+        <CursorPos X="11" Y="306"/>
+        <UsageCount Value="10"/>
+      </Unit16>
+      <Unit17>
+        <Filename Value="C:\lazarus\fpc\3.0.2\source\rtl\win\sysfile.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="114"/>
+        <CursorPos X="10" Y="120"/>
+        <UsageCount Value="10"/>
+      </Unit17>
     </Units>
-    <JumpHistory Count="3" HistoryIndex="2">
+    <JumpHistory Count="28" HistoryIndex="27">
       <Position1>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="315" Column="25" TopLine="296"/>
+        <Caret Line="321" Column="23" TopLine="313"/>
       </Position1>
       <Position2>
         <Filename Value="iconvraw.lpr"/>
+        <Caret Line="493" Column="7" TopLine="461"/>
       </Position2>
       <Position3>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="192" Column="35" TopLine="160"/>
+        <Caret Line="486" Column="77" TopLine="474"/>
       </Position3>
+      <Position4>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="123" Column="72" TopLine="112"/>
+      </Position4>
+      <Position5>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="486" Column="77" TopLine="475"/>
+      </Position5>
+      <Position6>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="19" Column="33" TopLine="7"/>
+      </Position6>
+      <Position7>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="123" Column="72" TopLine="111"/>
+      </Position7>
+      <Position8>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="165" Column="63" TopLine="154"/>
+      </Position8>
+      <Position9>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="485" Column="10" TopLine="349"/>
+      </Position9>
+      <Position10>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="46" Column="11" TopLine="292"/>
+      </Position10>
+      <Position11>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="95" Column="13" TopLine="84"/>
+      </Position11>
+      <Position12>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="301" Column="17" TopLine="291"/>
+      </Position12>
+      <Position13>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="97" Column="7" TopLine="79"/>
+      </Position13>
+      <Position14>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="314" Column="15" TopLine="300"/>
+      </Position14>
+      <Position15>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="64" Column="2" TopLine="54"/>
+      </Position15>
+      <Position16>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="77" Column="11" TopLine="58"/>
+      </Position16>
+      <Position17>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="321" Column="63" TopLine="303"/>
+      </Position17>
+      <Position18>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="328" Column="57" TopLine="309"/>
+      </Position18>
+      <Position19>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="328" Column="57" TopLine="318"/>
+      </Position19>
+      <Position20>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="101" Column="14" TopLine="87"/>
+      </Position20>
+      <Position21>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="198" Column="36" TopLine="179"/>
+      </Position21>
+      <Position22>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="290" Column="39" TopLine="271"/>
+      </Position22>
+      <Position23>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="293" Column="39" TopLine="274"/>
+      </Position23>
+      <Position24>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="297" Column="39" TopLine="278"/>
+      </Position24>
+      <Position25>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="328" Column="59" TopLine="315"/>
+      </Position25>
+      <Position26>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="331" Column="72" TopLine="318"/>
+      </Position26>
+      <Position27>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="330" Column="57" TopLine="318"/>
+      </Position27>
+      <Position28>
+        <Filename Value="iconvraw.lpr"/>
+        <Caret Line="312" Column="28" TopLine="306"/>
+      </Position28>
     </JumpHistory>
   </ProjectSession>
 </CONFIG>

@@ -278,7 +278,8 @@ begin
   FillChar(FileImage[0], (HeaderBlockCount + 1) * RecordsInBlock * FITSRecordLen, ' ');
   Seek(InF, 0);
   BlockRead(InF, FileImage[0], HeaderBlockCount * RecordsInBlock);
-  BlockRead(InF, FileImage[(HeaderBlockCount + 1) * RecordsInBlock], N - HeaderBlockCount * RecordsInBlock);
+  if (N - HeaderBlockCount * RecordsInBlock > 0) then
+    BlockRead(InF, FileImage[(HeaderBlockCount + 1) * RecordsInBlock], N - HeaderBlockCount * RecordsInBlock);
   FillChar(FileImage[ENDPosition], FITSRecordLen, ' ');
   FileImage[HeaderBlockCount * RecordsInBlock] := recordEND;
   Seek(InF, 0);
