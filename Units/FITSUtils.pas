@@ -31,8 +31,8 @@ const FITSNumericAlign = 30;
 type
   FITSRecordType = array[1..FITSRecordLen] of Char;
   FITSRecordFile = File of FITSRecordType;
-
-type
+  TFITSRecordArray = array of FITSRecordType;
+  TStringArray = array of string;
   TIntArray = array of Integer;
 
 type
@@ -64,6 +64,13 @@ procedure GetHeader(const FITSfileName: string; const Header: TStrings);
 function GetEndPosition(var FITSfile: FITSRecordFile): Integer;
 procedure GetBitPixAndNaxis(var FITSfile: FITSRecordfile; const FITSfileName: string; out BitPix: Integer; out NaxisN: TIntArray);
 procedure RevertBytes(var FITSvalue: TFITSValue; BitPix: Integer);
+function MakeFITSHeader(BitPix: Integer;
+                        const Axes: TIntArray;
+                        DateObs: TDateTime;
+                        Date: TDateTime;
+                        Exposure: Double;
+                        const Instrument: string;
+                        const Comments: TStringArray): TFITSRecordArray;
 
 implementation
 
@@ -485,6 +492,96 @@ begin
   for I := 0 to N - 1 do
     TempFITSvalue.A[N - 1 - I] := FITSvalue.A[I];
   FITSvalue := TempFITSvalue;
+end;
+
+procedure StrToFITSRecord(const S: string; out FITSRecord: FITSRecordType);
+var
+  L: Integer;
+begin
+  FillChar(FITSRecord, SizeOf(FITSRecord), ' ');
+  L := Length(S);
+  if L > SizeOf(FITSRecord) then L := SizeOf(FITSRecord);
+  Move(S[1], FITSRecord, L);
+end;
+  
+function MakeFITSHeader(BitPix: Integer;
+                        const Axes: TIntArray;
+                        DateObs: TDateTime;
+                        Date: TDateTime;
+                        Exposure: Double;
+                        const Instrument: string;
+                        const Comments: TStringArray): TFITSRecordArray;
+var
+  I, N: Integer;
+  TempS: string;
+begin
+  N := 0;
+
+  SetLength(Result, N + 1);
+  StrToFITSRecord('SIMPLE  =                    T', Result[N]);
+  Inc(N);
+
+  SetLength(Result, N + 1);
+  Str(BitPix:20, TempS);
+  StrToFITSRecord('BITPIX  = ' + TempS, Result[N]);
+  Inc(N);
+
+  SetLength(Result, N + 1);
+  Str(Length(Axes):20, TempS);
+  StrToFITSRecord('NAXIS   = ' + TempS, Result[N]);
+  Inc(N);
+
+  for I := 0 to Length(Axes) - 1 do begin
+    SetLength(Result, N + 1);
+    Str(Axes[I]:20, TempS);
+    StrToFITSRecord(PadCh('NAXIS' + IntToStr(I + 1), 8, ' ') + '= ' + TempS, Result[N]);
+    Inc(N);
+  end;
+  if DateObs <> 0 then begin
+    SetLength(Result, N + 1);
+    TempS := '''' + FormatDateTime('YYYY-MM-DD"T"hh:nn:ss', DateObs) + '''';
+    StrToFITSRecord('DATE-OBS= ' + TempS, Result[N]);
+    Inc(N);
+  end
+  else begin
+    SetLength(Result, N + 1);
+    StrToFITSRecord('COMMENT **** DATE-OBS was not specified!', Result[N]);
+    Inc(N);
+  end;
+  if Instrument <> '' then begin
+    SetLength(Result, N + 1);
+    TempS := FITSQuotedValue(Instrument);
+    StrToFITSRecord('INSTRUME= ' + TempS, Result[N]);
+    Inc(N);
+  end;
+  if Exposure > 0 then begin
+    SetLength(Result, N + 1);
+    Str(Exposure:20, TempS);
+    StrToFITSRecord('EXPTIME = ' + TempS, Result[N]);
+    Inc(N);
+  end;
+  if Date <> 0 then begin
+    SetLength(Result, N + 1);
+    TempS := '''' + FormatDateTime('YYYY-MM-DD"T"hh:nn:ss.zzz', Date) + '''';
+    StrToFITSRecord('DATE    = ' + TempS, Result[N]);
+    Inc(N);
+  end;
+  for I := 0 to Length(Comments) - 1 do begin
+    SetLength(Result, N + 1);
+    StrToFITSRecord('COMMENT ' + Comments[I], Result[N]);
+    Inc(N);
+  end;
+  SetLength(Result, N + 1);
+  Result[N] := recordEND;
+  Inc(N);
+  N := N mod RecordsInBlock;
+  if N > 0 then begin
+    for I := 1 to RecordsInBlock - N do begin
+      SetLength(Result, N + 1);
+      FillChar(Result[N], SizeOf(FITSRecordType), ' ');
+      Inc(N);
+    end;
+  end;
 end;
 
 end.
