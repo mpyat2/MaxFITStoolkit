@@ -341,6 +341,7 @@ begin
               WriteLn('**** Keyword ', Name, ' cannot be set');
           end;
         end;
+        Seek(FITSFile, FileSize(FITSFile));
         //
         BlockWrite(FITSFile, Image[0], ImageSize div SizeOf(FITSRecordType));
       finally
