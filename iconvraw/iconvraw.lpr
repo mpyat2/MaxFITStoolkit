@@ -326,7 +326,7 @@ begin
               else begin
                 if SetKeywordValue(FITSfile, NewFileName, Name, Value, True, '', True) then begin
                   TempValue := '';
-                  if GetKeywordValue(FITSfile, NewFileName, TempValue, False, False) < 0 then begin
+                  if GetKeywordValue(FITSfile, Name, TempValue, False, False) < 0 then begin
                     if (Value <> '') or (TempValue <> '') then
                       FileError('Internal Error: setting value of keyword ' + Name + ' failed.');
                   end;
