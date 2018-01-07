@@ -319,7 +319,8 @@ begin
               Value := Copy(S, P + 1, MaxInt);
               if (Name = '') or (Name = KeywordComment) or (Name = KeywordHistory) then begin
                 if AddCommentLikeKeyword(FITSfile, NewFileName, Name, Value, True) then begin
-                  WriteLn('Added ', Name, ' ', Value);
+                  WriteLn;
+                  Write('Added ', Name, ' ', Value);
                   Success := True;
                 end;
               end
@@ -330,7 +331,8 @@ begin
                     if (Value <> '') or (TempValue <> '') then
                       FileError('Internal Error: setting value of keyword ' + Name + ' failed.');
                   end;
-                  WriteLn('Keyword ', Name, ' set to ', TempValue);
+                  WriteLn;
+                  Write('Keyword ', Name, ' set to ', TempValue);
                   Success := True;
                 end;
               end;
