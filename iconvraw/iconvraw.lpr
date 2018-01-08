@@ -265,6 +265,10 @@ begin
       Inc(N);
 
       SetLength(Comments, N + 1);
+      Comments[N] := 'DATE is FITS creation time (reported by OS)';
+      Inc(N);
+
+      SetLength(Comments, N + 1);
       Comments[N] := 'Original EXIF time string: ' + DateTimeString;
       Inc(N);
 
@@ -320,7 +324,7 @@ begin
               if (Name = '') or (Name = KeywordComment) or (Name = KeywordHistory) then begin
                 if AddCommentLikeKeyword(FITSfile, NewFileName, Name, Value, True) then begin
                   WriteLn;
-                  Write('Added ', Name, ' ', Value);
+                  Write('Added ', Name, ' ', TrimRight(Value));
                   Success := True;
                 end;
               end
@@ -332,7 +336,7 @@ begin
                       FileError('Internal Error: setting value of keyword ' + Name + ' failed.');
                   end;
                   WriteLn;
-                  Write('Keyword ', Name, ' set to ', TempValue);
+                  Write('Keyword ', Name, ' set to ', TrimRight(TempValue));
                   Success := True;
                 end;
               end;
@@ -341,6 +345,7 @@ begin
               WriteLn('**** Keyword ', Name, ' cannot be set');
           end;
         end;
+        if FITSParams.Count <> 0 then WriteLn else Write(' ');
         Seek(FITSFile, FileSize(FITSFile));
         //
         BlockWrite(FITSFile, Image[0], ImageSize div SizeOf(FITSRecordType));
@@ -396,7 +401,7 @@ begin
         NewFileName := ChangeFileExt(NewFileName, OutputExt);
         Write(FileName, ^I'->'^I, NewFileName);
         ConvertFile(FileList[I], NewFileName, not Overwrite, TimeByExposureCorrection, DontTruncate, TimeShiftInSeconds, PixelRealNumber, FITSParams, TimeCorrected, TimeShifted);
-        if TimeShifted then Write(' DATE-OBS shifted by ', TimeShiftInSeconds, ' seconds');
+        if TimeShifted then Write('DATE-OBS shifted by ', TimeShiftInSeconds, ' seconds');
         if TimeCorrected then Write(' DATE-OBS corrected by exposure');
         WriteLn;
         Inc(FileNumber);

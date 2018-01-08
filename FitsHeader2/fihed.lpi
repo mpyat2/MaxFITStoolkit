@@ -29,13 +29,14 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="TEST.fit //set /COMMENT=''"/>
+        <CommandLineParams Value="TEST.fit //set /COMMENT=&quot;Comment 1&quot; /COMMENT=&quot;Comment 2&quot; /VALUE1=VAL1"/>
       </local>
     </RunParams>
     <Units Count="1">
       <Unit0>
         <Filename Value="fihed.lpr"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="FIHED"/>
       </Unit0>
     </Units>
   </ProjectOptions>

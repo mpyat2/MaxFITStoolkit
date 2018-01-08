@@ -22,8 +22,7 @@ SET OBJECT=C/2015 V2
 SET TELESCOP=Sky-Watcher 15075 OTAW
 
 REM Commands
-REM Converter: remove /E switch to disable TIME-OBS correction by exposure
-SET CONVERTER_SWITCHES=/F /E
+SET CONVERTER_SWITCHES=/F
 SET CONVERTER=iconvraw
 REM FITS command-line header editor
 SET FITSEDITOR=fihed
