@@ -7,7 +7,7 @@ REM This script converts .CR2 raw files to FITS files according IRIS naming conv
 REM FITS files are placed into IRIS working folder (specified by OUT variable)
 
 REM Setting folders: OUT: output folder, LIGHT: science images folder, BIAS: bias frames folder, DARK: dark frames folder, FLAT: flat frames folder
-SET BASE=.\2017-06-09(10)_C2015V2
+SET BASE=.\
 SET OUT=C:\PERSONAL\SKY2
 SET LIGHT=light
 SET FLAT=flat
@@ -16,16 +16,15 @@ SET DARK=dark
 SET RAWEXT=.CR2
 
 REM Time shift (from local to UTC) in seconds to be applied to DATE-OBS
+REM **** WARNING! CHECK TIME SHIFT BEFORE RUN!
 SET TS=-10800
-REM ADDITIONAL INFO
-SET OBJECT=C/2015 V2
+REM Additional info to be written into FITS header
+SET OBJECT=M57
 SET TELESCOP=Sky-Watcher 15075 OTAW
 
 REM Commands
 SET CONVERTER_SWITCHES=/F
 SET CONVERTER=iconvraw
-REM FITS command-line header editor
-SET FITSEDITOR=fihed
 
 REM ==========================================================================
 REM END OF CONFIGURATION SECTION
@@ -42,35 +41,27 @@ ECHO .
 ECHO .
 ECHO .
 ECHO Converting %OFFSET% ...
-"%CONVERTER%" %CONVERTER_SWITCHES% "%BASE%\%OFFSET%\*%RAWEXT%" /O="%OUT%" /G=offset /TS"%TS%"
+"%CONVERTER%" %CONVERTER_SWITCHES% "%BASE%\%OFFSET%\*%EAWEXT%" /O="%OUT%" /G=offset /TS"%TS%"
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 ECHO .
 ECHO .
 ECHO Converting %DARK% ...
-"%CONVERTER%" %CONVERTER_SWITCHES% "%BASE%\%DARK%\*%RAWEXT%" /O="%OUT%" /G=dark /TS"%TS%"           
+"%CONVERTER%" %CONVERTER_SWITCHES% "%BASE%\%DARK%\*%EAWEXT%" /O="%OUT%" /G=dark /TS"%TS%"           
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 ECHO .
 ECHO .
 ECHO Converting %FLAT% ...
-"%CONVERTER%" %CONVERTER_SWITCHES% "%BASE%\%FLAT%\*%RAWEXT%" /O="%OUT%" /G=flat /TS"%TS%"           
+"%CONVERTER%" %CONVERTER_SWITCHES% "%BASE%\%FLAT%\*%EAWEXT%" /O="%OUT%" /G=flat /TS"%TS%" /$TELESCOP="%TELESCOP%"
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 ECHO .
 ECHO .
 ECHO Converting %LIGHT% ...
-"%CONVERTER%" %CONVERTER_SWITCHES% "%BASE%\%LIGHT%\*%RAWEXT%" /O="%OUT%" /G=light /TS"%TS%"         
+"%CONVERTER%" %CONVERTER_SWITCHES% "%BASE%\%LIGHT%\*%EAWEXT%" /O="%OUT%" /G=light /TS"%TS%" /$TELESCOP="%TELESCOP%"  /$OBJECT="%OBJECT%"
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
-ECHO .
-ECHO .
-ECHO Postprocessing ...
-"%FITSEDITOR%" //SET /TELESCOP="%TELESCOP%" "%OUT%\flat*.fit"
-IF ERRORLEVEL 1 GOTO :ERROR
-"%FITSEDITOR%" //SET /OBJECT="%OBJECT%" /TELESCOP="%TELESCOP%" "%OUT%\light*.fit"
-IF ERRORLEVEL 1 GOTO :ERROR
-
 ECHO .
 ECHO .
 ECHO ==============================================================================
