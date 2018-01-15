@@ -49,7 +49,9 @@ Source: "..\bin-out\FreeImage.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitsutils.ini"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitsutils.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Scripts\CleanIRIS.bat"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\Samples\*"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\Samples\*"; DestDir: "{app}\SAMPLES"; Flags: ignoreversion
+Source: "..\APDAT\TESTDATA\*"; DestDir: "{app}\TESTDATA\APDAT"; Flags: ignoreversion
+Source: "..\IPDAT\TESTDATA\*"; DestDir: "{app}\TESTDATA\IPDAT"; Flags: ignoreversion
 
 ;Source: "..\bin-out\pfh.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
