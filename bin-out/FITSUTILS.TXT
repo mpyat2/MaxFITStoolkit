@@ -1,7 +1,7 @@
 @iconvraw
 
 Usage:
-iconvraw in_file_mask1 [in_file_mask2 ...] [/G=generic_name] [/O=out_dir] [/B=nn] [/F] [/E] [/L]
+iconvraw in_file_mask1 [in_file_mask2 ...] [/G=generic_name] [/O=out_dir] [/B=nn] [/F] [/E] [/L] [/TS<xxxxx>] [/X=<ext>]
 
 Where:
 
