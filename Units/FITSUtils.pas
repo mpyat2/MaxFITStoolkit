@@ -22,6 +22,7 @@ const KeywordSimple = 'SIMPLE';
 const KeywordComment= 'COMMENT';
 const KeywordHistory= 'HISTORY';
 const KeywordHierarch='HIERARCH';
+const KeywordContinue='CONTINUE';
 const FITSRecordLen = Length(recordEND);
 const RecordsInBlock = 36;
 const FITSKeywordLen = 8;

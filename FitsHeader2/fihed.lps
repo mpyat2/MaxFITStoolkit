@@ -10,8 +10,8 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="FIHED"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="79"/>
-        <CursorPos Y="98"/>
+        <TopLine Value="58"/>
+        <CursorPos X="17" Y="78"/>
         <UsageCount Value="28"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -25,10 +25,10 @@
       </Unit1>
       <Unit2>
         <Filename Value="..\Units\FITSUtils.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="321"/>
-        <CursorPos X="130" Y="332"/>
+        <EditorIndex Value="1"/>
+        <CursorPos X="7" Y="20"/>
         <UsageCount Value="14"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit2>
       <Unit3>
@@ -52,142 +52,128 @@
         <UsageCount Value="10"/>
       </Unit5>
     </Units>
-    <JumpHistory Count="29" HistoryIndex="28">
+    <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="81" TopLine="76"/>
+        <Caret Line="74" TopLine="62"/>
       </Position1>
       <Position2>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="82" TopLine="76"/>
+        <Caret Line="75" TopLine="62"/>
       </Position2>
       <Position3>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="83" TopLine="76"/>
+        <Caret Line="76" TopLine="62"/>
       </Position3>
       <Position4>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="98" TopLine="79"/>
+        <Caret Line="77" TopLine="62"/>
       </Position4>
       <Position5>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="73" TopLine="62"/>
+        <Caret Line="78" TopLine="62"/>
       </Position5>
       <Position6>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="74" TopLine="62"/>
+        <Caret Line="79" TopLine="62"/>
       </Position6>
       <Position7>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="75" TopLine="62"/>
+        <Caret Line="80" TopLine="62"/>
       </Position7>
       <Position8>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="76" TopLine="62"/>
+        <Caret Line="81" TopLine="62"/>
       </Position8>
       <Position9>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="77" TopLine="62"/>
+        <Caret Line="82" TopLine="63"/>
       </Position9>
       <Position10>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="78" TopLine="62"/>
+        <Caret Line="83" TopLine="64"/>
       </Position10>
       <Position11>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="79" TopLine="62"/>
+        <Caret Line="98" TopLine="87"/>
       </Position11>
       <Position12>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="80" TopLine="62"/>
+        <Caret Line="73" TopLine="62"/>
       </Position12>
       <Position13>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="81" TopLine="62"/>
+        <Caret Line="74" TopLine="62"/>
       </Position13>
       <Position14>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="82" TopLine="63"/>
+        <Caret Line="75" TopLine="62"/>
       </Position14>
       <Position15>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="83" TopLine="64"/>
+        <Caret Line="76" TopLine="62"/>
       </Position15>
       <Position16>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="98" TopLine="87"/>
+        <Caret Line="77" TopLine="62"/>
       </Position16>
       <Position17>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="73" TopLine="62"/>
+        <Caret Line="78" TopLine="62"/>
       </Position17>
       <Position18>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="74" TopLine="62"/>
+        <Caret Line="79" TopLine="62"/>
       </Position18>
       <Position19>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="75" TopLine="62"/>
+        <Caret Line="80" TopLine="62"/>
       </Position19>
       <Position20>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="76" TopLine="62"/>
+        <Caret Line="87" TopLine="76"/>
       </Position20>
       <Position21>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="77" TopLine="62"/>
+        <Caret Line="88" TopLine="76"/>
       </Position21>
       <Position22>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="78" TopLine="62"/>
+        <Caret Line="89" TopLine="76"/>
       </Position22>
       <Position23>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="79" TopLine="62"/>
+        <Caret Line="93" TopLine="76"/>
       </Position23>
       <Position24>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="80" TopLine="62"/>
+        <Caret Line="94" TopLine="76"/>
       </Position24>
       <Position25>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="87" TopLine="76"/>
+        <Caret Line="93"/>
       </Position25>
       <Position26>
-        <Filename Value="fihed.lpr"/>
-        <Caret Line="88" TopLine="76"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
       </Position26>
       <Position27>
-        <Filename Value="fihed.lpr"/>
-        <Caret Line="89" TopLine="76"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="23"/>
       </Position27>
       <Position28>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="93" TopLine="76"/>
+        <Caret Line="93"/>
       </Position28>
       <Position29>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="94" TopLine="76"/>
       </Position29>
+      <Position30>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="78" Column="141" TopLine="58"/>
+      </Position30>
     </JumpHistory>
   </ProjectSession>
   <Debugging>
-    <BreakPoints Count="2">
-      <Item1>
-        <Kind Value="bpkSource"/>
-        <WatchScope Value="wpsLocal"/>
-        <WatchKind Value="wpkWrite"/>
-        <Source Value="fihed.lpr"/>
-        <Line Value="93"/>
-      </Item1>
-      <Item2>
-        <Kind Value="bpkSource"/>
-        <WatchScope Value="wpsLocal"/>
-        <WatchKind Value="wpkWrite"/>
-        <Source Value="fihed.lpr"/>
-        <Line Value="81"/>
-      </Item2>
-    </BreakPoints>
     <Watches Count="6">
       <Item1>
         <Expression Value="TempS"/>

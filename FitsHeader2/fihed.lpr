@@ -75,7 +75,7 @@ begin
               P := Pos('=', S);
               if P > 0 then begin
                 Name := AnsiUpperCase(Trim(Copy(S, 1, P - 1)));
-                if (Length(Name) <= FITSKeywordLen) and (Name <> KeywordEND) and (Name <> KeywordHierarch) then begin
+                if (Length(Name) <= FITSKeywordLen) and (Name <> KeywordEND) and (Name <> KeywordHierarch) and (Name <> KeywordContinue) then begin
                   Value := Copy(S, P + 1, MaxInt);
                   if (Name = '') or (Name = KeywordComment) or (Name = KeywordHistory) then begin
                     if AddCommentLikeKeyword(FITSfile, FileName, Name, Value, True) then begin

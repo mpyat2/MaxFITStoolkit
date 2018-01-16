@@ -64,9 +64,9 @@ apdat [options] input_filename[.dat] [output_filename[.csv|.txt]]
 @fihed
 
 Usage:
-fihed file_mask1[.fit] [file_mask2[.fit] ...] [//CSV|//TAB] [/keyword1 [/keyword2 ...]]
+fihed file_mask1[.fit] [file_mask2[.fit] ...] //CSV|//TAB [/keyword1 [/keyword2 ...]]
 or   
-fihed file_mask1[.fit] [file_mask2[.fit] ...] [//SET] [/keyword1=value [/keyword2=value ...]]
+fihed file_mask1[.fit] [file_mask2[.fit] ...] //SET [/keyword1=value [/keyword2=value ...]]
 
   //CSV       prints header values as CSV table.
               COMMENT, HISTORY and similar keywords without '='
