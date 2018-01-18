@@ -1,1 +1,2 @@
 1) FileMode: not needed to set it to fmOpenReadWrite before Rewrite. Remove unnecessary FileModeSaved.
+2) CalcMed: sort procedure: do not copy array, sort inplace
