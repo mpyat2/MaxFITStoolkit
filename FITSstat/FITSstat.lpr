@@ -105,16 +105,21 @@ begin
     result := (data[centralElement - 1] + data[centralElement]) / 2;
 end;
 
-function mean(var data: TDoubleArray): double;
+procedure mean(var data: TDoubleArray; out m, s: Double);
 var
   I: Integer;
   V: Extended;
 begin
-  Result := 0;
+  m := 0;
+  s := 0;
   V := 0;
   for I := 0 to High(data) do
     V := V + data[I];
-  Result := V / High(data);
+  m := V / High(data);
+  V := 0;
+  for I := 0 to High(data) do
+    V := V + (data[I] - m) * (data[I] - m);
+  s := Sqrt(V / High(data));
 end;
 
 procedure PrintV(Name: string; V: Double);
@@ -123,7 +128,7 @@ begin
   if Frac(V) = 0 then
     WriteLn(V:0:0)
   else
-    WriteLn(V);
+    WriteLn(V:0:7);
 end;
 
 procedure ProcessInput(const FITSFileName: string);
@@ -134,7 +139,7 @@ var
   X, Y, Addr: Integer;
   BytePix: Integer;
   data: TDoubleArray;
-  medianV, meanV, minV, maxV: Double;
+  medianV, meanV, stdevV, minV, maxV: Double;
 begin
   try
     Image := GetFITSimage2D(FITSFileName, Width, Height, BitPix);
@@ -143,8 +148,8 @@ begin
     try
       BytePix := Abs(BitPix) div 8;
       SetLength(data, Height * Width);
-      for Y := 3 to Height - 4 do begin
-        for X := 3 to Width - 4 do begin
+      for Y := 0 to Height -1 do begin
+        for X := 0 to Width - 1 do begin
           Addr := (Y * Width + X) * BytePix;
           Move(Image[Addr], A, BytePix);
           RevertBytes(A, BitPix);
@@ -160,14 +165,15 @@ begin
       medianV := median(data); // sorts data!
       minV := data[0];
       maxV := data[High(data)];
-      meanV := mean(data);
+      mean(data, meanV, stdevV);
       WriteLn('File:'^I, ExtractFileName(FITSFileName));
       PrintV('Width:'^I, Width);
       PrintV('Height:'^I, Height);
-      PrintV('Median:'^I, medianV);
-      PrintV('Mean:'^I, meanV);
       PrintV('Min:'^I, minV);
       PrintV('Max:'^I, maxV);
+      PrintV('Median:'^I, medianV);
+      PrintV('Mean:'^I, meanV);
+      PrintV('StDev:'^I, stdevV);
     finally
       FreeMem(Image);
       Image := nil;
