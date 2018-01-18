@@ -80,7 +80,7 @@ var
   Image2: PChar;
 
   NblocksInHeader2, StartOfImage2: Integer;
-  BitPix2, BytePix2: Integer;
+  BitPix2: Integer;
   NaxisN2: TIntArray;
 
   FileModeSaved: Integer;
@@ -133,7 +133,7 @@ begin
             if N < 0 then
               FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FileToSubName, '"'));
             NblocksInHeader2 := N div RecordsInBlock + 1;
-            StartOfImage2 := NblocksInHeader * RecordsInBlock;
+            StartOfImage2 := NblocksInHeader2 * RecordsInBlock;
             GetBitPixAndNaxis(FITSfileToSub, FileToSubName, BitPix2, NaxisN2);
             if BitPix <> BitPix2 then
               FileError('Input file and file to subtract must have identical BITPIX');
@@ -142,7 +142,6 @@ begin
             for I := 0 to Length(NaxisN) - 1 do
               if NaxisN[I] <> NaxisN2[I] then
                 FileError('Input file and file to subtract must have identical lengthes of axes');
-            BytePix2 := Abs(BitPix2) div 8;
             GetMem(Image2, ImageMemSize);
           end;
           try

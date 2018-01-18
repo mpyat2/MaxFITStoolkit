@@ -134,7 +134,7 @@ end;
 function GetTimeObsAndExposure(var FITSFile: FITSRecordFile; out DateTimeObs: TDateTime; out ExpTime: Double): Boolean;
 var
   DateObsStr, TimeObsStr, ExpTimeStr: string;
-  TimeObsKeyUsed, UtStartKeyUsed, ExposureKeywordUsed: Boolean;
+  TimeObsKeyUsed: Boolean;
   P: Integer;
   ErrorPos: Integer;
 begin
@@ -145,7 +145,6 @@ begin
   ExpTime := 0;
   DateTimeObs := 0;
   TimeObsKeyUsed := False;
-  UtStartKeyUsed := False;
   if GetKeywordValue(FITSFile, 'DATE-OBS', DateObsStr, True, True) < 0 then
     DateObsStr := '';
   if DateObsStr <> '' then begin
@@ -162,13 +161,14 @@ begin
       if not TimeObsKeyUsed then begin
         // There is no TIME-OBS...
         // Try to get time from UT-START (IRIS-specific)
-        UtStartKeyUsed := (GetKeywordValue(FITSFile, 'UT-START', TimeObsStr, True, True) >= 0) and (TimeObsStr <> '');
+        GetKeywordValue(FITSFile, 'UT-START', TimeObsStr, True, True);
       end;
       TimeObsStr := StripQuotes(TimeObsStr);
     end;
   end;
 
-  ExposureKeywordUsed := (GetKeywordValue(FITSFile, 'EXPTIME', ExpTimeStr, True, True) >= 0) or (GetKeywordValue(FITSFile, 'EXPOSURE', ExpTimeStr, True, True) >= 0);
+  if (GetKeywordValue(FITSFile, 'EXPTIME', ExpTimeStr, True, True) < 0) or (ExpTimeStr = '') then
+    GetKeywordValue(FITSFile, 'EXPOSURE', ExpTimeStr, True, True);
   if (ExpTimeStr <> '') then begin
     Val(ExpTimeStr, ExpTime, ErrorPos);
     if (ErrorPos <> 0) or (ExpTime < 0) then

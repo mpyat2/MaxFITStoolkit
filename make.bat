@@ -51,6 +51,21 @@ copy iconvraw\FreeImage.DLL bin-out\
 ECHO .
 
 REM ...
+%COMPILER% CalcMed\CalcMed.lpr
+IF ERRORLEVEL 1 GOTO :ERROR
+ECHO .
+
+REM ...
+%COMPILER% CalcSub\CalcSub.lpr
+IF ERRORLEVEL 1 GOTO :ERROR
+ECHO .
+
+REM ...
+%COMPILER% FindHot\FindHot.lpr
+IF ERRORLEVEL 1 GOTO :ERROR
+ECHO .
+
+REM ...
 %COMPILER% Hello\HelloIRISFITS.pas
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .

@@ -41,7 +41,6 @@ var
   ExpTimeStr: string;
   ExpTime: Double;
   TempExpTime: Double;
-  ExposureKeywordExists: Boolean;
   ErrorPos: Integer;
   DateTimeObs: TDateTime;
   N: Integer;
@@ -97,7 +96,8 @@ begin
             TimeObsStr := StripQuotes(TimeObsStr);
           end;
 
-          ExposureKeywordExists := (GetKeywordValue(FITSFile, 'EXPTIME', ExpTimeStr, True, True) >= 0) or (GetKeywordValue(FITSFile, 'EXPOSURE', ExpTimeStr, True, True) >= 0);
+          if (GetKeywordValue(FITSFile, 'EXPTIME', ExpTimeStr, True, True) < 0) or (ExpTimeStr = '') then
+            GetKeywordValue(FITSFile, 'EXPOSURE', ExpTimeStr, True, True);
           if (ExpTimeStr <> '') then begin
             Val(ExpTimeStr, ExpTime, ErrorPos);
             if (ErrorPos <> 0) or (ExpTime < 0) then
