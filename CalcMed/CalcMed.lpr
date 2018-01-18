@@ -20,27 +20,25 @@ type
   TDoubleArray = array of Double;
   TLongIntArray = array of LongInt;
 
-function SortDoubleArray(const data: TDoubleArray): TDoubleArray;
+procedure SortDoubleArray(var data: TDoubleArray);
 { Based on Shell Sort - avoiding recursion allows for sorting of very
   large arrays, too }
 var
-  data2: TDoubleArray;
   arrayLength, i, j, k: longint;
   h: double;
 begin
   arrayLength := high(data);
-  data2 := copy(data, 0, arrayLength + 1);
   k := arrayLength div 2;
   while k > 0 do
   begin
     for i := 0 to arrayLength - k do
     begin
       j := i;
-      while (j >= 0) and (data2[j] > data2[j + k]) do
+      while (j >= 0) and (data[j] > data[j + k]) do
       begin
-        h := data2[j];
-        data2[j] := data2[j + k];
-        data2[j + k] := h;
+        h := data[j];
+        data[j] := data[j + k];
+        data[j + k] := h;
         if j > k then
           dec(j, k)
         else
@@ -49,30 +47,27 @@ begin
     end;
     k := k div 2
   end;
-  result := data2;
 end;
 
-function SortLongIntArray(const data: TLongIntArray): TLongIntArray;
+procedure SortLongIntArray(var data: TLongIntArray);
 { Based on Shell Sort - avoiding recursion allows for sorting of very
   large arrays, too }
 var
-  data2: TLongIntArray;
   arrayLength, i, j, k: longint;
   h: LongInt;
 begin
   arrayLength := high(data);
-  data2 := copy(data, 0, arrayLength + 1);
   k := arrayLength div 2;
   while k > 0 do
   begin
     for i := 0 to arrayLength - k do
     begin
       j := i;
-      while (j >= 0) and (data2[j] > data2[j + k]) do
+      while (j >= 0) and (data[j] > data[j + k]) do
       begin
-        h := data2[j];
-        data2[j] := data2[j + k];
-        data2[j + k] := h;
+        h := data[j];
+        data[j] := data[j + k];
+        data[j + k] := h;
         if j > k then
           dec(j, k)
         else
@@ -81,34 +76,32 @@ begin
     end;
     k := k div 2
   end;
-  result := data2;
 end;
 
-function median(const data: TDoubleArray): double; overload;
+// modifies data!
+function median(var data: TDoubleArray): double; overload;
 var
   centralElement: integer;
-  sortedData: TDoubleArray;
 begin
-  sortedData := SortDoubleArray(data);
-  centralElement := length(sortedData) div 2;
-  if odd(length(sortedData)) then
-    result := sortedData[centralElement]
+  SortDoubleArray(data);
+  centralElement := length(data) div 2;
+  if odd(length(data)) then
+    result := data[centralElement]
   else
-    result := (sortedData[centralElement - 1] + sortedData[centralElement]) / 2;
+    result := (data[centralElement - 1] + data[centralElement]) / 2;
 end;
 
-function median(const data: TLongIntArray): LongInt; overload;
+// modifies data!
+function median(var data: TLongIntArray): LongInt; overload;
 var
   centralElement: integer;
-  sortedData: TLongIntArray;
 begin
-  sortedData := SortLongIntArray(data);
-  centralElement := length(sortedData) div 2;
-  if odd(length(sortedData)) then
-    result := sortedData[centralElement]
+  SortLongIntArray(data);
+  centralElement := length(data) div 2;
+  if odd(length(data)) then
+    result := data[centralElement]
   else
-    //result := Round((sortedData[centralElement - 1] + sortedData[centralElement]) / 2);
-    result := (sortedData[centralElement - 1] + sortedData[centralElement]) div 2; // Like IRIS!
+    result := (data[centralElement - 1] + data[centralElement]) div 2; // Like IRIS!
 end;
 
 function average(const data: TDoubleArray): double; overload;
@@ -321,6 +314,7 @@ begin
             end;
           end
           else begin
+            // WARNING! median alters data (sorts it)!
             case BitPix0 of
                 8: FITSValueSum.B := median(DataInt);
                16: FITSValueSum.I := median(DataInt);
