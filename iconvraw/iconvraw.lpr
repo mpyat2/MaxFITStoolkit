@@ -94,6 +94,7 @@ var
   TempS: string;
   FITSHeader: TFITSRecordArray;
   Comments: TStringArray;
+  DateTimeComment: string;
   Axes: TIntArray;
   Success: Boolean;
   S: string;
@@ -265,10 +266,6 @@ begin
       Inc(N);
 
       SetLength(Comments, N + 1);
-      Comments[N] := 'DATE is FITS creation time (reported by OS)';
-      Inc(N);
-
-      SetLength(Comments, N + 1);
       Comments[N] := 'Original EXIF time string: ' + DateTimeString;
       Inc(N);
 
@@ -306,7 +303,17 @@ begin
 
       DateTimeFile := Now();
 
-      FITSHeader := MakeFITSHeader(FITSbpp, Axes, DateTime, DateTimeFile, ExposureTimeFloat, Instrument, Comments);
+      DateTimeComment := '';
+      if TimeCorrected then DateTimeComment := 'corrected by exposure';
+
+      FITSHeader := MakeFITSHeader(
+        FITSbpp,
+        Axes,
+        DateTime,          DateTimeComment,
+        DateTimeFile,      'FITS creation time (reported by OS)',
+        ExposureTimeFloat, 'ExposureTime EXIF value',
+        Instrument,
+        Comments);
 
       AssignFile(FITSFile, NewFileName);
       Rewrite(FITSFile);

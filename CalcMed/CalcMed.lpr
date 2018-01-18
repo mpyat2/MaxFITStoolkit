@@ -3,7 +3,7 @@
 program CalcMed;
 
 uses
-  SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, FITSUtils, EnumFiles, StringListNaturalSort, FitsUtilsHelp, CommonIni;
+  SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, FITSUtils, FITSTimeUtils, EnumFiles, StringListNaturalSort, FitsUtilsHelp, CommonIni;
 
 procedure PrintVersion;
 begin
@@ -131,6 +131,56 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+function GetTimeObsAndExposure(var FITSFile: FITSRecordFile; out DateTimeObs: TDateTime; out ExpTime: Double): Boolean;
+var
+  DateObsStr, TimeObsStr, ExpTimeStr: string;
+  TimeObsKeyUsed, UtStartKeyUsed, ExposureKeywordUsed: Boolean;
+  P: Integer;
+  ErrorPos: Integer;
+begin
+  Result := False;
+  DateObsStr := '';
+  TimeObsStr := '';
+  ExpTimeStr := '';
+  ExpTime := 0;
+  DateTimeObs := 0;
+  TimeObsKeyUsed := False;
+  UtStartKeyUsed := False;
+  if GetKeywordValue(FITSFile, 'DATE-OBS', DateObsStr, True, True) < 0 then
+    DateObsStr := '';
+  if DateObsStr <> '' then begin
+    DateObsStr := StripQuotes(DateObsStr);
+    P := Pos('T', DateObsStr);
+    if P <> 0 then begin
+      TimeObsStr := Copy(DateObsStr, P + 1, MaxInt);
+      DateObsStr := Copy(DateObsStr, 1, P - 1);
+    end;
+    if TimeObsStr = '' then begin
+      // There is no time part in DATE-OBS.
+      // Try to get time from TIME-OBS
+      TimeObsKeyUsed := (GetKeywordValue(FITSFile, 'TIME-OBS', TimeObsStr, True, True) >= 0) and (TimeObsStr <> '');
+      if not TimeObsKeyUsed then begin
+        // There is no TIME-OBS...
+        // Try to get time from UT-START (IRIS-specific)
+        UtStartKeyUsed := (GetKeywordValue(FITSFile, 'UT-START', TimeObsStr, True, True) >= 0) and (TimeObsStr <> '');
+      end;
+      TimeObsStr := StripQuotes(TimeObsStr);
+    end;
+  end;
+
+  ExposureKeywordUsed := (GetKeywordValue(FITSFile, 'EXPTIME', ExpTimeStr, True, True) >= 0) or (GetKeywordValue(FITSFile, 'EXPOSURE', ExpTimeStr, True, True) >= 0);
+  if (ExpTimeStr <> '') then begin
+    Val(ExpTimeStr, ExpTime, ErrorPos);
+    if (ErrorPos <> 0) or (ExpTime < 0) then
+      ExpTime := 0;
+  end;
+
+  if (DateObsStr <> '') and (TimeObsStr <> '') then
+    Result := MakeDateObsFromIrisDate(DateTimeObs, DateObsStr, TimeObsStr, ExpTime);
+  if not Result then DateTimeObs := 0;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
 
 procedure ShowProgress(N, NBlocksInImage: Integer);
 var
@@ -192,6 +242,12 @@ var
   NAxisN0, NAxisN: TIntArray;
   NblocksInHeader, NBlocksInImage: Integer;
   Comments: TStringArray;
+  DateTimeCorrect: Boolean;
+  ExpTimeCorrect: Boolean;
+  DateTimeObsAverage: TDateTime;
+  DateTimeObs: TDateTime;
+  ExpTimeTotal: Double;
+  ExpTime: Double;
 begin
   try
     if CheckExistence and FileExists(OutputFileName) then
@@ -237,6 +293,10 @@ begin
       NBlocksInImage := NBlocksInImage * NAxisN0[I];
     NBlocksInImage := (NBlocksInImage * BytePix - 1) div (FITSRecordLen * RecordsInBlock) + 1;
     //
+    DateTimeCorrect := True;
+    ExpTimeCorrect := True;
+    DateTimeObsAverage := 0;
+    ExpTimeTotal := 0;
     for I := 0 to FileListFull.Count - 1 do begin
       AssignFile(FITSfile, FileListFull[I]);
       Reset(FITSfile);
@@ -254,10 +314,22 @@ begin
           FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FileListFull[I], '"'));
         NblocksInHeader := N div RecordsInBlock + 1;
         TFileInfo(FileListFull.Objects[I]).StartOfImage := NblocksInHeader * RecordsInBlock;
+        DateTimeCorrect := DateTimeCorrect and GetTimeObsAndExposure(FITSfile, DateTimeObs, ExpTime);
+        ExpTimeCorrect := ExpTimeCorrect and (ExpTime > 0);
+        if DateTimeCorrect then
+          DateTimeObsAverage := DateTimeObsAverage + DateTimeObs;
+        if ExpTimeCorrect then
+          ExpTimeTotal := ExpTimeTotal + ExpTime;
       finally
         CloseFile(FITSfile);
       end;
     end;
+    if DateTimeCorrect then
+      DateTimeObsAverage := DateTimeObsAverage / FileListFull.Count
+    else
+      DateTimeObsAverage := 0;
+    if not ExpTimeCorrect then
+      ExpTimeTotal := 0;
 
     SetLength(Comments, 1);
     if CalcAverage then
@@ -267,7 +339,14 @@ begin
     AssignFile(OutputFITSFile, OutputFileName);
     Rewrite(OutputFITSFile);
     try
-      OutputFITSHeader := MakeFITSHeader(BitPix0, NAxisN0, 0, 0, 0, '', Comments);
+      OutputFITSHeader :=
+        MakeFITSHeader(BitPix0,
+                       NAxisN0,
+                       DateTimeObsAverage, 'Mean time corrected by exposure of each frame',
+                       0, '',
+                       ExpTimeTotal, 'Total exposure of ' + IntToStr(FileListFull.Count) + ' frames',
+                       '',
+                       Comments);
       BlockWrite(OutputFITSFile, OutputFITSHeader[0], Length(OutputFITSHeader));
       for N := 0 to NBlocksInImage - 1 do begin
         ShowProgress(N, NBlocksInImage);

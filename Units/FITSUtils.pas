@@ -67,9 +67,9 @@ procedure GetBitPixAndNaxis(var FITSfile: FITSRecordfile; const FITSfileName: st
 procedure RevertBytes(var FITSvalue: TFITSValue; BitPix: Integer);
 function MakeFITSHeader(BitPix: Integer;
                         const Axes: TIntArray;
-                        DateObs: TDateTime;
-                        Date: TDateTime;
-                        Exposure: Double;
+                        DateObs: TDateTime; DateObsComment: string;
+                        Date: TDateTime;    DateComment: string;
+                        Exposure: Double;   ExposureComment: string;
                         const Instrument: string;
                         const Comments: TStringArray): TFITSRecordArray;
 
@@ -508,9 +508,9 @@ end;
   
 function MakeFITSHeader(BitPix: Integer;
                         const Axes: TIntArray;
-                        DateObs: TDateTime;
-                        Date: TDateTime;
-                        Exposure: Double;
+                        DateObs: TDateTime; DateObsComment: string;
+                        Date: TDateTime;    DateComment: string;
+                        Exposure: Double;   ExposureComment: string;
                         const Instrument: string;
                         const Comments: TStringArray): TFITSRecordArray;
 var
@@ -541,8 +541,10 @@ begin
   end;
   if DateObs <> 0 then begin
     SetLength(Result, N + 1);
-    TempS := '''' + FormatDateTime('YYYY-MM-DD"T"hh:nn:ss', DateObs) + '''';
-    StrToFITSRecord('DATE-OBS= ' + TempS, Result[N]);
+    TempS := 'DATE-OBS= ' + '''' + FormatDateTime('YYYY-MM-DD"T"hh:nn:ss', DateObs) + '''';
+    if DateObsComment <> '' then
+      TempS := TempS + ' / ' + DateObsComment;
+    StrToFITSRecord(TempS, Result[N]);
     Inc(N);
   end
   else begin
@@ -559,13 +561,18 @@ begin
   if Exposure > 0 then begin
     SetLength(Result, N + 1);
     Str(Exposure:20, TempS);
-    StrToFITSRecord('EXPTIME = ' + TempS, Result[N]);
+    TempS := 'EXPTIME = ' + TempS;
+    if ExposureComment <> '' then
+      TempS := TempS + ' / ' + ExposureComment;
+    StrToFITSRecord(TempS, Result[N]);
     Inc(N);
   end;
   if Date <> 0 then begin
     SetLength(Result, N + 1);
-    TempS := '''' + FormatDateTime('YYYY-MM-DD"T"hh:nn:ss.zzz', Date) + '''';
-    StrToFITSRecord('DATE    = ' + TempS, Result[N]);
+    TempS := 'DATE    = ' + '''' + FormatDateTime('YYYY-MM-DD"T"hh:nn:ss.zzz', Date) + '''';
+    if DateComment <> '' then
+      TempS := TempS + ' / ' + DateComment;
+    StrToFITSRecord(TempS, Result[N]);
     Inc(N);
   end;
   for I := 0 to Length(Comments) - 1 do begin
