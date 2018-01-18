@@ -1,0 +1,1 @@
+1) FileMode: not needed to set it to fmOpenReadWrite before Rewrite. Remove unnecessary FileModeSaved.
