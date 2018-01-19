@@ -130,9 +130,6 @@ Name of a profile (INI-file's section) to be used should be specified in the com
 by "/P=" option.
 If no profile specified, DEFAULT profile will be used.
 
-If INI-file is missing or it does not contain specified section,
-output files will get numeric prefixes: "p1-", "p2-", "p3-", and "p4-".
-
 When started with /PI switch, the program prints INI file and terminates.
 
 @fitsrgb
