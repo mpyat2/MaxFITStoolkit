@@ -50,6 +50,7 @@ procedure ConvertFile(const FileName: string;
                       DontTruncate: Boolean;
                       TimeShiftInSeconds: Integer;
                       PixelRealNumber: Boolean;
+                      BzeroShift: Boolean;
                       FITSParams: TStrings;
                       out TimeCorrected, TimeShifted: Boolean);
 var
@@ -67,6 +68,8 @@ var
   BytePerPix: Byte;
   Pixel: Word;
   PixelBytes: array[0..1] of Char absolute Pixel;
+  PixelAsSignedInt: SmallInt;
+  PixelAsSignedIntBytes: array[0..1] of Char absolute PixelAsSignedInt;
   PixelR: Single;
   PixelRBytes: array[0..3] of Char absolute PixelR;
   X, Y: LongWord;
@@ -100,6 +103,7 @@ var
   S: string;
   I, P: Integer;
   Name, Value, TempValue: string;
+  Bzero: Integer;
 begin
   TimeShifted := False;
   TimeCorrected := False;
@@ -143,6 +147,12 @@ begin
     //if (lpTag = nil) then FileError('Metadata error');
     //BayerPattern := PChar(FreeImage_GetTagValue(lpTag));
 
+    if BzeroShift then begin
+      Bzero := 32768;
+    end
+    else
+      Bzero := 0;
+
     bits := PChar(FreeImage_GetBits(dib));
     FirstPixel := True;
     SumValue := 0;
@@ -180,23 +190,38 @@ begin
           end;
           SumValue := SumValue + Pixel;
           Inc(PixelCount);
+
           if not PixelRealNumber then begin
-            Image[N    ] := PixelBytes[1];
-            Image[N + 1] := PixelBytes[0];
+            if not BzeroShift then begin
+              Image[N    ] := PixelBytes[1];
+              Image[N + 1] := PixelBytes[0];
+            end
+            else begin
+              PixelAsSignedInt := Pixel - Bzero;
+              Image[N    ] := PixelAsSignedIntBytes[1];
+              Image[N + 1] := PixelAsSignedIntBytes[0];
+            end;
           end
           else begin
             PixelR := Pixel;
+            PixelR := PixelR - Bzero;
             Image[N    ] := PixelRBytes[3];
             Image[N + 1] := PixelRBytes[2];
             Image[N + 2] := PixelRBytes[1];
             Image[N + 3] := PixelRBytes[0];
           end;
+
           Inc(N, BytePerPix);
         end;
       end;
 
-      if not PixelRealNumber and (MaxValue > High(SmallInt)) then
-        FileError('UINT pixel value too big: ' + IntToStr(MaxValue) + ^M^J'Use /R option to make floating-point FITS.');
+      if not PixelRealNumber and not BzeroShift and (MaxValue > High(SmallInt)) then begin
+        FileError('UINT pixel value too big: ' + IntToStr(MaxValue) +
+                  ^M^J'Use /R option to make floating-point FITS' +
+                  ^M^J'or' +
+                  ^M^J'Use /S option to specify BZERO = 32768');
+      end;
+
       if PixelCount > 0 then
         AverageValue := SumValue / PixelCount
       else
@@ -309,6 +334,7 @@ begin
       FITSHeader := MakeFITSHeader(
         FITSbpp,
         Axes,
+        Bzero, 1,
         DateTime,          DateTimeComment,
         DateTimeFile,      'FITS creation time (reported by OS)',
         ExposureTimeFloat, 'ExposureTime EXIF value',
@@ -378,6 +404,7 @@ procedure ProcessInput(const FileMasks: array of string;
                        DontTruncate: Boolean;
                        TimeShiftInSeconds: Integer;
                        PixelRealNumber: Boolean;
+                       BzeroShift: Boolean;
                        FITSParams: TStrings;
                        const OutputExt: string);
 var
@@ -407,7 +434,7 @@ begin
           NewFileName := TempOutputDir + FileName;
         NewFileName := ChangeFileExt(NewFileName, OutputExt);
         Write(FileName, ^I'->'^I, NewFileName);
-        ConvertFile(FileList[I], NewFileName, not Overwrite, TimeByExposureCorrection, DontTruncate, TimeShiftInSeconds, PixelRealNumber, FITSParams, TimeCorrected, TimeShifted);
+        ConvertFile(FileList[I], NewFileName, not Overwrite, TimeByExposureCorrection, DontTruncate, TimeShiftInSeconds, PixelRealNumber, BzeroShift, FITSParams, TimeCorrected, TimeShifted);
         if TimeShifted then Write('DATE-OBS shifted by ', TimeShiftInSeconds, ' seconds');
         if TimeCorrected then Write(' DATE-OBS corrected by exposure');
         WriteLn;
@@ -438,6 +465,7 @@ var
   DontTruncate: Boolean;
   TimeShiftInSeconds: Integer;
   PixelRealNumber: Boolean;
+  BzeroShift: Boolean;
   OutputExt: string;
   ErrorPos: Integer;
   PrintVer: Boolean;
@@ -505,6 +533,7 @@ begin
   DontTruncate := CmdObj.CmdLine.IsCmdOption('L');
 
   PixelRealNumber := CmdObj.CmdLine.IsCmdOption('R');
+  BzeroShift := CmdObj.CmdLine.IsCmdOption('S');
 
   OutputExt := CmdObj.CmdLine.KeyValue('X=');
   if OutputExt = '' then
@@ -541,7 +570,7 @@ begin
     end;
     FileList := TStringListNaturalSort.Create;
     try
-      ProcessInput(InputFileMasks, GenericName, OutputDir, Overwrite, BaseNumber, TimeByExposureCorrection, DontTruncate, TimeShiftInSeconds, PixelRealNumber, FITSParams, OutputExt);
+      ProcessInput(InputFileMasks, GenericName, OutputDir, Overwrite, BaseNumber, TimeByExposureCorrection, DontTruncate, TimeShiftInSeconds, PixelRealNumber, BzeroShift, FITSParams, OutputExt);
       WriteLn;
     finally
       FreeAndNil(FileList);

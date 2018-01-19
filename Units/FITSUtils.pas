@@ -10,6 +10,7 @@
 unit FITSUtils;
 
 // https://fits.gsfc.nasa.gov/fits_primer.html
+// https://heasarc.gsfc.nasa.gov/docs/fcg/standard_dict.html
 
 interface
 
@@ -67,11 +68,15 @@ procedure GetBitPixAndNaxis(var FITSfile: FITSRecordfile; const FITSfileName: st
 procedure RevertBytes(var FITSvalue: TFITSValue; BitPix: Integer);
 function MakeFITSHeader(BitPix: Integer;
                         const Axes: TIntArray;
+                        Bzero, Bscale: Double;
                         DateObs: TDateTime; DateObsComment: string;
                         Date: TDateTime;    DateComment: string;
                         Exposure: Double;   ExposureComment: string;
                         const Instrument: string;
                         const Comments: TStringArray): TFITSRecordArray;
+// physical_value = BZERO + BSCALE * array_value (https://heasarc.gsfc.nasa.gov/docs/fcg/standard_dict.html)
+procedure GetBscaleBzero(var FITSfile: FITSRecordFile; const FITSfileName: string; out Bscale, Bzero: Double);
+function GetFITSimage2D(const FITSfileName: string; out Width, Height, BitPix: Integer; out Bscale, Bzero: Double): PChar;
 
 implementation
 
@@ -508,6 +513,7 @@ end;
   
 function MakeFITSHeader(BitPix: Integer;
                         const Axes: TIntArray;
+                        Bzero, Bscale: Double;
                         DateObs: TDateTime; DateObsComment: string;
                         Date: TDateTime;    DateComment: string;
                         Exposure: Double;   ExposureComment: string;
@@ -524,21 +530,36 @@ begin
   Inc(N);
 
   SetLength(Result, N + 1);
-  Str(BitPix:20, TempS);
+  Str(BitPix:FITSNumericAlign - FITSKeywordLen - 2, TempS);
   StrToFITSRecord('BITPIX  = ' + TempS, Result[N]);
   Inc(N);
 
   SetLength(Result, N + 1);
-  Str(Length(Axes):20, TempS);
+  Str(Length(Axes):FITSNumericAlign - FITSKeywordLen - 2, TempS);
   StrToFITSRecord('NAXIS   = ' + TempS, Result[N]);
   Inc(N);
 
   for I := 0 to Length(Axes) - 1 do begin
     SetLength(Result, N + 1);
-    Str(Axes[I]:20, TempS);
+    Str(Axes[I]:FITSNumericAlign - FITSKeywordLen - 2, TempS);
     StrToFITSRecord(PadCh('NAXIS' + IntToStr(I + 1), 8, ' ') + '= ' + TempS, Result[N]);
     Inc(N);
   end;
+
+  if Bzero <> 0 then begin
+    SetLength(Result, N + 1);
+    Str(Bzero:FITSNumericAlign - FITSKeywordLen - 2, TempS);
+    StrToFITSRecord('BZERO   = ' + TempS, Result[N]);
+    Inc(N);
+  end;
+
+  if Bscale <> 1 then begin
+    SetLength(Result, N + 1);
+    Str(Bscale:FITSNumericAlign - FITSKeywordLen - 2, TempS);
+    StrToFITSRecord('BSCALE  = ' + TempS, Result[N]);
+    Inc(N);
+  end;
+
   if DateObs <> 0 then begin
     SetLength(Result, N + 1);
     TempS := 'DATE-OBS= ' + '''' + FormatDateTime('YYYY-MM-DD"T"hh:nn:ss', DateObs) + '''';
@@ -552,12 +573,14 @@ begin
     StrToFITSRecord('COMMENT **** DATE-OBS was not specified!', Result[N]);
     Inc(N);
   end;
+
   if Instrument <> '' then begin
     SetLength(Result, N + 1);
     TempS := FITSQuotedValue(Instrument);
     StrToFITSRecord('INSTRUME= ' + TempS, Result[N]);
     Inc(N);
   end;
+
   if Exposure > 0 then begin
     SetLength(Result, N + 1);
     Str(Exposure:20, TempS);
@@ -567,6 +590,7 @@ begin
     StrToFITSRecord(TempS, Result[N]);
     Inc(N);
   end;
+
   if Date <> 0 then begin
     SetLength(Result, N + 1);
     TempS := 'DATE    = ' + '''' + FormatDateTime('YYYY-MM-DD"T"hh:nn:ss.zzz', Date) + '''';
@@ -575,14 +599,17 @@ begin
     StrToFITSRecord(TempS, Result[N]);
     Inc(N);
   end;
+
   for I := 0 to Length(Comments) - 1 do begin
     SetLength(Result, N + 1);
     StrToFITSRecord('COMMENT ' + Comments[I], Result[N]);
     Inc(N);
   end;
+
   SetLength(Result, N + 1);
   Result[N] := recordEND;
   Inc(N);
+
   N := N mod RecordsInBlock;
   if N > 0 then begin
     for I := 1 to RecordsInBlock - N do begin
@@ -590,6 +617,66 @@ begin
       FillChar(Result[N], SizeOf(FITSRecordType), ' ');
       Inc(N);
     end;
+  end;
+end;
+
+procedure GetBscaleBzero(var FITSfile: FITSRecordFile; const FITSfileName: string; out Bscale, Bzero: Double);
+var
+  S: string;
+  ErrorPos: Integer;
+begin
+  Bscale := 1;
+  Bzero := 0;
+  if (GetKeywordValue(FITSfile, 'BSCALE', S, True, True) >= 0) and (S <> '') then begin
+    Val(S, Bscale, ErrorPos);
+    if ErrorPos <> 0 then
+      FileError('Invalid BSCALE value in file ' + AnsiQuotedStr(FITSfileName, '"'));
+  end;
+  if (GetKeywordValue(FITSfile, 'BZERO', S, True, True) >= 0) and (S <> '') then begin
+    Val(S, Bzero, ErrorPos);
+    if ErrorPos <> 0 then
+      FileError('Invalid BZERO value in file ' + AnsiQuotedStr(FITSfileName, '"'));
+  end;
+end;
+
+function GetFITSimage2D(const FITSfileName: string; out Width, Height, BitPix: Integer; out Bscale, Bzero: Double): PChar;
+var
+  FITSfile: FITSRecordFile;
+  I, N, NblocksInHeader, StartOfImage, BytePix, NImagePoints, NrecordsToRead, ImageMemSize: Integer;
+  NaxisN: TIntArray;
+begin
+  AssignFile(FITSfile, FITSfileName);
+  Reset(FITSfile);
+  try
+    N := GetEndPosition(FITSfile);
+    if N < 0 then
+      FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSfileName, '"'));
+    GetBscaleBzero(FITSfile, FITSfileName, Bscale, Bzero);
+    NblocksInHeader := N div RecordsInBlock + 1;
+    StartOfImage := NblocksInHeader * RecordsInBlock;
+    GetBitPixAndNaxis(FITSfile, FITSfileName, BitPix, NaxisN);
+    if Length(NAxisN) <> 2 then
+      FileError('2D FITS expected; NAXIS = ' + IntToStr(Length(NAxisN)) + ' in file ' + AnsiQuotedStr(FITSfileName, '"'));
+    Width := NAxisN[0];
+    Height := NAxisN[1];
+    BytePix := Abs(BitPix) div 8;
+    NImagePoints := 1;
+    for I := 0 to Length(NaxisN) - 1 do
+      NImagePoints := NImagePoints * NaxisN[I];
+    NrecordsToRead := (NImagePoints * BytePix - 1) div FITSRecordLen + 1;
+    ImageMemSize := NrecordsToRead * FITSRecordLen;
+    GetMem(Result, ImageMemSize);
+    try
+      FillChar(Result^, ImageMemSize, 0);
+      Seek(FITSfile, StartOfImage);
+      BlockRead(FITSfile, Result^, NrecordsToRead);
+    except
+      FreeMem(Result);
+      Result := nil;
+      raise;
+    end;
+  finally
+    CloseFile(FITSFile);
   end;
 end;
 

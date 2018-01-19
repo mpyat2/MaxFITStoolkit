@@ -17,49 +17,9 @@ begin
   raise Exception.Create(S);
 end;
 
-function GetFITSimage2D(const FITSfileName: string; out Width, Height, BitPix: Integer): PChar;
-var
-  FITSfile: FITSRecordFile;
-  I, N, NblocksInHeader, StartOfImage, BytePix, NImagePoints, NrecordsToRead, ImageMemSize: Integer;
-  NaxisN: TIntArray;
-begin
-  AssignFile(FITSfile, FITSfileName);
-  Reset(FITSfile);
-  try
-    N := GetEndPosition(FITSfile);
-    if N < 0 then
-      FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSfileName, '"'));
-    NblocksInHeader := N div RecordsInBlock + 1;
-    StartOfImage := NblocksInHeader * RecordsInBlock;
-    GetBitPixAndNaxis(FITSfile, FITSfileName, BitPix, NaxisN);
-    if Length(NAxisN) <> 2 then
-      FileError('2D FITS expected. File ' + AnsiQuotedStr(FITSfileName, '"'));
-    Width := NAxisN[0];
-    Height := NAxisN[1];
-    BytePix := Abs(BitPix) div 8;
-    NImagePoints := 1;
-    for I := 0 to Length(NaxisN) - 1 do
-      NImagePoints := NImagePoints * NaxisN[I];
-    NrecordsToRead := (NImagePoints * BytePix - 1) div FITSRecordLen + 1;
-    ImageMemSize := NrecordsToRead * FITSRecordLen;
-    GetMem(Result, ImageMemSize);
-    try
-      FillChar(Result^, ImageMemSize, 0);
-      Seek(FITSfile, StartOfImage);
-      BlockRead(FITSfile, Result^, NrecordsToRead);
-    except
-      FreeMem(Result);
-      Result := nil;
-      raise;
-    end;
-  finally
-    CloseFile(FITSFile);
-  end;
-end;
-
 procedure ProcessInput(const FITSFileName: string; Level: Double; MaxNumber: Integer; ExtendedOut: Boolean; const OutFileName: string; CheckExistense: Boolean);
 
-  function PrintHot(Image: PChar; Width, Height, BitPix: Integer): Integer;
+  function PrintHot(Image: PChar; Width, Height, BitPix: Integer; Bscale, Bzero: Double): Integer;
   var
     A: TFITSValue;
     X, Y, Addr: Integer;
@@ -88,6 +48,7 @@ procedure ProcessInput(const FITSFileName: string; Level: Double; MaxNumber: Int
             -32: V := A.S;
             -64: V := A.D;
           end;
+          V := Bscale * V + Bzero;
           if V > Level then begin
             if OutFileName <> '' then begin
               Write(OutFile, 'P', ' ', X + 1, ' ', Y + 1);
@@ -101,8 +62,10 @@ procedure ProcessInput(const FITSFileName: string; Level: Double; MaxNumber: Int
               WriteLn(OutFile);
             end;
             Inc(Result);
-            if Result >= MaxNumber then
+            if Result >= MaxNumber then begin
+              WriteLn('Number of pixels found exceeds limit of ', MaxNumber, ' pixels. Use /M= option to increase the limit.');
               Exit;
+            end;
           end;
         end;
       end;
@@ -115,11 +78,12 @@ procedure ProcessInput(const FITSFileName: string; Level: Double; MaxNumber: Int
 var
   Image: PChar;
   Width, Height, BitPix, N: Integer;
+  Bscale, Bzero: Double;
 begin
   try
-    Image := GetFITSimage2D(FITSFileName, Width, Height, BitPix);
+    Image := GetFITSimage2D(FITSFileName, Width, Height, BitPix, Bscale, Bzero);
     try
-      N := PrintHot(Image, Width, Height, BitPix);
+      N := PrintHot(Image, Width, Height, BitPix, Bscale, Bzero);
       WriteLn(N, ' hot pixels found');
     finally
       FreeMem(Image);

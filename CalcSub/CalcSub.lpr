@@ -255,6 +255,8 @@ var
 begin
   FileMode := fmOpenRead;
 
+  WriteLn('**** WARNING!!! THIS VERSION DOES NOT SUPPORT BSCALE/BZERO YET! SHOULD BE IMPLEMENTED BEFORE RELEASE!');
+
   PrintVer := (CmdObj.CmdLine.IsCmdOption('V') or CmdObj.CmdLine.IsCmdOption('version'));
   if PrintVer then PrintVersion;
 

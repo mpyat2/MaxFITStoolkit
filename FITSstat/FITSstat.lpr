@@ -8,53 +8,13 @@ uses
 procedure PrintVersion;
 begin
   WriteLn('FITSstat  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2018.01.18.01');
+  WriteLn('Version 2018.01.19.01');
   WriteLn;
 end;
 
 procedure FileError(const S: string);
 begin
   raise Exception.Create(S);
-end;
-
-function GetFITSimage2D(const FITSfileName: string; out Width, Height, BitPix: Integer): PChar;
-var
-  FITSfile: FITSRecordFile;
-  I, N, NblocksInHeader, StartOfImage, BytePix, NImagePoints, NrecordsToRead, ImageMemSize: Integer;
-  NaxisN: TIntArray;
-begin
-  AssignFile(FITSfile, FITSfileName);
-  Reset(FITSfile);
-  try
-    N := GetEndPosition(FITSfile);
-    if N < 0 then
-      FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSfileName, '"'));
-    NblocksInHeader := N div RecordsInBlock + 1;
-    StartOfImage := NblocksInHeader * RecordsInBlock;
-    GetBitPixAndNaxis(FITSfile, FITSfileName, BitPix, NaxisN);
-    if Length(NAxisN) <> 2 then
-      FileError('2D FITS expected. File ' + AnsiQuotedStr(FITSfileName, '"'));
-    Width := NAxisN[0];
-    Height := NAxisN[1];
-    BytePix := Abs(BitPix) div 8;
-    NImagePoints := 1;
-    for I := 0 to Length(NaxisN) - 1 do
-      NImagePoints := NImagePoints * NaxisN[I];
-    NrecordsToRead := (NImagePoints * BytePix - 1) div FITSRecordLen + 1;
-    ImageMemSize := NrecordsToRead * FITSRecordLen;
-    GetMem(Result, ImageMemSize);
-    try
-      FillChar(Result^, ImageMemSize, 0);
-      Seek(FITSfile, StartOfImage);
-      BlockRead(FITSfile, Result^, NrecordsToRead);
-    except
-      FreeMem(Result);
-      Result := nil;
-      raise;
-    end;
-  finally
-    CloseFile(FITSFile);
-  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -135,14 +95,15 @@ procedure ProcessInput(const FITSFileName: string);
 var
   Image: PChar;
   Width, Height, BitPix: Integer;
+  Bscale, Bzero: Double;
   A: TFITSValue;
-  X, Y, Addr: Integer;
+  X, Y, Addr, N: Integer;
   BytePix: Integer;
   data: TDoubleArray;
   medianV, meanV, stdevV, minV, maxV: Double;
 begin
   try
-    Image := GetFITSimage2D(FITSFileName, Width, Height, BitPix);
+    Image := GetFITSimage2D(FITSFileName, Width, Height, BitPix, Bscale, Bzero);
     if Width * Height = 0 then
       FileError('One of dimensions is zero. File ' + AnsiQuotedStr(FITSfileName, '"')); // should never occured...
     try
@@ -153,13 +114,15 @@ begin
           Addr := (Y * Width + X) * BytePix;
           Move(Image[Addr], A, BytePix);
           RevertBytes(A, BitPix);
+          N := Y * Width + X;
           case BitPix of
-              8: data[Y * Width + X] := A.B;
-             16: data[Y * Width + X] := A.I;
-             32: data[Y * Width + X] := A.L;
-            -32: data[Y * Width + X] := A.S;
-            -64: data[Y * Width + X] := A.D;
+              8: data[N] := A.B;
+             16: data[N] := A.I;
+             32: data[N] := A.L;
+            -32: data[N] := A.S;
+            -64: data[N] := A.D;
           end;
+          data[N] := Bscale * data[N] + Bzero;
         end;
       end;
       medianV := median(data); // sorts data!
