@@ -342,6 +342,7 @@ begin
       OutputFITSHeader :=
         MakeFITSHeader(BitPix0,
                        NAxisN0,
+                       0, 1,
                        DateTimeObsAverage, 'Mean time corrected by exposure of each frame',
                        0, '',
                        ExpTimeTotal, 'Total exposure of ' + IntToStr(FileListFull.Count) + ' frames',
