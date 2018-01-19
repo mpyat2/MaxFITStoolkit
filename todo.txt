@@ -2,3 +2,4 @@
 2) CalcMed: sort procedure: do not copy array, sort inplace
 3) FindHot: option to specify maximum number of hot pixel for autofit the level
 4) FITSstat: include into the package
+5) Deinstall: remove PATH
