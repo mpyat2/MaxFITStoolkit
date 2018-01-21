@@ -1,6 +1,6 @@
 @ECHO OFF
 rem SET COMPILER="C:\PERSONAL\DC\DCC32" -UUnits\ -UFreeImage\ -Ebin-out\
-SET COMPILER="c:\personal\lazarus\fpc\3.0.2\bin\i386-win32\fpc.exe" -MDELPHI -Xg -FuUnits\ -FuFreeImage\ -FEbin-out\
+SET COMPILER="c:\lazarus\fpc\3.0.4\bin\i386-win32\fpc.exe" -MDELPHI -Xg -FuUnits\ -FuFreeImage\ -FEbin-out\
 SET A7z="c:\Program Files\7-zip\7z.exe"
 
 REM fihed.exe: Print/edit FITS header, multifile mode
