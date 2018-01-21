@@ -1,24 +1,24 @@
-{
- To-do!
- 1) Time: shifted by UnixToDateTime()
-}
-
 {$APPTYPE CONSOLE}
 
 program iconvraw;
 
-uses Windows, SysUtils, DateUtils, Classes, CmdObj, EnumFiles, StringListNaturalSort, LibRawMxWrapper, FITSUtils, FITSTimeUtils, FitsUtilsHelp, CommonIni;
+uses Windows, SysUtils, DateUtils, Classes, CmdObj, EnumFiles, StringListNaturalSort, FreeImage, FITSUtils, FITSTimeUtils, FitsUtilsHelp, CommonIni;
 
 procedure PrintVersion;
 begin
   WriteLn('RAW -> CFA converter  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2018.01.21.01');
+  WriteLn('Version 2017.12.18.01');
   WriteLn;
 end;
 
 procedure FileError(const S: string);
 begin
   raise Exception.Create(S);
+end;
+
+procedure FreeImageErrorHandler(fif: FREE_IMAGE_FORMAT; Msg: PChar); stdcall;
+begin
+  FileError(Msg);
 end;
 
 type
@@ -35,28 +35,13 @@ begin
   Result := True;
 end;
 
-procedure CheckLibRawError(RawProcessor: Pointer; LibRawError: Integer);
-begin
-  if LibRawError <> 0 then
-    FileError(RawProcessorStrError(RawProcessor, LibRawError));
-end;
+const
+  RAW_UNPROCESSED = 8; // missing in FreeImage.pas
 
-function MMMtoMonth(const MMM: string): Word;
-begin
-  if MMM = 'Jan' then Result :=  1 else
-  if MMM = 'Feb' then Result :=  2 else
-  if MMM = 'Mar' then Result :=  3 else
-  if MMM = 'Apr' then Result :=  4 else
-  if MMM = 'May' then Result :=  5 else
-  if MMM = 'Jun' then Result :=  6 else
-  if MMM = 'Jul' then Result :=  7 else
-  if MMM = 'Aug' then Result :=  8 else
-  if MMM = 'Sep' then Result :=  9 else
-  if MMM = 'Oct' then Result := 10 else
-  if MMM = 'Nov' then Result := 11 else
-  if MMM = 'Dec' then Result := 12 else
-  raise EConvertError.Create('Cannot convert Month string to a number');
-end;
+type
+  TRational = array[0..1] of LongInt;
+  PRational = ^TRational;
+  PSmallInt = ^SmallInt;
 
 procedure ConvertFile(const FileName: string;
                       const NewFileName: string;
@@ -69,11 +54,14 @@ procedure ConvertFile(const FileName: string;
                       FITSParams: TStrings;
                       out TimeCorrected, TimeShifted: Boolean);
 var
-  RawProcessor: Pointer;
-  //LibRawError: Integer;
-  RawFrameLeft, RawFrameTop, RawFrameWidth, RawFrameHeight: Word;
-  _width, _height: Word;
-  year, month, day, hour, min, sec: Word;
+  //fif: FREE_IMAGE_FORMAT;
+  dib: PFIBITMAP;
+  lpTag: PFITAG;
+  bpp: LongWord;
+  RawFrameLeft, RawFrameTop, RawFrameWidth, RawFrameHeight: LongWord;
+  //BayerPattern: string;
+  _width: LongWord;
+  _height: LongWord;
   bits: PChar;
   scanline: PChar;
   FITSbpp: Integer;
@@ -84,7 +72,7 @@ var
   PixelAsSignedIntBytes: array[0..1] of Char absolute PixelAsSignedInt;
   PixelR: Single;
   PixelRBytes: array[0..3] of Char absolute PixelR;
-  X, Y: Word;
+  X, Y: LongWord;
   FirstPixel: Boolean;
   MinValue, MaxValue: Word;
   PixelCount: LongWord;
@@ -97,13 +85,15 @@ var
   N: LongWord;
   Make, Model: string;
   Instrument: string;
+  SoftwareTag: string;
   Software: string;
-  ISO: Double;
+  ISO: SmallInt;
+  ExposureTime: TRational;
   ExposureTimeFloat: Double;
-  //Timestamp: Int64;
-  TimeStr: array[0..25] of Char;
+  DateTimeString: string;
   DateTime: TDateTime;
   DateTimeFile: TDateTime;
+  FormatSettings: TFormatSettings;
   TempS: string;
   FITSHeader: TFITSRecordArray;
   Comments: TStringArray;
@@ -117,28 +107,45 @@ var
 begin
   TimeShifted := False;
   TimeCorrected := False;
-  RawFrameLeft := 0;
-  RawFrameTop := 0;
-  RawFrameWidth := 0;
-  RawFrameHeight := 0;
-
   if CheckExistence and FileExists(NewFileName) then
     FileError('File already exists. Use /F switch to overwrite existing files.');
-  RawProcessor := RawProcessorCreate;
-  if RawProcessor = nil then FileError('Cannot create RawProcessor');
+  //fif := FreeImage_GetFileType(PChar(FileName), 0);
+  //if (fif <> FIF_RAW) or not FreeImage_FIFSupportsReading(fif) then
+  //  FileError('Unsupported file.');
+  dib := FreeImage_Load(FIF_RAW, PChar(FileName), RAW_UNPROCESSED); // Output a FIT_UINT16 raw Bayer image
+  if (dib = nil) then
+    FileError('Error loading bitmap.');
   try
-    CheckLibRawError(RawProcessor, RawProcessorOpenFile(RawProcessor, PChar(FileName)));
-    RawProcessorSizes(RawProcessor, RawFrameWidth, RawFrameHeight, _width, _height, RawFrameTop, RawFrameLeft);
+    bpp := FreeImage_GetBPP(dib);
+    if bpp <> 16 then
+      FileError('Internal error: RAW IMAGE BITPIX <> 16');
+    _width := FreeImage_GetWidth(dib);
+    _height := FreeImage_GetHeight(dib);
+
     if DontTruncate then begin
       RawFrameLeft := 0;
       RawFrameTop := 0;
       RawFrameWidth := _width;
       RawFrameHeight := _height;
+    end
+    else begin
+      FreeImage_GetMetadata(FIMD_COMMENTS, dib, 'Raw.Frame.Left', lpTag);
+      if (lpTag = nil) then FileError('Metadata error');
+      RawFrameLeft := StrToInt(PChar(FreeImage_GetTagValue(lpTag)));
+      FreeImage_GetMetadata(FIMD_COMMENTS, dib, 'Raw.Frame.Top', lpTag);
+      if (lpTag = nil) then FileError('Metadata error');
+      RawFrameTop := StrToInt(PChar(FreeImage_GetTagValue(lpTag)));
+      FreeImage_GetMetadata(FIMD_COMMENTS, dib, 'Raw.Frame.Width', lpTag);
+      if (lpTag = nil) then FileError('Metadata error');
+      RawFrameWidth := StrToInt(PChar(FreeImage_GetTagValue(lpTag)));
+      FreeImage_GetMetadata(FIMD_COMMENTS, dib, 'Raw.Frame.Height', lpTag);
+      if (lpTag = nil) then FileError('Metadata error');
+      RawFrameHeight := StrToInt(PChar(FreeImage_GetTagValue(lpTag)));
     end;
 
-    CheckLibRawError(RawProcessor, RawProcessorUnpack(RawProcessor));
-    if RawProcessorCheck(RawProcessor) <> 0 then
-      FileError('Not a Bayer-pattern RAW');
+    //FreeImage_GetMetadata(FIMD_COMMENTS, dib, 'Raw.BayerPattern', lpTag);
+    //if (lpTag = nil) then FileError('Metadata error');
+    //BayerPattern := PChar(FreeImage_GetTagValue(lpTag));
 
     if BzeroShift then begin
       Bzero := 32768;
@@ -146,7 +153,7 @@ begin
     else
       Bzero := 0;
 
-    bits := PChar(RawProcessorRawImage(RawProcessor));
+    bits := PChar(FreeImage_GetBits(dib));
     FirstPixel := True;
     SumValue := 0;
     MinValue := 0;
@@ -168,7 +175,7 @@ begin
     try
       FillChar(Image[0], ImageSize, 0);
       N := 0;
-      for Y := RawFrameTop + RawFrameHeight - 1 downto RawFrameTop do begin
+      for Y := _height - RawFrameHeight - RawFrameTop to _height - RawFrameTop - 1 do begin
         scanline := @bits[Y * _width * 2];
         for X := RawFrameLeft to RawFrameLeft + RawFrameWidth - 1 do begin
           Pixel := PWord(@scanline[X * 2])^;
@@ -220,41 +227,38 @@ begin
       else
         AverageValue := 0;
 
-      //Timestamp := RawProcessorTimestamp(RawProcessor);
-      //DateTime := UnixToDateTime(Timestamp);
+      Make := '';
+      Model := '';
+      Instrument := '';
+      Software := '';
+      ISO := 0;
+      FillChar(ExposureTime, SizeOf(ExposureTime), 0);
+      ExposureTimeFloat := 0;
+      DateTimeString := '';
       DateTime := 0;
-      RawProcessorTime(RawProcessor, TimeStr, SizeOf(TimeStr));
-      if StrLen(TimeStr) = 25 then begin
+      if FreeImage_GetMetadata(FIMD_EXIF_MAIN, dib, 'DateTime', lpTag) then
+        DateTimeString := PChar(FreeImage_GetTagValue(lpTag));
+      if DateTimeString <> '' then begin
+        FillChar(FormatSettings, SizeOf(FormatSettings), 0);
+        FormatSettings.DateSeparator := ':';
+        FormatSettings.TimeSeparator := ':';
+        FormatSettings.ShortDateFormat := 'y/m/d';
+        FormatSettings.ShortTimeFormat := 'hh:nn';
+        FormatSettings.LongTimeFormat := 'hh:nn:ss';
         try
-           //Www Mmm dd hh:mm:ss yyyy\n
-           year := StrToInt(Copy(TimeStr, 21, 4));
-           month := MMMtoMonth(Copy(TimeStr, 5, 3));
-           day := StrToInt(Copy(TimeStr, 9, 2));
-           hour := StrToInt(Copy(TimeStr, 12, 2));
-           min := StrToInt(Copy(TimeStr, 15, 2));
-           sec := StrToInt(Copy(TimeStr, 18, 2));
-           DateTime := EncodeDateTime(year, month, day, hour, min, sec, 0);
+          DateTime := StrToDateTime(DateTimeString, FormatSettings);
         except
           on E: EConvertError do DateTime := 0;
         end;
       end;
-
-      Make := RawProcessorMake(RawProcessor);
-      Model := RawProcessorModel(RawProcessor);
-      ExposureTimeFloat := RawProcessorShutter(RawProcessor);
-      if ExposureTimeFloat < 1 then begin
-        // Round it slightly....
-        ExposureTimeFloat := ExposureTimeFloat * 1e7;
-        ExposureTimeFloat := Round(ExposureTimeFloat);
-        ExposureTimeFloat := ExposureTimeFloat / 1e7;
+      if FreeImage_GetMetadata(FIMD_EXIF_EXIF, dib, 'ISOSpeedRatings', lpTag) then
+        ISO := PSmallInt(FreeImage_GetTagValue(lpTag))^;
+      if FreeImage_GetMetadata(FIMD_EXIF_EXIF, dib, 'ExposureTime', lpTag) then begin
+        ExposureTime := PRational(FreeImage_GetTagValue(lpTag))^;
+        if ExposureTime[1] <> 0 then begin
+          ExposureTimeFloat := ExposureTime[0] / ExposureTime[1];
+        end;
       end;
-      ISO := RawProcessorISOspeed(RawProcessor);
-      Instrument := '';
-      Software := '';
-      if (Make <> '') or (Model <> '') then
-        Instrument := Trim(Make + ' ' + Model);
-      Software := RawProcessorVersion + ' / ' + ExtractFileName(ParamStr(0));
-
       if DateTime <> 0 then begin
         DateTime := DateTime + TimeShiftInSeconds / (24.0*60.0*60.0);
         TimeShifted := TimeShiftInSeconds <> 0;
@@ -262,6 +266,18 @@ begin
           DateTime := DateTime + ExposureTimeFloat / (24.0*60.0*60.0) / 2.0;
           TimeCorrected := True;
         end;
+      end;
+      if FreeImage_GetMetadata(FIMD_EXIF_MAIN, dib, 'Make', lpTag) then
+        Make := PChar(FreeImage_GetTagValue(lpTag));
+      if FreeImage_GetMetadata(FIMD_EXIF_MAIN, dib, 'Model', lpTag) then
+        Model := PChar(FreeImage_GetTagValue(lpTag));
+      if (Make <> '') or (Model <> '') then
+        Instrument := Trim(Make + ' ' + Model);
+      Software := 'FreeImage ' + FreeImage_GetVersion() + ' / ' + ExtractFileName(ParamStr(0));
+      if FreeImage_GetMetadata(FIMD_EXIF_MAIN, dib, 'Software', lpTag) then begin
+        SoftwareTag := PChar(FreeImage_GetTagValue(lpTag));
+        if SoftwareTag <> '' then
+          Software := SoftwareTag + ' / ' + Software;
       end;
 
       SetLength(Axes, 2);
@@ -275,7 +291,7 @@ begin
       Inc(N);
 
       SetLength(Comments, N + 1);
-      Comments[N] := 'Original EXIF time: ' + TimeStr;
+      Comments[N] := 'Original EXIF time string: ' + DateTimeString;
       Inc(N);
 
       if TimeShifted then begin
@@ -292,7 +308,7 @@ begin
 
       if ISO <> 0 then begin
         SetLength(Comments, N + 1);
-        Comments[N] := 'ISO ' + FloatToStr(ISO);
+        Comments[N] := 'ISO ' + IntToStr(ISO);
         Inc(N);
       end;
 
@@ -375,7 +391,7 @@ begin
       Image := nil;
     end;
   finally
-    RawProcessorFree(RawProcessor);
+    FreeImage_Unload(dib);
   end;
 end;
 
@@ -540,6 +556,8 @@ begin
   for I := 1 to N do begin
     InputFileMasks[I - 1] := ExpandFileName(CmdObj.CmdLine.ParamFile(I));
   end;
+
+  FreeImage_SetOutputMessageStdCall(FreeImageErrorHandler);
 
   FITSparams := TStringList.Create;
   try
