@@ -3,3 +3,5 @@
 3) FindHot: option to specify maximum number of hot pixel for autofit the level
 4) FITSstat: include into the package
 5) Deinstall: remove PATH
+6) iconvraw / FreeImage: error while converting FUJIFILM S500 RAF and similar (sizes!)
+7) iconvraw / libraw: check X/Y pixel ratio and other values....

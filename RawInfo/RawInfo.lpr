@@ -81,21 +81,31 @@ begin
       WriteLn('[MAIN]');
       FreeImage_GetAllMetadataTags(FIMD_EXIF_MAIN, dib, tags);
       PrintTags(FIMD_EXIF_MAIN, tags);
+      WriteLn;
       WriteLn('[EXIF]');
       FreeImage_GetAllMetadataTags(FIMD_EXIF_EXIF, dib, tags);
       PrintTags(FIMD_EXIF_EXIF, tags);
+      WriteLn;
       WriteLn('[GPS]');
       FreeImage_GetAllMetadataTags(FIMD_EXIF_GPS, dib, tags);
       PrintTags(FIMD_EXIF_GPS, tags);
+      WriteLn;
       WriteLn('[MAKERNOTE]');
       FreeImage_GetAllMetadataTags(FIMD_EXIF_MAKERNOTE, dib, tags);
       PrintTags(FIMD_EXIF_MAKERNOTE, tags);
+      WriteLn;
       WriteLn('[INTEROP]');
       FreeImage_GetAllMetadataTags(FIMD_EXIF_INTEROP, dib, tags);
       PrintTags(FIMD_EXIF_INTEROP, tags);
+      WriteLn;
       WriteLn('[COMMENTS]');
       FreeImage_GetAllMetadataTags(FIMD_COMMENTS, dib, tags);
       PrintTags(FIMD_COMMENTS, tags);
+      WriteLn;
+      WriteLn('[OTHER]');
+      WriteLn('dib.width = ', FreeImage_GetWidth(dib));
+      WriteLn('dib.height = ', FreeImage_GetHeight(dib));
+
       if SaveTIFF then begin
         if not FreeImage_Save(FIF_TIFF, dib, PChar(FileName + '.TIF'), TIFF_NONE) then
           FileError('Cannon save TIFF');

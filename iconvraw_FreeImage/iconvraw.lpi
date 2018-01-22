@@ -32,7 +32,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="TEST.CR2 /TS-7200 /F /R  /$COMMENT=Comment1 &quot;/$COMMENT= test comment 2 &quot; /X=fits /$TELESCOP=SW15075OTAW"/>
+        <CommandLineParams Value="RAW_FUJI_S5000.RAF /F"/>
       </local>
     </RunParams>
     <Units Count="1">
