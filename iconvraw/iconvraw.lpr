@@ -74,7 +74,6 @@ var
   //LibRawError: Integer;
   RawFrameLeft, RawFrameTop: Word;
   RawFrameWidth, RawFrameHeight: Word;
-  RawFrameWidth0, RawFrameHeight0: Word;
   _width, _height: Word;
   year, month, day, hour, min, sec: Word;
   bits: PChar;
@@ -124,8 +123,6 @@ begin
   RawFrameTop := 0;
   RawFrameWidth := 0;
   RawFrameHeight := 0;
-  RawFrameWidth0 := 0;
-  RawFrameHeight0 := 0;
 
   if not PrintInfo then begin
     if CheckExistence and FileExists(NewFileName) then
@@ -136,16 +133,15 @@ begin
   if RawProcessor = nil then FileError('Cannot create RawProcessor');
   try
     CheckLibRawError(RawProcessor, RawProcessorOpenFile(RawProcessor, PChar(FileName)));
-    RawProcessorSizes(RawProcessor, RawFrameWidth0, RawFrameHeight0, _width, _height, RawFrameTop, RawFrameLeft);
+    RawProcessorSizes(RawProcessor, RawFrameWidth, RawFrameHeight, _width, _height, RawFrameTop, RawFrameLeft);
     if PrintInfo then begin
       WriteLn;
-      WriteLn('Image Size:  ', RawFrameWidth0, 'x', RawFrameHeight0);
+      WriteLn('Image Size:  ', RawFrameWidth, 'x', RawFrameHeight);
       WriteLn('Raw Size:    ', _width, 'x', _height);
       WriteLn('Left Margin: ', RawFrameLeft);
       WriteLn('Top Margin:  ', RawFrameTop);
       Exit;
     end;
-
     if DontTruncate then begin
       RawFrameLeft := 0;
       RawFrameTop := 0;
@@ -153,8 +149,8 @@ begin
       RawFrameHeight := _height;
     end
     else begin
-      RawFrameWidth := _width - RawFrameLeft;
-      RawFrameHeight := _height - RawFrameTop;
+      if ((RawFrameLeft + RawFrameWidth) > _width) or ((RawFrameTop + RawFrameHeight) > _height) then
+        FileError('Don''t know how to work with the image: Raw sizes less than image sizes. Use /L switch to convert.');
     end;
 
     CheckLibRawError(RawProcessor, RawProcessorUnpack(RawProcessor));
@@ -274,7 +270,7 @@ begin
       Software := '';
       if (Make <> '') or (Model <> '') then
         Instrument := Trim(Make + ' ' + Model);
-      Software := RawProcessorVersion + ' / ' + ExtractFileName(ParamStr(0));
+      Software := 'libraw ' + RawProcessorVersion + ' / ' + ExtractFileName(ParamStr(0));
 
       if DateTime <> 0 then begin
         DateTime := DateTime + TimeShiftInSeconds / (24.0*60.0*60.0);

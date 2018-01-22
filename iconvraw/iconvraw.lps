@@ -9,11 +9,11 @@
         <Filename Value="iconvraw.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="130"/>
-        <CursorPos Y="139"/>
+        <TopLine Value="57"/>
+        <CursorPos Y="77"/>
         <UsageCount Value="64"/>
         <Bookmarks Count="1">
-          <Item0 X="14" Y="250" ID="1"/>
+          <Item0 X="14" Y="249" ID="1"/>
         </Bookmarks>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -293,15 +293,4 @@
       </Position30>
     </JumpHistory>
   </ProjectSession>
-  <Debugging>
-    <BreakPoints Count="1">
-      <Item1>
-        <Kind Value="bpkSource"/>
-        <WatchScope Value="wpsLocal"/>
-        <WatchKind Value="wpkWrite"/>
-        <Source Value="iconvraw.lpr"/>
-        <Line Value="139"/>
-      </Item1>
-    </BreakPoints>
-  </Debugging>
 </CONFIG>

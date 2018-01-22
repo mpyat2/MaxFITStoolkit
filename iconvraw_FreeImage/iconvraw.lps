@@ -9,13 +9,13 @@
         <Filename Value="iconvraw.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <EditorIndex Value="-1"/>
         <TopLine Value="169"/>
         <CursorPos X="47" Y="202"/>
         <UsageCount Value="54"/>
         <Bookmarks Count="1">
           <Item0 X="12" Y="194" ID="1"/>
         </Bookmarks>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
       <Unit1>
@@ -129,9 +129,6 @@
         <UsageCount Value="10"/>
       </Unit15>
     </Units>
-    <General>
-      <ActiveWindowIndexAtStart Value="-1"/>
-    </General>
     <JumpHistory HistoryIndex="-1"/>
   </ProjectSession>
 </CONFIG>

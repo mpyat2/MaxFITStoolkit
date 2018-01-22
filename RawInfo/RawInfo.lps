@@ -9,10 +9,10 @@
         <Filename Value="RawInfo.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <EditorIndex Value="-1"/>
         <TopLine Value="76"/>
         <CursorPos X="7" Y="82"/>
         <UsageCount Value="21"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
       <Unit1>
@@ -24,9 +24,6 @@
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit1>
     </Units>
-    <General>
-      <ActiveWindowIndexAtStart Value="-1"/>
-    </General>
     <JumpHistory HistoryIndex="-1"/>
   </ProjectSession>
 </CONFIG>
