@@ -59,6 +59,7 @@ begin
 end;
 
 procedure ConvertFile(const FileName: string;
+                      PrintInfo: Boolean;
                       const NewFileName: string;
                       CheckExistence: Boolean;
                       TimeByExposureCorrection: Boolean;
@@ -71,7 +72,9 @@ procedure ConvertFile(const FileName: string;
 var
   RawProcessor: Pointer;
   //LibRawError: Integer;
-  RawFrameLeft, RawFrameTop, RawFrameWidth, RawFrameHeight: Word;
+  RawFrameLeft, RawFrameTop: Word;
+  RawFrameWidth, RawFrameHeight: Word;
+  RawFrameWidth0, RawFrameHeight0: Word;
   _width, _height: Word;
   year, month, day, hour, min, sec: Word;
   bits: PChar;
@@ -121,19 +124,37 @@ begin
   RawFrameTop := 0;
   RawFrameWidth := 0;
   RawFrameHeight := 0;
+  RawFrameWidth0 := 0;
+  RawFrameHeight0 := 0;
 
-  if CheckExistence and FileExists(NewFileName) then
-    FileError('File already exists. Use /F switch to overwrite existing files.');
+  if not PrintInfo then begin
+    if CheckExistence and FileExists(NewFileName) then
+      FileError('File already exists. Use /F switch to overwrite existing files.');
+  end;
+
   RawProcessor := RawProcessorCreate;
   if RawProcessor = nil then FileError('Cannot create RawProcessor');
   try
     CheckLibRawError(RawProcessor, RawProcessorOpenFile(RawProcessor, PChar(FileName)));
-    RawProcessorSizes(RawProcessor, RawFrameWidth, RawFrameHeight, _width, _height, RawFrameTop, RawFrameLeft);
+    RawProcessorSizes(RawProcessor, RawFrameWidth0, RawFrameHeight0, _width, _height, RawFrameTop, RawFrameLeft);
+    if PrintInfo then begin
+      WriteLn;
+      WriteLn('Image Size:  ', RawFrameWidth0, 'x', RawFrameHeight0);
+      WriteLn('Raw Size:    ', _width, 'x', _height);
+      WriteLn('Left Margin: ', RawFrameLeft);
+      WriteLn('Top Margin:  ', RawFrameTop);
+      Exit;
+    end;
+
     if DontTruncate then begin
       RawFrameLeft := 0;
       RawFrameTop := 0;
       RawFrameWidth := _width;
       RawFrameHeight := _height;
+    end
+    else begin
+      RawFrameWidth := _width - RawFrameLeft;
+      RawFrameHeight := _height - RawFrameTop;
     end;
 
     CheckLibRawError(RawProcessor, RawProcessorUnpack(RawProcessor));
@@ -380,6 +401,7 @@ begin
 end;
 
 procedure ProcessInput(const FileMasks: array of string;
+                       PrintInfo: Boolean;
                        const GenericName: string;
                        const OutputDir: string;
                        Overwrite: Boolean;
@@ -417,8 +439,10 @@ begin
         else
           NewFileName := TempOutputDir + FileName;
         NewFileName := ChangeFileExt(NewFileName, OutputExt);
-        Write(FileName, ^I'->'^I, NewFileName);
-        ConvertFile(FileList[I], NewFileName, not Overwrite, TimeByExposureCorrection, DontTruncate, TimeShiftInSeconds, PixelRealNumber, BzeroShift, FITSParams, TimeCorrected, TimeShifted);
+        Write(FileName);
+        if not PrintInfo then
+          Write(^I'->'^I, NewFileName);
+        ConvertFile(FileList[I], PrintInfo, NewFileName, not Overwrite, TimeByExposureCorrection, DontTruncate, TimeShiftInSeconds, PixelRealNumber, BzeroShift, FITSParams, TimeCorrected, TimeShifted);
         if TimeShifted then Write('DATE-OBS shifted by ', TimeShiftInSeconds, ' seconds');
         if TimeCorrected then Write(' DATE-OBS corrected by exposure');
         WriteLn;
@@ -453,6 +477,7 @@ var
   OutputExt: string;
   ErrorPos: Integer;
   PrintVer: Boolean;
+  PrintInfo: Boolean;
   FITSparams: TStringList;
   S: string;
   N: Integer;
@@ -479,6 +504,8 @@ begin
     end;
     Halt(1);
   end;
+
+  PrintInfo := CmdObj.CmdLine.IsCmdOption('I');
 
   GenericName := CmdObj.CmdLine.KeyValue('G=');
   // \/:*?
@@ -552,7 +579,7 @@ begin
     end;
     FileList := TStringListNaturalSort.Create;
     try
-      ProcessInput(InputFileMasks, GenericName, OutputDir, Overwrite, BaseNumber, TimeByExposureCorrection, DontTruncate, TimeShiftInSeconds, PixelRealNumber, BzeroShift, FITSParams, OutputExt);
+      ProcessInput(InputFileMasks, PrintInfo, GenericName, OutputDir, Overwrite, BaseNumber, TimeByExposureCorrection, DontTruncate, TimeShiftInSeconds, PixelRealNumber, BzeroShift, FITSParams, OutputExt);
       WriteLn;
     finally
       FreeAndNil(FileList);
