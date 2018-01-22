@@ -1,6 +1,6 @@
 @ECHO OFF
 rem SET COMPILER="C:\PERSONAL\DC\DCC32" -UUnits\ -UFreeImage\ -Ebin-out\
-SET COMPILER="c:\lazarus\fpc\3.0.4\bin\i386-win32\fpc.exe" -MDELPHI -Xg -FuUnits\ -FuFreeImage\ -FEbin-out\
+SET COMPILER="c:\Personal\lazarus\fpc\3.0.2\bin\i386-win32\fpc.exe" -MDELPHI -Xg -FuUnits\ -FuFreeImage\ -FEbin-out\
 SET A7z="c:\Program Files\7-zip\7z.exe"
 
 REM fihed.exe: Print/edit FITS header, multifile mode
@@ -47,7 +47,8 @@ ECHO .
 REM iconvraw.exe: RAW->FITS converter
 %COMPILER% iconvraw\iconvraw.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
-copy iconvraw\FreeImage.DLL bin-out\
+copy iconvraw\libraw.dll bin-out\
+copy iconvraw\librawmxwrapper.dll bin-out\
 ECHO .
 
 REM ...

@@ -49,7 +49,9 @@ Source: "..\bin-out\fitsrgb.exe"; DestDir: "{app}"; Flags: ignoreversion
 ;Source: "..\bin-out\findhot.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitsstat.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\iconvraw.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\bin-out\FreeImage.dll"; DestDir: "{app}"; Flags: ignoreversion
+;Source: "..\bin-out\FreeImage.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin-out\libraw.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin-out\LibRawMxWrapper.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitsutils.ini"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitsutils.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Scripts\CleanIRIS.bat"; DestDir: "{app}"; Flags: ignoreversion
