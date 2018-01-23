@@ -338,7 +338,7 @@ begin
         Bzero, 1,
         DateTime,          DateTimeComment,
         DateTimeFile,      'FITS creation time (reported by OS)',
-        ExposureTimeFloat, 'ExposureTime EXIF value',
+        ExposureTimeFloat, '',
         Instrument,
         Comments);
 
