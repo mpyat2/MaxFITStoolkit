@@ -101,8 +101,8 @@ var
   Make, Model: string;
   Instrument: string;
   Software: string;
-  ISO: Single;
-  ExposureTimeFloat: Single;
+  ISO: Double;
+  ExposureTimeFloat: Double;
   //Timestamp: Int64;
   TimeStr: array[0..25] of Char;
   DateTime: TDateTime;
@@ -158,12 +158,6 @@ begin
     Make := RawProcessorMake(RawProcessor);
     Model := RawProcessorModel(RawProcessor);
     ExposureTimeFloat := RawProcessorShutter(RawProcessor);
-    if ExposureTimeFloat < 1 then begin
-      // Round it slightly....
-      ExposureTimeFloat := ExposureTimeFloat * 1e7;
-      ExposureTimeFloat := Round(ExposureTimeFloat);
-      ExposureTimeFloat := ExposureTimeFloat / 1e7;
-    end;
     ISO := RawProcessorISOspeed(RawProcessor);
     RawProcessorTime(RawProcessor, TimeStr, SizeOf(TimeStr));
 
