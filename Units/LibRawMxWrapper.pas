@@ -11,9 +11,9 @@ function RawProcessorVersion: PChar; stdcall; external LibRawWrapper name '_RawP
 function RawProcessorOpenFile(RawProcessor: Pointer; FileName: PChar): Integer; stdcall; external LibRawWrapper name '_RawProcessorOpenFile@8';
 procedure RawProcessorSizes(
   RawProcessor: Pointer;
-  var Width, Height: Word;
   var RawWidth, RawHeight: Word;
-  var TopMargin, LeftMargin: Word;
+  var Width, Height: Word;
+  var LeftMargin, TopMargin: Word;
   var Iwidth, Iheight: Word;
   var RawPitch: LongWord;
   var PixelAspect: Double;

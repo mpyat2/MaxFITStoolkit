@@ -10,6 +10,7 @@ procedure PrintVersion;
 begin
   WriteLn('RAW -> CFA converter  Maksym Pyatnytskyy  2017');
   WriteLn('Version 2018.01.21.01');
+  WriteLn('Libraw version: ', RawProcessorVersion);
   WriteLn;
 end;
 
@@ -140,15 +141,50 @@ begin
   if RawProcessor = nil then FileError('Cannot create RawProcessor');
   try
     CheckLibRawError(RawProcessor, RawProcessorOpenFile(RawProcessor, PChar(FileName)));
-    RawProcessorSizes(RawProcessor, RawFrameWidth, RawFrameHeight, _width, _height, RawFrameTop, RawFrameLeft, Iwidth, Iheight,RawPitch, PixelAspect, ImageFlip);
+    if not PrintInfo then
+      CheckLibRawError(RawProcessor, RawProcessorUnpack(RawProcessor));
+
+    RawProcessorSizes(
+      RawProcessor,
+      _width, _height,                // raw_width, raw_height
+      RawFrameWidth, RawFrameHeight,  // width, height
+      RawFrameLeft, RawFrameTop,      // left_margin, top_marhin
+      Iwidth, Iheight,                // iwidth, iheight
+      RawPitch,                       // raw_pitch -- will not be assigned if RawProcessorUnpack is not called
+      PixelAspect,                    // pixel_aspect -- equal 1 even for FUJI_S5000 RAF (strange...)
+      ImageFlip                       // flip
+    );
+
+    Make := RawProcessorMake(RawProcessor);
+    Model := RawProcessorModel(RawProcessor);
+    ExposureTimeFloat := RawProcessorShutter(RawProcessor);
+    if ExposureTimeFloat < 1 then begin
+      // Round it slightly....
+      ExposureTimeFloat := ExposureTimeFloat * 1e7;
+      ExposureTimeFloat := Round(ExposureTimeFloat);
+      ExposureTimeFloat := ExposureTimeFloat / 1e7;
+    end;
+    ISO := RawProcessorISOspeed(RawProcessor);
+    RawProcessorTime(RawProcessor, TimeStr, SizeOf(TimeStr));
+
     if PrintInfo then begin
       WriteLn;
-      WriteLn('Image Size:  ', RawFrameWidth, 'x', RawFrameHeight);
-      WriteLn('Raw Size:    ', _width, 'x', _height);
-      WriteLn('Left Margin: ', RawFrameLeft);
-      WriteLn('Top Margin:  ', RawFrameTop);
+      WriteLn('Make        : ', Make);
+      WriteLn('Model       : ', Model);
+      WriteLn('Time        : ', TrimRight(TimeStr));
+      WriteLn('ISO         : ', Round(ISO));
+      WriteLn('Exposure    : ', ExposureTimeFloat:9:7);
+      WriteLn('Raw Size    : ', _width, 'x', _height);
+      WriteLn('Image Size  : ', RawFrameWidth, 'x', RawFrameHeight);
+      WriteLn('Left Margin : ', RawFrameLeft);
+      WriteLn('Top Margin  : ', RawFrameTop);
+      WriteLn('Output Size : ', Iwidth, 'x', Iheight);
       Exit;
     end;
+
+    if (2 * _width <> RawPitch) then
+      FileError('RAW image must be 16-bit.');
+
     if DontTruncate then begin
       RawFrameLeft := 0;
       RawFrameTop := 0;
@@ -160,9 +196,26 @@ begin
         FileError('Don''t know how to work with the image: Raw sizes less than image sizes. Use /L switch to convert.');
     end;
 
-    CheckLibRawError(RawProcessor, RawProcessorUnpack(RawProcessor));
     if RawProcessorCheck(RawProcessor) <> 0 then
-      FileError('Not a Bayer-pattern RAW');
+      FileError('Don''t know how to work with non-Bayer RAW.');
+
+    //Timestamp := RawProcessorTimestamp(RawProcessor);
+    //DateTime := UnixToDateTime(Timestamp);
+    DateTime := 0;
+    if StrLen(TimeStr) = 25 then begin
+      try
+         //Www Mmm dd hh:mm:ss yyyy\n
+         year := StrToInt(Copy(TimeStr, 21, 4));
+         month := MMMtoMonth(Copy(TimeStr, 5, 3));
+         day := StrToInt(Copy(TimeStr, 9, 2));
+         hour := StrToInt(Copy(TimeStr, 12, 2));
+         min := StrToInt(Copy(TimeStr, 15, 2));
+         sec := StrToInt(Copy(TimeStr, 18, 2));
+         DateTime := EncodeDateTime(year, month, day, hour, min, sec, 0);
+      except
+        on E: EConvertError do DateTime := 0;
+      end;
+    end;
 
     if BzeroShift then begin
       Bzero := 32768;
@@ -184,6 +237,7 @@ begin
       FITSbpp := 16;
       BytePerPix := 2;
     end;
+    // FITS image
     ImageSize := RawFrameWidth * RawFrameHeight * BytePerPix;
     ImageSizeInBlocks := ImageSize div (RecordsInBlock * SizeOf(FITSRecordType));
     if ImageSize mod (RecordsInBlock * SizeOf(FITSRecordType)) > 0 then Inc(ImageSizeInBlocks);
@@ -244,35 +298,6 @@ begin
       else
         AverageValue := 0;
 
-      //Timestamp := RawProcessorTimestamp(RawProcessor);
-      //DateTime := UnixToDateTime(Timestamp);
-      DateTime := 0;
-      RawProcessorTime(RawProcessor, TimeStr, SizeOf(TimeStr));
-      if StrLen(TimeStr) = 25 then begin
-        try
-           //Www Mmm dd hh:mm:ss yyyy\n
-           year := StrToInt(Copy(TimeStr, 21, 4));
-           month := MMMtoMonth(Copy(TimeStr, 5, 3));
-           day := StrToInt(Copy(TimeStr, 9, 2));
-           hour := StrToInt(Copy(TimeStr, 12, 2));
-           min := StrToInt(Copy(TimeStr, 15, 2));
-           sec := StrToInt(Copy(TimeStr, 18, 2));
-           DateTime := EncodeDateTime(year, month, day, hour, min, sec, 0);
-        except
-          on E: EConvertError do DateTime := 0;
-        end;
-      end;
-
-      Make := RawProcessorMake(RawProcessor);
-      Model := RawProcessorModel(RawProcessor);
-      ExposureTimeFloat := RawProcessorShutter(RawProcessor);
-      if ExposureTimeFloat < 1 then begin
-        // Round it slightly....
-        ExposureTimeFloat := ExposureTimeFloat * 1e7;
-        ExposureTimeFloat := Round(ExposureTimeFloat);
-        ExposureTimeFloat := ExposureTimeFloat / 1e7;
-      end;
-      ISO := RawProcessorISOspeed(RawProcessor);
       Instrument := '';
       Software := '';
       if (Make <> '') or (Model <> '') then
