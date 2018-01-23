@@ -1,13 +1,10 @@
-{
- To-do!
- 1) Time: shifted by UnixToDateTime()
-}
-
 {$APPTYPE CONSOLE}
 
 program iconvraw;
 
-uses Windows, SysUtils, DateUtils, Classes, CmdObj, EnumFiles, StringListNaturalSort, LibRawMxWrapper, FITSUtils, FITSTimeUtils, FitsUtilsHelp, CommonIni;
+uses Windows, SysUtils, DateUtils, Classes, CmdObj, EnumFiles,
+  StringListNaturalSort, LibRawMxWrapper,
+  FITSUtils, FITSTimeUtils, FitsUtilsHelp, CommonIni;
 
 procedure PrintVersion;
 begin
@@ -71,10 +68,13 @@ procedure ConvertFile(const FileName: string;
                       out TimeCorrected, TimeShifted: Boolean);
 var
   RawProcessor: Pointer;
-  //LibRawError: Integer;
   RawFrameLeft, RawFrameTop: Word;
   RawFrameWidth, RawFrameHeight: Word;
   _width, _height: Word;
+  Iwidth, Iheight: Word;
+  RawPitch: LongWord;
+  PixelAspect: Double;
+  ImageFlip: Integer;
   year, month, day, hour, min, sec: Word;
   bits: PChar;
   scanline: PChar;
@@ -100,8 +100,8 @@ var
   Make, Model: string;
   Instrument: string;
   Software: string;
-  ISO: Double;
-  ExposureTimeFloat: Double;
+  ISO: Single;
+  ExposureTimeFloat: Single;
   //Timestamp: Int64;
   TimeStr: array[0..25] of Char;
   DateTime: TDateTime;
@@ -123,6 +123,13 @@ begin
   RawFrameTop := 0;
   RawFrameWidth := 0;
   RawFrameHeight := 0;
+  _width := 0;
+  _height := 0;
+  Iwidth := 0;
+  Iheight := 0;
+  RawPitch := 0;
+  PixelAspect := 0;
+  ImageFlip := 0;
 
   if not PrintInfo then begin
     if CheckExistence and FileExists(NewFileName) then
@@ -133,7 +140,7 @@ begin
   if RawProcessor = nil then FileError('Cannot create RawProcessor');
   try
     CheckLibRawError(RawProcessor, RawProcessorOpenFile(RawProcessor, PChar(FileName)));
-    RawProcessorSizes(RawProcessor, RawFrameWidth, RawFrameHeight, _width, _height, RawFrameTop, RawFrameLeft);
+    RawProcessorSizes(RawProcessor, RawFrameWidth, RawFrameHeight, _width, _height, RawFrameTop, RawFrameLeft, Iwidth, Iheight,RawPitch, PixelAspect, ImageFlip);
     if PrintInfo then begin
       WriteLn;
       WriteLn('Image Size:  ', RawFrameWidth, 'x', RawFrameHeight);

@@ -31,7 +31,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="TEST.CR2"/>
+        <CommandLineParams Value="RAW_FUJI_S5000.RAF"/>
       </local>
     </RunParams>
     <Units Count="1">
