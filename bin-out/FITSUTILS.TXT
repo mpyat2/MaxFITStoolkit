@@ -182,3 +182,8 @@ Where:
 
 Example:
 iren dir1\IMG*.CR2 dir2\IMG*.CR2 dir3\IMG*.CR2 /G=src /O=C:\SKY\ /F /B=1
+
+@fitsstat
+
+Usage:
+fitsstat file

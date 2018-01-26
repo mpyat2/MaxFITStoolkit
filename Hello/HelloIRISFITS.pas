@@ -17,6 +17,7 @@ begin
   WriteLn('ipdat');
   WriteLn('apdat');
   WriteLn('iconvraw');
+  WriteLn('fitsstat');
   WriteLn;
   WriteLn('Your sincerely,');
   WriteLn('  Max [mpyat2@gmail.com]');

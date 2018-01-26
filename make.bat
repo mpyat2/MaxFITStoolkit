@@ -1,6 +1,13 @@
 @ECHO OFF
-rem SET COMPILER="C:\PERSONAL\DC\DCC32" -UUnits\ -UFreeImage\ -Ebin-out\
-SET COMPILER="c:\lazarus\fpc\3.0.2\bin\i386-win32\fpc.exe" -MDELPHI -Xg -FuUnits\ -FuFreeImage\ -FEbin-out\
+REM
+REM Use non-unicode Delphi or FPC [www.freepascal.org] in $DELPHI mode.
+REM 
+REM Should be compiled with NON-UNICODE 32bit Delphi Compiler!
+REM SET COMPILER="C:\PERSONAL\DC\DCC32" -UUnits\ -Ebin-out\
+REM
+SET COMPILER="c:\Personal\lazarus\fpc\3.0.2\bin\i386-win32\fpc.exe" -MDELPHI -Xg -FuUnits\ -FEbin-out\
+REM
+REM To produce source-code ZIP, run this script with "A" command-line option: make.bat A
 SET A7z="c:\Program Files\7-zip\7z.exe"
 
 REM fihed.exe: Print/edit FITS header, multifile mode
@@ -52,19 +59,19 @@ copy iconvraw\librawmxwrapper.dll bin-out\
 ECHO .
 
 REM ...
-%COMPILER% CalcMed\CalcMed.lpr
-IF ERRORLEVEL 1 GOTO :ERROR
-ECHO .
+REM %COMPILER% CalcMed\CalcMed.lpr
+REM IF ERRORLEVEL 1 GOTO :ERROR
+REM ECHO .
 
-REM ...
-%COMPILER% CalcSub\CalcSub.lpr
-IF ERRORLEVEL 1 GOTO :ERROR
-ECHO .
+REM REM ...
+REM %COMPILER% CalcSub\CalcSub.lpr
+REM IF ERRORLEVEL 1 GOTO :ERROR
+REM ECHO .
 
-REM ...
-%COMPILER% FindHot\FindHot.lpr
-IF ERRORLEVEL 1 GOTO :ERROR
-ECHO .
+REM REM ...
+REM %COMPILER% FindHot\FindHot.lpr
+REM IF ERRORLEVEL 1 GOTO :ERROR
+REM ECHO .
 
 REM ...
 %COMPILER% FITSstat\FITSstat.lpr
@@ -79,8 +86,35 @@ ECHO .
 IF "%1"=="A" GOTO :ARCHIVE
 GOTO :END
 :ARCHIVE
+echo FitsHeader2\fihed.*          >  ziplist.txt
+echo FitsFlip\fflip.*             >> ziplist.txt
+echo IrisDateObs\idobs.*          >> ziplist.txt
+echo IrisRename\iren.*            >> ziplist.txt
+echo IPDAT\ipdat.*                >> ziplist.txt
+echo IPDAT\testdata\*.dat         >> ziplist.txt
+echo APDAT\apdat.*                >> ziplist.txt
+echo APDAT\testdata\*.dat         >> ziplist.txt
+echo FitsCfa\fitscfa.*            >> ziplist.txt
+echo FitsRGB\fitsrgb.*            >> ziplist.txt
+echo FitsStat\fitsstat.*          >> ziplist.txt
+echo iconvraw\iconvraw.*          >> ziplist.txt
+echo iconvraw\libraw.dll          >> ziplist.txt
+echo iconvraw\LibRawMxWrapper.dll >> ziplist.txt
+echo Hello\*.pas                  >> ziplist.txt
+echo Units\*.pas                  >> ziplist.txt
+echo Scripts\*                    >> ziplist.txt
+echo Samples\*                    >> ziplist.txt
+echo Setup\*.iss                  >> ziplist.txt
+echo Setup\output\dirinfo         >> ziplist.txt
+echo bin-out\dirinfo              >> ziplist.txt
+echo bin-out\fitsutils.ini        >> ziplist.txt
+echo bin-out\fitsutils.txt        >> ziplist.txt
+echo clean.bat                    >> ziplist.txt
+echo clean2.bat                   >> ziplist.txt
+echo make.bat                     >> ziplist.txt
+
 del FITSutils_src.zip
-%A7z% a FITSutils_src.zip FitsHeader2\fihed.* FitsFlip\fflip.* IrisDateObs\idobs.* IrisRename\iren.* IPDAT\ipdat.* IPDAT\testdata\*.dat APDAT\apdat.* APDAT\testdata\*.dat FitsCfa\fitscfa.* FitsRGB\fitsrgb.* iconvraw\iconvraw.* iconvraw\FreeImage.dll Hello\*.pas Units\*.pas FreeImage\* Setup\*.iss Setup\output\dirinfo bin-out\dirinfo bin-out\fitsutils.ini Samples\* bin-out\fitsutils.txt clean.bat clean2.bat make.bat
+%A7z% a FITSutils_src.zip @ziplist.txt
 
 GOTO :END
 
