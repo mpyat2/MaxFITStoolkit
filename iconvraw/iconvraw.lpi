@@ -31,7 +31,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="/F TEST.CR2"/>
+        <CommandLineParams Value="/F TEST.CR2 /i"/>
       </local>
     </RunParams>
     <Units Count="1">

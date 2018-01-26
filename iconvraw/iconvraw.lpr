@@ -9,7 +9,7 @@ uses Windows, SysUtils, DateUtils, Classes, CmdObj, EnumFiles,
 procedure PrintVersion;
 begin
   WriteLn('RAW -> CFA converter  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2018.01.21.01');
+  WriteLn('Version 2018.01.26.01');
   WriteLn('Libraw version: ', RawProcessorVersion);
   WriteLn;
 end;
@@ -98,9 +98,8 @@ var
   ImageSizeInBlocks: LongWord;
   AverageValue: Double;
   N: LongWord;
-  Make, Model: string;
+  Make, Model, Software: string;
   Instrument: string;
-  Software: string;
   ISO: Double;
   ExposureTimeFloat: Double;
   //Timestamp: Int64;
@@ -142,7 +141,9 @@ begin
   try
     CheckLibRawError(RawProcessor, RawProcessorOpenFile(RawProcessor, PChar(FileName)));
     if not PrintInfo then
-      CheckLibRawError(RawProcessor, RawProcessorUnpack(RawProcessor));
+      CheckLibRawError(RawProcessor, RawProcessorUnpack(RawProcessor))
+    else
+      CheckLibRawError(RawProcessor, RawProcessorAdjustSizesInfoOnly(RawProcessor));
 
     RawProcessorSizes(
       RawProcessor,
@@ -157,6 +158,7 @@ begin
 
     Make := RawProcessorMake(RawProcessor);
     Model := RawProcessorModel(RawProcessor);
+    Software := RawProcessorSoftware(RawProcessor);
     ExposureTimeFloat := RawProcessorShutter(RawProcessor);
     ISO := RawProcessorISOspeed(RawProcessor);
     RawProcessorTime(RawProcessor, TimeStr, SizeOf(TimeStr));
@@ -165,6 +167,7 @@ begin
       WriteLn;
       WriteLn('Make        : ', Make);
       WriteLn('Model       : ', Model);
+      WriteLn('Software    : ', Software);
       WriteLn('Time        : ', TrimRight(TimeStr));
       WriteLn('ISO         : ', Round(ISO));
       WriteLn('Exposure    : ', ExposureTimeFloat:9:7);
@@ -293,9 +296,10 @@ begin
         AverageValue := 0;
 
       Instrument := '';
-      Software := '';
       if (Make <> '') or (Model <> '') then
         Instrument := Trim(Make + ' ' + Model);
+      if Software <> '' then
+        Software := Software + ' / ';
       Software := 'libraw ' + RawProcessorVersion + ' / ' + ExtractFileName(ParamStr(0));
 
       if DateTime <> 0 then begin

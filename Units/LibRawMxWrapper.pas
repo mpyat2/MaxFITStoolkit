@@ -18,16 +18,17 @@ procedure RawProcessorSizes(
   var RawPitch: LongWord;
   var PixelAspect: Double;
   var Flip: Integer); stdcall; external LibRawWrapper name '_RawProcessorSizes@48';
+function RawProcessorAdjustSizesInfoOnly(RawProcessor: Pointer): Integer; stdcall; external LibRawWrapper name '_RawProcessorAdjustSizesInfoOnly@4';
 function RawProcessorUnpack(RawProcessor: Pointer): Integer; stdcall; external LibRawWrapper name '_RawProcessorUnpack@4';
 function RawProcessorCheck(RawProcessor: Pointer): Integer; stdcall; external LibRawWrapper name '_RawProcessorCheck@4';
 function RawProcessorRawImage(RawProcessor: Pointer): PWord; stdcall; external LibRawWrapper name '_RawProcessorRawImage@4';
 function RawProcessorMake(RawProcessor: Pointer): PChar; stdcall; external LibRawWrapper name '_RawProcessorMake@4';
 function RawProcessorModel(RawProcessor: Pointer): PChar; stdcall; external LibRawWrapper name '_RawProcessorModel@4';
+function RawProcessorSoftware(RawProcessor: Pointer): PChar; stdcall; external LibRawWrapper name '_RawProcessorSoftware@4';
 function RawProcessorTimestamp(RawProcessor: Pointer): Int64; stdcall; external LibRawWrapper name '_RawProcessorTimestamp@4';
 procedure RawProcessorTime(RawProcessor: Pointer; TimeStr: PChar; TimeStrLen: Integer); stdcall; external LibRawWrapper name '_RawProcessorTime@12';
 function RawProcessorShutter(RawProcessor: Pointer): Single; stdcall; external LibRawWrapper name '_RawProcessorShutter@4';
 function RawProcessorISOspeed(RawProcessor: Pointer): Single; stdcall; external LibRawWrapper name '_RawProcessorISOspeed@4';
-
 
 implementation
 end.
