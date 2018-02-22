@@ -15,11 +15,10 @@ unit FITSUtils;
 interface
 
 uses
-  Windows, SysUtils, Classes;
+  Windows, SysUtils, Classes, FITSTimeUtils;
 
 const recordEND     = 'END                                                                             ';    
 const KeywordEND    = 'END';
-const KeywordSimple = 'SIMPLE';
 const KeywordComment= 'COMMENT';
 const KeywordHistory= 'HISTORY';
 const KeywordHierarch='HIERARCH';
@@ -58,13 +57,12 @@ function LeftPadCh(const S: string; L: Integer; Ch: Char): string;
 function FITSQuotedValue(const S: string): string;
 function StripQuotes(const S: string): string;
 
-function IsFITS(const FITSfileName: string): Boolean;
+function IsFITS(var FITSfile: FITSRecordFile): Boolean;
 function GetKeywordValue(var FITSfile: FITSRecordFile; const Keyword: string; out Value: string; RemoveComment: Boolean; TrimVal: Boolean): Integer;
-function SetKeywordValue(var FITSfile: FITSRecordFile; const FITSfileName: string; const Keyword: string; const Value: string; AlignNumeric: Boolean; const Comment: string; CanResize: Boolean): Boolean;
-function AddCommentLikeKeyword(var FITSfile: FITSRecordFile; const FITSfileName: string; const Keyword: string; const Value: string; CanResize: Boolean): Boolean;
-procedure GetHeader(const FITSfileName: string; const Header: TStrings);
+function SetKeywordValue(var FITSfile: FITSRecordFile; const Keyword: string; const Value: string; AlignNumeric: Boolean; const Comment: string; CanResize: Boolean): Boolean;
+function AddCommentLikeKeyword(var FITSfile: FITSRecordFile; const Keyword: string; const Value: string; CanResize: Boolean): Boolean;
+procedure GetHeader(var FITSfile: FITSRecordFile; const Header: TStrings);
 function GetEndPosition(var FITSfile: FITSRecordFile): Integer;
-procedure GetBitPixAndNaxis(var FITSfile: FITSRecordfile; const FITSfileName: string; out BitPix: Integer; out NaxisN: TIntArray);
 procedure RevertBytes(var FITSvalue: TFITSValue; BitPix: Integer);
 function MakeFITSHeader(BitPix: Integer;
                         const Axes: TIntArray;
@@ -74,15 +72,23 @@ function MakeFITSHeader(BitPix: Integer;
                         Exposure: Double;   ExposureComment: string;
                         const Instrument: string;
                         const Comments: TStringArray): TFITSRecordArray;
+procedure GetBitPixAndNaxis(var FITSfile: FITSRecordfile; out BitPix: Integer; out NaxisN: TIntArray);
 // physical_value = BZERO + BSCALE * array_value (https://heasarc.gsfc.nasa.gov/docs/fcg/standard_dict.html)
-procedure GetBscaleBzero(var FITSfile: FITSRecordFile; const FITSfileName: string; out Bscale, Bzero: Double);
-function GetFITSimage2D(const FITSfileName: string; out Width, Height, BitPix: Integer; out Bscale, Bzero: Double): PChar;
+procedure GetBscaleBzero(var FITSfile: FITSRecordFile; out Bscale, Bzero: Double);
+function GetDateObs(var FITSfile: FITSRecordFile): TDateTime;
+function GetExposureTime(var FITSfile: FITSRecordFile): Double;
+function GetFITSimage2D(var FITSfile: FITSRecordFile; out Width, Height, BitPix: Integer; out Bscale, Bzero: Double): PChar;
 
 implementation
 
 procedure FileError(const S: string);
 begin
   raise EFITSerror.Create(S);
+end;
+
+function FITSRecordTypeFileName(var FITSfile: FITSRecordFile): string;
+begin
+  Result := TFileRec(FITSfile).name;
 end;
 
 function PadCh(const S: string; L: Integer; Ch: Char): string;
@@ -151,6 +157,26 @@ begin
   end;
 end;
 
+function IsFITS(var FITSfile: FITSRecordFile): Boolean;
+var
+  Buf: FITSRecordType;
+  Value: string;
+  EndPosition: Integer;
+begin
+  Result := False;
+  if FileSize(FITSfile) < 2 then Exit;
+  // at least 2 records (however for correct FITS should be more...)
+  BlockRead(FITSfile, Buf, 1);
+  if Copy(Buf, 1, Length('SIMPLE  = ')) <> 'SIMPLE  = ' then Exit;
+  Value := Trim(Copy(Buf, Length('SIMPLE  = ') + 1, MaxInt));
+  if Copy(Value, 1, 1) <> 'T' then Exit;
+  Value := Trim(Copy(Value, 2, MaxInt));
+  if (Value <> '') and (Value[1] <> '/') then Exit;
+  EndPosition := GetEndPosition(FITSfile);
+  if EndPosition < 1 then Exit;
+  Result := True;
+end;
+
 function GetEndPosition(var FITSfile: FITSRecordFile): Integer;
 // Position is zero-based
 var
@@ -168,28 +194,6 @@ begin
       Exit;
     end;
   end;
-end;
-
-function IsFITS(const FITSfileName: string): Boolean;
-var
-  FITSfile: FITSRecordFile;
-  Value: string;
-  EndPosition: Integer;
-begin
-  Result := False;
-  AssignFile(FITSfile, FITSfileName);
-  Reset(FITSfile);
-  try
-    if FileSize(FITSfile) < 2 then Exit;
-    // at least 2 records (however for correct FITS should be more...)
-    if GetKeywordValue(FITSfile, KeywordSimple, Value, True, True) <> 0 then Exit;
-    if (Value <> 'T') and (Value <> 'F') then Exit;
-    EndPosition := GetEndPosition(FITSfile);
-    if EndPosition < 1 then Exit;
-  finally
-    CloseFile(FITSfile);
-  end;
-  Result := True;
 end;
 
 function GetHeaderRecordPosition(var FITSfile: FITSRecordFile; const Keyword: string): Integer;
@@ -267,7 +271,7 @@ begin
   end;  
 end;
 
-procedure InsertHeaderBlock(var InF: FITSRecordFile; const FITSfileName: string);
+procedure InsertHeaderBlock(var InF: FITSRecordFile);
 var
   HeaderBlockCount: Integer;
   FileImage: array of FITSRecordType;
@@ -276,7 +280,7 @@ var
 begin
   ENDPosition := GetEndPosition(InF);
   if ENDPosition < 0 then
-    FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSfileName, '"'));
+    FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(InF), '"'));
   N := FileSize(InF);
   SetLength(FileImage, N + RecordsInBlock);
   FillChar(FileImage[0], (N + RecordsInBlock) * FITSRecordLen, 0);
@@ -293,7 +297,7 @@ begin
   BlockWrite(InF, FileImage[0], N + RecordsInBlock);
 end;
 
-function SetKeywordValue(var FITSfile: FITSRecordFile; const FITSfileName: string; const Keyword: string; const Value: string; AlignNumeric: Boolean; const Comment: string; CanResize: Boolean): Boolean;
+function SetKeywordValue(var FITSfile: FITSRecordFile; const Keyword: string; const Value: string; AlignNumeric: Boolean; const Comment: string; CanResize: Boolean): Boolean;
 // Only for keywords with '='
 var
   Buf: FITSRecordType;
@@ -356,7 +360,7 @@ begin
     AKeyword := AKeyword + '= ';
     // Creating new entry.
     N := GetEndPosition(FITSfile);
-    if N < 0 then FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSfileName, '"'));
+    if N < 0 then FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
     if (N mod RecordsInBlock) < (RecordsInBlock - 1) then begin
       Seek(FITSfile, N);
       FillChar(Buf, SizeOf(Buf), ' ');
@@ -366,8 +370,8 @@ begin
     end
     else begin
       if not CanResize then
-        FileError('Cannot create new entry: another header block is needed (CanResize flag is not set). File ' + AnsiQuotedStr(FITSfileName, '"'));
-      InsertHeaderBlock(FITSfile, FITSfileName);
+        FileError('Cannot create new entry: another header block is needed (CanResize flag is not set). File ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+      InsertHeaderBlock(FITSfile);
     end;  
     Seek(FITSfile, N);
     FillChar(Buf, SizeOf(Buf), ' ');
@@ -397,7 +401,7 @@ begin
   Result := True;
 end;
 
-function AddCommentLikeKeyword(var FITSfile: FITSRecordFile; const FITSfileName: string; const Keyword: string; const Value: string; CanResize: Boolean): Boolean;
+function AddCommentLikeKeyword(var FITSfile: FITSRecordFile; const Keyword: string; const Value: string; CanResize: Boolean): Boolean;
 // Only for keywords with '='
 var
   Buf: FITSRecordType;
@@ -411,7 +415,7 @@ begin
   if Length(AKeyword) > FITSKeywordLen then FileError('Keyword ' + AKeyword + ' too long');
   Seek(FITSfile, 0);
   N := GetEndPosition(FITSfile);
-  if N < 0 then FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSfileName, '"'));
+  if N < 0 then FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
   if (N mod RecordsInBlock) < (RecordsInBlock - 1) then begin
     Seek(FITSfile, N);
     FillChar(Buf, SizeOf(Buf), ' ');
@@ -421,8 +425,8 @@ begin
   end
   else begin
     if not CanResize then
-      FileError('Cannot create new entry: another header block is needed (CanResize flag is not set). File ' + AnsiQuotedStr(FITSfileName, '"'));
-    InsertHeaderBlock(FITSfile, FITSfileName);
+      FileError('Cannot create new entry: another header block is needed (CanResize flag is not set). File ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+    InsertHeaderBlock(FITSfile);
   end;  
   Seek(FITSfile, N);
   FillChar(Buf, SizeOf(Buf), ' ');
@@ -435,58 +439,19 @@ begin
   Result := True;
 end;
 
-procedure GetHeader(const FITSfileName: string; const Header: TStrings);
+procedure GetHeader(var FITSfile: FITSRecordFile; const Header: TStrings);
 var
-  FITSfile: FITSRecordFile;
   Buf: FITSRecordType;
 begin
   Header.Clear;
-  AssignFile(FITSfile, FITSfileName);
-  Reset(FITSfile);
-  try
-    if GetEndPosition(FITSfile) < 0 then
-      FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSfileName, '"'));
-    Seek(FITSfile, 0);
-    while not EOF(FITSfile) do begin
-      BlockRead(FITSfile, Buf, 1);
-      Header.Add(Buf);
-      if Buf = recordEND then
-        Exit;
-    end;
-  finally
-    CloseFile(FITSfile);
-  end;  
-end;
-
-procedure GetBitPixAndNaxis(var FITSfile: FITSRecordfile; const FITSfileName: string; out BitPix: Integer; out NaxisN: TIntArray);
-var
-  Value: string;
-  Naxis: Integer;
-  N: Integer;
-  I: Integer;
-  ErrorPos: Integer;
-begin
-  BitPix := 0;
-  NaxisN := nil;
-  if GetKeywordValue(FITSfile, 'BITPIX', Value, True, True) < 0 then
-    FileError('Cannot get value of BITPIX. File ' + AnsiQuotedStr(FITSfileName, '"'));
-  Val(Value, BitPix, ErrorPos);
-  if (ErrorPos <> 0) or (BitPix = 0) or (Abs(BitPix) mod 8 <> 0) then
-    FileError('BITPIX has invalid value. File ' + AnsiQuotedStr(FITSfileName, '"'));
-  if GetKeywordValue(FITSfile, 'NAXIS', Value, True, True) < 0 then
-    FileError('Cannot get value of NAXIS. File ' + AnsiQuotedStr(FITSfileName, '"'));
-  Val(Value, Naxis, ErrorPos);
-  if (ErrorPos <> 0) or (Naxis < 0) or (Naxis > 999) then
-    FileError('NAXIS has invalid value. File ' + AnsiQuotedStr(FITSfileName, '"'));
-  if Naxis = 0 then Exit;
-  SetLength(NaxisN, Naxis);
-  for I := 0 to Naxis - 1 do begin
-    if GetKeywordValue(FITSfile, 'NAXIS' + IntToStr(I + 1), Value, True, True) < 0 then
-      FileError('Cannot get value of NAXIS' + IntToStr(I + 1) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
-    Val(Value, N, ErrorPos);
-    if (ErrorPos <> 0) or (N < 0) then
-      FileError('NAXIS' + IntToStr(I + 1) + ' has invalid value. File ' + AnsiQuotedStr(FITSfileName, '"'));
-    NaxisN[I] := N;
+  if GetEndPosition(FITSfile) < 0 then
+    FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+  Seek(FITSfile, 0);
+  while not EOF(FITSfile) do begin
+    BlockRead(FITSfile, Buf, 1);
+    Header.Add(Buf);
+    if Buf = recordEND then
+      Exit;
   end;
 end;
 
@@ -620,7 +585,41 @@ begin
   end;
 end;
 
-procedure GetBscaleBzero(var FITSfile: FITSRecordFile; const FITSfileName: string; out Bscale, Bzero: Double);
+procedure GetBitPixAndNaxis(var FITSfile: FITSRecordfile; out BitPix: Integer; out NaxisN: TIntArray);
+var
+  Value: string;
+  Naxis: Integer;
+  N: Integer;
+  I: Integer;
+  ErrorPos: Integer;
+  FITSfileName: string;
+begin
+  BitPix := 0;
+  NaxisN := nil;
+  FITSfileName := FITSRecordTypeFileName(FITSfile);
+  if GetKeywordValue(FITSfile, 'BITPIX', Value, True, True) < 0 then
+    FileError('Cannot get value of BITPIX. File ' + AnsiQuotedStr(FITSfileName, '"'));
+  Val(Value, BitPix, ErrorPos);
+  if (ErrorPos <> 0) or (BitPix = 0) or (Abs(BitPix) mod 8 <> 0) then
+    FileError('BITPIX has invalid value. File ' + AnsiQuotedStr(FITSfileName, '"'));
+  if GetKeywordValue(FITSfile, 'NAXIS', Value, True, True) < 0 then
+    FileError('Cannot get value of NAXIS. File ' + AnsiQuotedStr(FITSfileName, '"'));
+  Val(Value, Naxis, ErrorPos);
+  if (ErrorPos <> 0) or (Naxis < 0) or (Naxis > 999) then
+    FileError('NAXIS has invalid value. File ' + AnsiQuotedStr(FITSfileName, '"'));
+  if Naxis = 0 then Exit;
+  SetLength(NaxisN, Naxis);
+  for I := 0 to Naxis - 1 do begin
+    if GetKeywordValue(FITSfile, 'NAXIS' + IntToStr(I + 1), Value, True, True) < 0 then
+      FileError('Cannot get value of NAXIS' + IntToStr(I + 1) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
+    Val(Value, N, ErrorPos);
+    if (ErrorPos <> 0) or (N < 0) then
+      FileError('NAXIS' + IntToStr(I + 1) + ' has invalid value. File ' + AnsiQuotedStr(FITSfileName, '"'));
+    NaxisN[I] := N;
+  end;
+end;
+
+procedure GetBscaleBzero(var FITSfile: FITSRecordFile; out Bscale, Bzero: Double);
 var
   S: string;
   ErrorPos: Integer;
@@ -630,53 +629,100 @@ begin
   if (GetKeywordValue(FITSfile, 'BSCALE', S, True, True) >= 0) and (S <> '') then begin
     Val(S, Bscale, ErrorPos);
     if ErrorPos <> 0 then
-      FileError('Invalid BSCALE value in file ' + AnsiQuotedStr(FITSfileName, '"'));
+      FileError('Invalid BSCALE value in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
   end;
   if (GetKeywordValue(FITSfile, 'BZERO', S, True, True) >= 0) and (S <> '') then begin
     Val(S, Bzero, ErrorPos);
     if ErrorPos <> 0 then
-      FileError('Invalid BZERO value in file ' + AnsiQuotedStr(FITSfileName, '"'));
+      FileError('Invalid BZERO value in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
   end;
 end;
 
-function GetFITSimage2D(const FITSfileName: string; out Width, Height, BitPix: Integer; out Bscale, Bzero: Double): PChar;
+function GetDateObs(var FITSfile: FITSRecordFile): TDateTime;
 var
-  FITSfile: FITSRecordFile;
+  DateObsStr: string;
+  TimeObsStr: string;
+  TimeObsKeyUsed: Boolean;
+  UtStartKeyUsed: Boolean;
+  P: Integer;
+begin
+  Result := 0;
+  DateObsStr := '';
+  TimeObsStr := '';
+  TimeObsKeyUsed := False;
+  UtStartKeyUsed := False;
+  if (GetKeywordValue(FITSFile, 'DATE-OBS', DateObsStr, True, True) < 0) or (DateObsStr = '') then
+    FileError('DATE-OBS keyword is not found or is empty. File: ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+  DateObsStr := StripQuotes(DateObsStr);
+  P := Pos('T', DateObsStr);
+  if P <> 0 then begin
+    TimeObsStr := Copy(DateObsStr, P + 1, MaxInt);
+    DateObsStr := Copy(DateObsStr, 1, P - 1);
+  end;
+  if TimeObsStr = '' then begin
+    // There is no time part in DATE-OBS.
+    // Try to get time from TIME-OBS
+    TimeObsKeyUsed := (GetKeywordValue(FITSFile, 'TIME-OBS', TimeObsStr, True, True) >= 0) and (TimeObsStr <> '');
+    if not TimeObsKeyUsed then begin
+      // There is no TIME-OBS...
+      // Try to get time from UT-START (IRIS-specific)
+      UtStartKeyUsed := (GetKeywordValue(FITSFile, 'UT-START', TimeObsStr, True, True) >= 0) and (TimeObsStr <> '');
+      if not UtStartKeyUsed then
+        FileError('DATE-OBS value does not contain time part and there is no TIME-OBS nor UT-START keywords. File: ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+    end;
+    TimeObsStr := StripQuotes(TimeObsStr);
+  end;
+
+  if not MakeDateObsFromStrings(Result, DateObsStr, TimeObsStr) then
+    FileError('Cannot determine date/time of observation. Date part = ' + DateObsStr + '; Time part = ' + TimeObsStr + '. File: ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+end;
+
+function GetExposureTime(var FITSfile: FITSRecordFile): Double;
+var
+  ExpTimeStr: string;
+  ErrorPos: Integer;
+begin
+  Result := 0;
+  if (GetKeywordValue(FITSFile, 'EXPTIME', ExpTimeStr, True, True) < 0) or (ExpTimeStr = '') then
+    GetKeywordValue(FITSFile, 'EXPOSURE', ExpTimeStr, True, True);
+  if (ExpTimeStr <> '') then begin
+    Val(ExpTimeStr, Result, ErrorPos);
+    if (ErrorPos <> 0) or (Result < 0) then
+      FileError('EXPTIME/EXPOSURE keyword does exist however it contains invalid value: ' + ExpTimeStr + '. File: ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+  end;
+end;
+
+function GetFITSimage2D(var FITSfile: FITSRecordFile; out Width, Height, BitPix: Integer; out Bscale, Bzero: Double): PChar;
+var
   I, N, NblocksInHeader, StartOfImage, BytePix, NImagePoints, NrecordsToRead, ImageMemSize: Integer;
   NaxisN: TIntArray;
 begin
-  AssignFile(FITSfile, FITSfileName);
-  Reset(FITSfile);
+  N := GetEndPosition(FITSfile);
+  if N < 0 then
+    FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+  GetBscaleBzero(FITSfile, Bscale, Bzero);
+  NblocksInHeader := N div RecordsInBlock + 1;
+  StartOfImage := NblocksInHeader * RecordsInBlock;
+  GetBitPixAndNaxis(FITSfile, BitPix, NaxisN);
+  if Length(NAxisN) <> 2 then
+    FileError('2D FITS expected; NAXIS = ' + IntToStr(Length(NAxisN)) + ' in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+  Width := NAxisN[0];
+  Height := NAxisN[1];
+  BytePix := Abs(BitPix) div 8;
+  NImagePoints := 1;
+  for I := 0 to Length(NaxisN) - 1 do
+    NImagePoints := NImagePoints * NaxisN[I];
+  NrecordsToRead := (NImagePoints * BytePix - 1) div FITSRecordLen + 1;
+  ImageMemSize := NrecordsToRead * FITSRecordLen;
+  GetMem(Result, ImageMemSize);
   try
-    N := GetEndPosition(FITSfile);
-    if N < 0 then
-      FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSfileName, '"'));
-    GetBscaleBzero(FITSfile, FITSfileName, Bscale, Bzero);
-    NblocksInHeader := N div RecordsInBlock + 1;
-    StartOfImage := NblocksInHeader * RecordsInBlock;
-    GetBitPixAndNaxis(FITSfile, FITSfileName, BitPix, NaxisN);
-    if Length(NAxisN) <> 2 then
-      FileError('2D FITS expected; NAXIS = ' + IntToStr(Length(NAxisN)) + ' in file ' + AnsiQuotedStr(FITSfileName, '"'));
-    Width := NAxisN[0];
-    Height := NAxisN[1];
-    BytePix := Abs(BitPix) div 8;
-    NImagePoints := 1;
-    for I := 0 to Length(NaxisN) - 1 do
-      NImagePoints := NImagePoints * NaxisN[I];
-    NrecordsToRead := (NImagePoints * BytePix - 1) div FITSRecordLen + 1;
-    ImageMemSize := NrecordsToRead * FITSRecordLen;
-    GetMem(Result, ImageMemSize);
-    try
-      FillChar(Result^, ImageMemSize, 0);
-      Seek(FITSfile, StartOfImage);
-      BlockRead(FITSfile, Result^, NrecordsToRead);
-    except
-      FreeMem(Result);
-      Result := nil;
-      raise;
-    end;
-  finally
-    CloseFile(FITSFile);
+    FillChar(Result^, ImageMemSize, 0);
+    Seek(FITSfile, StartOfImage);
+    BlockRead(FITSfile, Result^, NrecordsToRead);
+  except
+    FreeMem(Result);
+    Result := nil;
+    raise;
   end;
 end;
 

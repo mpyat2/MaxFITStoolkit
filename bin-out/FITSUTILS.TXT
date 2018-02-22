@@ -14,7 +14,6 @@ Where:
   /B=nn            base file number (default = 1); must be >= 0 (only when generic_name is specified)
   /X=<ext>         extension for output files (.fit by default)
   /F               overwrite existing files in output directory
-  /E               correct DATE-OBS by exposure
   /TS<xxxxx>       shift DATE-OBS by xxxxx seconds (the value can be negative or positive)
                    Example: /TS-10800 shifts DATE-OBS by three hours backwards
   /L               do not truncate image (show full RAW image)
@@ -136,12 +135,11 @@ Where:
 @idobs
 
 Usage:
-idobs file_mask1[.fit] [file_mask2[.fit] ...] [/E] [/P=filename]
+idobs file_mask1[.fit] [file_mask2[.fit] ...] [/E]
 
 Where:
   file_maskX   mask of input files to be processed (several masks are allowed)
   /E           correct time by exposure
-  /P=filename  print FIHED command for filename (stacked image)
   /V           print version
   /H           print this help and halt
 
@@ -150,7 +148,6 @@ Date/Time is extracted from DATE-OBS first,
 if DATE-OBS does contain time part, time is extracted from it,
 otherwise TIME-OBS is used.
 If TIME-OBS is missing, UT-START (IRIS-specific keyword) is searched.
-
 
 Example:
 idobs ser1\calib* ser2\calib* ser3\calib* /E

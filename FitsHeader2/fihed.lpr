@@ -11,7 +11,7 @@ uses
 procedure PrintVersion;
 begin
   WriteLn('FITS Header Viewer/Editor  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2017.11.22.01');
+  WriteLn('Version 2018.02.22.01');
   WriteLn;
 end;  
   
@@ -44,91 +44,85 @@ begin
     WriteLn('File    = ', QuotedStr(ExtractFilename(FileName)))
   else
     Write(QuotedStr(ExtractFilename(FileName)));
-    
-  if IsFITS(FileName) then begin
-    if not (CSVmode or TABmode) then begin
-      if not SETmode then begin
-        // Print header and exit
-        Header := TStringList.Create;
-        try
-          GetHeader(FileName, Header);
-          for I := 0 to Header.Count - 1 do begin
-            if (Keywords.Count < 1) or (Keywords.IndexOf(TrimRight(Copy(Header[I], 1, FITSKeywordLen))) >= 0) then
-              WriteLn(TrimRight(Header[I]));
+
+  FileModeSaved := FileMode;
+  if SETmode then FileMode := fmOpenReadWrite; // Edit mode
+  try
+    AssignFile(FITSFile, FileName);
+    Reset(FITSFile);
+    try
+      if IsFITS(FITSFile) then begin
+        if not SETmode then begin
+          // Print header and exit
+          if not (CSVmode or TABmode) then begin
+            Header := TStringList.Create;
+            try
+              GetHeader(FITSFile, Header);
+              for I := 0 to Header.Count - 1 do begin
+                if (Keywords.Count < 1) or (Keywords.IndexOf(TrimRight(Copy(Header[I], 1, FITSKeywordLen))) >= 0) then
+                  WriteLn(TrimRight(Header[I]));
+              end;
+            finally
+              FreeAndNil(Header);
+            end;
+            WriteLn;
+          end
+          else begin
+            // Table-like output
+            for I := 0 to Keywords.Count - 1 do begin
+              GetKeywordValue(FITSFile, Keywords[I], Value, True, True);
+              if CSVmode then Write(';') else Write(^I);
+              Write(Value);
+            end;
+            WriteLn;
           end;
-        finally
-          FreeAndNil(Header);
-        end;    
-        WriteLn;
+        end
+        else begin
+          // Edit mode
+          for I := 0 to Keywords.Count - 1 do begin
+            Success := False;
+            S := Keywords[I];
+            P := Pos('=', S);
+            if P > 0 then begin
+              Name := AnsiUpperCase(Trim(Copy(S, 1, P - 1)));
+              if (Length(Name) <= FITSKeywordLen) and (Name <> KeywordEND) and (Name <> KeywordHierarch) and (Name <> KeywordContinue) then begin
+                Value := Copy(S, P + 1, MaxInt);
+                if (Name = '') or (Name = KeywordComment) or (Name = KeywordHistory) then begin
+                  if AddCommentLikeKeyword(FITSfile, Name, Value, True) then begin
+                    WriteLn('Added ', Name, ' ', TrimRight(Value));
+                    Success := True;
+                  end;
+                end
+                else begin
+                  if SetKeywordValue(FITSfile, Name, Value, True, '', True) then begin
+                    TempValue := '';
+                    if GetKeywordValue(FITSfile, Name, TempValue, False, False) < 0 then begin
+                      if (Value <> '') or (TempValue <> '') then
+                        FileError('Internal Error: setting value of keyword ' + Name + ' failed.');
+                    end;
+                    WriteLn('Keyword ', Name, ' set to ', TrimRight(TempValue));
+                    Success := True;
+                  end;
+                end;
+              end;
+              if not Success then
+                WriteLn('**** Keyword ', Name, ' cannot be set');
+            end;
+          end;
+          WriteLn;
+        end;
       end
       else begin
-        // Edit mode
-        FileModeSaved := FileMode;
-        FileMode := fmOpenReadWrite;
-        try
-          AssignFile(FITSFile, FileName);
-          Reset(FITSFile);
-          try
-            for I := 0 to Keywords.Count - 1 do begin
-              Success := False;
-              S := Keywords[I];
-              P := Pos('=', S);
-              if P > 0 then begin
-                Name := AnsiUpperCase(Trim(Copy(S, 1, P - 1)));
-                if (Length(Name) <= FITSKeywordLen) and (Name <> KeywordEND) and (Name <> KeywordHierarch) and (Name <> KeywordContinue) then begin
-                  Value := Copy(S, P + 1, MaxInt);
-                  if (Name = '') or (Name = KeywordComment) or (Name = KeywordHistory) then begin
-                    if AddCommentLikeKeyword(FITSfile, FileName, Name, Value, True) then begin
-                      WriteLn('Added ', Name, ' ', TrimRight(Value));
-                      Success := True;
-                    end;  
-                  end
-                  else begin
-                    if SetKeywordValue(FITSfile, FileName, Name, Value, True, '', True) then begin
-                      TempValue := '';
-                      if GetKeywordValue(FITSfile, Name, TempValue, False, False) < 0 then begin
-                        if (Value <> '') or (TempValue <> '') then                      
-                          FileError('Internal Error: setting value of keyword ' + Name + ' failed.');
-                      end;  
-                      WriteLn('Keyword ', Name, ' set to ', TrimRight(TempValue));
-                      Success := True;
-                    end;
-                  end;  
-                end;
-                if not Success then
-                  WriteLn('**** Keyword ', Name, ' cannot be set');
-              end;
-            end;
-          finally
-            CloseFile(FITSfile);
-          end;          
+        if not (CSVmode or TABmode) then begin
+          WriteLn('**** Not a FITS file');
           WriteLn;
-        finally
-          FileMode := FileModeSaved;
-        end;        
-      end;
-    end
-    else begin
-      // Table-like output
-      AssignFile(FITSFile, FileName);
-      Reset(FITSFile);
-      try
-        for I := 0 to Keywords.Count - 1 do begin
-          GetKeywordValue(FITSFile, Keywords[I], Value, True, True);
-          if CSVmode then Write(';') else Write(^I);
-          Write(Value);
         end;
-        WriteLn;
-      finally
-        CloseFile(FITSFile);
       end;
+    finally
+      CloseFile(FITSFile);
     end;
-  end
-  else begin
-    if not (CSVmode or TABmode) then begin
-      WriteLn('**** Not a FITS file');
-      WriteLn;
-    end;
+  finally
+    FileMode := FileModeSaved;
   end;
 end;
 

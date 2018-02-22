@@ -11,19 +11,14 @@ interface
 
 uses Windows, SysUtils {$IFNDEF FPC}, DateUtils{$ENDIF};
 
-function TimeObs(const TimeStr: string; out T: TDateTime): Boolean;
-function DateObs(const DateStr: string; out T: TDateTime): Boolean;
-function IrisDateObs(const DateStr: string; out T: TDateTime): Boolean;
-function MakeDateObsFromIrisDate(out DateTimeObs: TDateTime; const DateObsStr: string; UtStartStr: string = ''; Exposure: Double = 0.0): Boolean; overload;
-function MakeDateObsFromIrisDate(out DateTimeObsStr: string; const DateObsStr: string; UtStartStr: string = ''; Exposure: Double = 0.0): Boolean; overload;
-function DateObsToDateTime(const DateObsStr: string; out DateTimeObs: TDateTime): Boolean;
+function MakeDateObsFromStrings(out DateTimeObs: TDateTime; const DateObsStr: string; const UtStartStr: string): Boolean;
 
 implementation
 
 const
   Digits = ['0','1','2','3','4','5','6','7','8','9'];
 
-function TimeObs(const TimeStr: string; out T: TDateTime): Boolean;
+function TimeObs(out T: TDateTime; const TimeStr: string): Boolean;
 // Assuming that time must be like this: 'H[H]:M[M]:[S[S][.<millisec>]]'
 var
   I, II: Integer;
@@ -86,7 +81,7 @@ begin
   Result := True;
 end;
 
-function DateObs(const DateStr: string; out T: TDateTime): Boolean;
+function DateObs(out T: TDateTime; const DateStr: string): Boolean;
 // This procedure allows: 'YYYY-[M]M-[D]D'
 // Year must be always 4-digit.
 var
@@ -129,7 +124,7 @@ begin
   Result := TryEncodeDate(YYYY, MM, DD, T);
 end;
 
-function IrisDateObs(const DateStr: string; out T: TDateTime): Boolean;
+function IrisDateObs(out T: TDateTime; const DateStr: string): Boolean;
 // IRIS date format: 'DD/MM/YYYY'
 // This procedure allows: '[D]D/[M]M/YYYY'
 // Year must be always 4-digit.
@@ -173,60 +168,23 @@ begin
   Result := TryEncodeDate(YYYY, MM, DD, T);
 end;
 
-function MakeDateObsFromIrisDate(out DateTimeObs: TDateTime; const DateObsStr: string; UtStartStr: string = ''; Exposure: Double = 0.0): Boolean; overload;
+function MakeDateObsFromStrings(out DateTimeObs: TDateTime; const DateObsStr: string; const UtStartStr: string): Boolean;
 var
   D, T: TDateTime;
 begin
   Result := False;
   if Pos('/', DateObsStr) <> 0 then begin 
-    if not IrisDateObs(DateObsStr, D) then Exit;
+    if not IrisDateObs(D, DateObsStr) then Exit;
   end
   else begin
-    if not DateObs(DateObsStr, D) then Exit;
+    if not DateObs(D, DateObsStr) then Exit;
   end;  
   T := 0;
   if UtStartStr <> '' then begin
-    if not TimeObs(UtStartStr, T) then Exit;
+    if not TimeObs(T, UtStartStr) then Exit;
   end;
   DateTimeObs := D + T;
-  if (UtStartStr <> '') and (Exposure > 0) then
-  DateTimeObs := DateTimeObs + Exposure / (24.0*60.0*60.0) / 2.0;
   Result := True;
-end;
-
-function MakeDateObsFromIrisDate(out DateTimeObsStr: string; const DateObsStr: string; UtStartStr: string = ''; Exposure: Double = 0.0): Boolean; overload;
-var
-  DateTimeObs: TDateTime;
-begin
-  DateTimeObsStr := '';
-  Result := MakeDateObsFromIrisDate(DateTimeObs, DateObsStr, UtStartStr, Exposure);
-  if Result then
-    DateTimeObsStr := FormatDateTime('YYYY-MM-DD"T"hh:nn:ss', DateTimeObs);
-end;
-
-function DateObsToDateTime(const DateObsStr: string; out DateTimeObs: TDateTime): Boolean;
-// '2017-11-16[T20:22:21.345]'
-var
-  S: string;
-  P: Integer;
-  T, D: TDateTime;
-begin
-  Result := False;
-  DateTimeObs := 0;
-  S := DateObsStr;
-  if Length(S) < 2 then Exit;
-  if S[1] = '''' then Delete(S, 1, 1);
-  if S[Length(S)] = '''' then Delete(S, Length(S), 1);
-  P := Pos('T', S);
-  if P = 0 then begin
-    Result := DateObs(S, DateTimeObs);
-  end
-  else begin
-    if not DateObs(Copy(S, 1, P - 1), D) then Exit;
-    if not TimeObs(Copy(S, P + 1, MaxInt), T) then Exit;
-    DateTimeObs := D + T;
-    Result := True;
-  end;  
 end;
 
 end.

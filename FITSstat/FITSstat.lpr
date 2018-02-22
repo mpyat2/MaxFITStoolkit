@@ -8,7 +8,7 @@ uses
 procedure PrintVersion;
 begin
   WriteLn('FITSstat  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2018.01.19.01');
+  WriteLn('Version 2018.02.22.01');
   WriteLn;
 end;
 
@@ -93,6 +93,7 @@ end;
 
 procedure ProcessInput(const FITSFileName: string);
 var
+  FITSFile: FITSRecordFile;
   Image: PChar;
   Width, Height, BitPix: Integer;
   Bscale, Bzero: Double;
@@ -103,7 +104,13 @@ var
   medianV, meanV, stdevV, minV, maxV: Double;
 begin
   try
-    Image := GetFITSimage2D(FITSFileName, Width, Height, BitPix, Bscale, Bzero);
+    Assign(FITSFile, FITSFileName);
+    Reset(FITSFile);
+    try
+      Image := GetFITSimage2D(FITSFile, Width, Height, BitPix, Bscale, Bzero);
+    finally
+      CloseFile(FITSFile);
+    end;
     if Width * Height = 0 then
       FileError('One of dimensions is zero. File ' + AnsiQuotedStr(FITSfileName, '"')); // should never occured...
     try

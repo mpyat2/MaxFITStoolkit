@@ -5,7 +5,7 @@ program PFH;
 // https://fits.gsfc.nasa.gov/fits_primer.html
 
 uses
-  Windows, SysUtils, CmdObj, CmdObjStdSwitches, Classes;
+  Windows, SysUtils, CmdObj, {CmdObjStdSwitches, }Classes;
 
 procedure PrintHelp;
 begin

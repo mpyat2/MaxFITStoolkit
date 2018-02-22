@@ -60,13 +60,12 @@ procedure ConvertFile(const FileName: string;
                       PrintInfo: Boolean;
                       const NewFileName: string;
                       CheckExistence: Boolean;
-                      TimeByExposureCorrection: Boolean;
                       DontTruncate: Boolean;
                       TimeShiftInSeconds: Integer;
                       PixelRealNumber: Boolean;
                       BzeroShift: Boolean;
                       FITSParams: TStrings;
-                      out TimeCorrected, TimeShifted: Boolean);
+                      out TimeShifted: Boolean);
 var
   RawProcessor: Pointer;
   RawFrameLeft, RawFrameTop: Word;
@@ -118,7 +117,6 @@ var
   Bzero: Integer;
 begin
   TimeShifted := False;
-  TimeCorrected := False;
   RawFrameLeft := 0;
   RawFrameTop := 0;
   RawFrameWidth := 0;
@@ -305,10 +303,6 @@ begin
       if DateTime <> 0 then begin
         DateTime := DateTime + TimeShiftInSeconds / (24.0*60.0*60.0);
         TimeShifted := TimeShiftInSeconds <> 0;
-        if (ExposureTimeFloat > 0) and TimeByExposureCorrection then begin
-          DateTime := DateTime + ExposureTimeFloat / (24.0*60.0*60.0) / 2.0;
-          TimeCorrected := True;
-        end;
       end;
 
       SetLength(Axes, 2);
@@ -328,12 +322,6 @@ begin
       if TimeShifted then begin
         SetLength(Comments, N + 1);
         Comments[N] := 'DATE-OBS = Original EXIF time shifted by ' + IntToStr(TimeShiftInSeconds) + ' seconds';
-        Inc(N);
-      end;
-
-      if TimeCorrected then begin
-        SetLength(Comments, N + 1);
-        Comments[N] := 'DATE-OBS corrected by exposure';
         Inc(N);
       end;
 
@@ -360,7 +348,6 @@ begin
       DateTimeFile := Now();
 
       DateTimeComment := '';
-      if TimeCorrected then DateTimeComment := 'corrected by exposure';
 
       FITSHeader := MakeFITSHeader(
         FITSbpp,
@@ -386,14 +373,14 @@ begin
             if (Length(Name) <= FITSKeywordLen) and (Name <> KeywordEND) and (Name <> KeywordHierarch) then begin
               Value := Copy(S, P + 1, MaxInt);
               if (Name = '') or (Name = KeywordComment) or (Name = KeywordHistory) then begin
-                if AddCommentLikeKeyword(FITSfile, NewFileName, Name, Value, True) then begin
+                if AddCommentLikeKeyword(FITSfile, Name, Value, True) then begin
                   WriteLn;
                   Write('Added ', Name, ' ', TrimRight(Value));
                   Success := True;
                 end;
               end
               else begin
-                if SetKeywordValue(FITSfile, NewFileName, Name, Value, True, '', True) then begin
+                if SetKeywordValue(FITSfile, Name, Value, True, '', True) then begin
                   TempValue := '';
                   if GetKeywordValue(FITSfile, Name, TempValue, False, False) < 0 then begin
                     if (Value <> '') or (TempValue <> '') then
@@ -432,7 +419,6 @@ procedure ProcessInput(const FileMasks: array of string;
                        const OutputDir: string;
                        Overwrite: Boolean;
                        BaseNumber: Integer;
-                       TimeByExposureCorrection: Boolean;
                        DontTruncate: Boolean;
                        TimeShiftInSeconds: Integer;
                        PixelRealNumber: Boolean;
@@ -446,7 +432,6 @@ var
   NewFileName: string;
   TempOutputDir: string;
   TimeShifted: Boolean;
-  TimeCorrected: Boolean;
 begin
   try
     FileNumber := 0;
@@ -468,9 +453,8 @@ begin
         Write(FileName);
         if not PrintInfo then
           Write(^I'->'^I, NewFileName);
-        ConvertFile(FileList[I], PrintInfo, NewFileName, not Overwrite, TimeByExposureCorrection, DontTruncate, TimeShiftInSeconds, PixelRealNumber, BzeroShift, FITSParams, TimeCorrected, TimeShifted);
+        ConvertFile(FileList[I], PrintInfo, NewFileName, not Overwrite, DontTruncate, TimeShiftInSeconds, PixelRealNumber, BzeroShift, FITSParams, TimeShifted);
         if TimeShifted then Write('DATE-OBS shifted by ', TimeShiftInSeconds, ' seconds');
-        if TimeCorrected then Write(' DATE-OBS corrected by exposure');
         WriteLn;
         Inc(FileNumber);
       end;
@@ -494,7 +478,6 @@ var
   GenericName: string;
   OutputDir: string;
   Overwrite: Boolean;
-  TimeByExposureCorrection: Boolean;
   BaseNumber: Integer;
   DontTruncate: Boolean;
   TimeShiftInSeconds: Integer;
@@ -565,8 +548,6 @@ begin
 
   Overwrite := CmdObj.CmdLine.IsCmdOption('F');
 
-  TimeByExposureCorrection := CmdObj.CmdLine.IsCmdOption('E');
-
   DontTruncate := CmdObj.CmdLine.IsCmdOption('L');
 
   PixelRealNumber := CmdObj.CmdLine.IsCmdOption('R');
@@ -605,7 +586,7 @@ begin
     end;
     FileList := TStringListNaturalSort.Create;
     try
-      ProcessInput(InputFileMasks, PrintInfo, GenericName, OutputDir, Overwrite, BaseNumber, TimeByExposureCorrection, DontTruncate, TimeShiftInSeconds, PixelRealNumber, BzeroShift, FITSParams, OutputExt);
+      ProcessInput(InputFileMasks, PrintInfo, GenericName, OutputDir, Overwrite, BaseNumber, DontTruncate, TimeShiftInSeconds, PixelRealNumber, BzeroShift, FITSParams, OutputExt);
       WriteLn;
     finally
       FreeAndNil(FileList);

@@ -29,7 +29,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="/p=rgb  test /f"/>
+        <CommandLineParams Value="/p=rggb  test /f"/>
       </local>
     </RunParams>
     <Units Count="1">

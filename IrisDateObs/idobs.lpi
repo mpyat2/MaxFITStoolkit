@@ -29,12 +29,14 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
+        <CommandLineParams Value="test.fit /E"/>
       </local>
     </RunParams>
     <Units Count="1">
       <Unit0>
         <Filename Value="idobs.lpr"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="IDOBS"/>
       </Unit0>
     </Units>
   </ProjectOptions>

@@ -8,7 +8,7 @@ uses
 procedure PrintVersion;
 begin
   WriteLn('FITS Flip  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2017.11.26.01');
+  WriteLn('Version 2018.02.22.01');
   WriteLn;
 end;
 
@@ -44,7 +44,7 @@ begin
     FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSfileName, '"'));
   NblocksInHeader := N div RecordsInBlock + 1;
   StartOfImage := NblocksInHeader * RecordsInBlock;
-  GetBitPixAndNaxis(FITSfile, FITSfileName, BitPix, NaxisN);
+  GetBitPixAndNaxis(FITSfile, BitPix, NaxisN);
   if (Length(NaxisN) < 2) or (Length(NaxisN) > 3) then
     FileError('Cannot work with NAXIS other than 2 or 3, got ' + IntToStr(Length(NaxisN)) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
   BytePix := Abs(BitPix) div 8;
@@ -110,13 +110,12 @@ end;
 procedure ProcessFile(const FileName: string; Vertically: Boolean);
 var
   FITSfile: FITSRecordFile;
-  Value: string;
 begin
   Write('Processing ', ExtractFileName(FileName));
   AssignFile(FITSfile, FileName);
   Reset(FITSfile);
   try
-    if (GetKeywordValue(FITSfile, KeywordSimple, Value, True, True) <> 0) or ((Value <> 'T') and (Value <> 'F')) then
+    if not IsFits(FITSfile) then
       FileError('Not a valid FITS file: ' + AnsiQuotedStr(FileName, '"'));
     FITSflip(FITSfile, FileName, Vertically);
   finally

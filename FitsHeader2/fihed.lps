@@ -10,10 +10,10 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="FIHED"/>
         <IsVisibleTab Value="True"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="58"/>
-        <CursorPos X="17" Y="78"/>
-        <UsageCount Value="28"/>
+        <TopLine Value="91"/>
+        <CursorPos X="3" Y="126"/>
+        <UsageCount Value="29"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
       <Unit1>
@@ -25,9 +25,11 @@
       </Unit1>
       <Unit2>
         <Filename Value="..\Units\FITSUtils.pas"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="7" Y="20"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="45"/>
+        <CursorPos X="11" Y="64"/>
         <UsageCount Value="14"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit2>
       <Unit3>
@@ -51,10 +53,16 @@
         <UsageCount Value="10"/>
       </Unit5>
     </Units>
-    <General>
-      <ActiveWindowIndexAtStart Value="-1"/>
-    </General>
-    <JumpHistory HistoryIndex="-1"/>
+    <JumpHistory Count="2" HistoryIndex="1">
+      <Position1>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="78" Column="17" TopLine="58"/>
+      </Position1>
+      <Position2>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="60" Column="15" TopLine="40"/>
+      </Position2>
+    </JumpHistory>
   </ProjectSession>
   <Debugging>
     <Watches Count="6">

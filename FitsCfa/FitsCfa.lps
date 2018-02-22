@@ -10,18 +10,19 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="FITSCFA"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="348"/>
-        <CursorPos X="11" Y="379"/>
-        <UsageCount Value="23"/>
+        <TopLine Value="204"/>
+        <CursorPos Y="255"/>
+        <UsageCount Value="24"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
       <Unit1>
         <Filename Value="..\Units\FITSUtils.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="298"/>
-        <CursorPos Y="317"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="152"/>
+        <CursorPos Y="167"/>
         <UsageCount Value="10"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit1>
       <Unit2>
@@ -65,10 +66,11 @@
       </Unit6>
       <Unit7>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.2\source\rtl\inc\systemh.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="1173"/>
-        <CursorPos X="11" Y="1192"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="1179"/>
+        <CursorPos X="11" Y="1198"/>
         <UsageCount Value="10"/>
+        <Loaded Value="True"/>
       </Unit7>
       <Unit8>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.2\source\rtl\inc\file.inc"/>
@@ -85,72 +87,126 @@
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit9>
     </Units>
-    <JumpHistory Count="17" HistoryIndex="16">
+    <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="379" Column="11" TopLine="352"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="237" TopLine="221"/>
       </Position1>
       <Position2>
-        <Filename Value="FitsCfa.lpr"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
       </Position2>
       <Position3>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="40" Column="11" TopLine="9"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="170" TopLine="153"/>
       </Position3>
       <Position4>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="309" Column="11" TopLine="278"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="727" Column="5" TopLine="689"/>
       </Position4>
       <Position5>
-        <Filename Value="FitsCfa.lpr"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="170" Column="16" TopLine="152"/>
       </Position5>
       <Position6>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="40" Column="11" TopLine="9"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="167" TopLine="152"/>
       </Position6>
       <Position7>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="309" Column="11" TopLine="278"/>
+        <Caret Line="255" TopLine="236"/>
       </Position7>
       <Position8>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="333" Column="9" TopLine="302"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="167" TopLine="152"/>
       </Position8>
       <Position9>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="338" Column="9" TopLine="307"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="168" TopLine="152"/>
       </Position9>
       <Position10>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="349" Column="9" TopLine="318"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="170" TopLine="152"/>
       </Position10>
       <Position11>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="378" Column="21" TopLine="348"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="171" TopLine="152"/>
       </Position11>
       <Position12>
-        <Filename Value="FitsCfa.lpr"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="172" TopLine="152"/>
       </Position12>
       <Position13>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="40" Column="11" TopLine="9"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="173" TopLine="152"/>
       </Position13>
       <Position14>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="309" Column="11" TopLine="278"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="174" TopLine="152"/>
       </Position14>
       <Position15>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="333" Column="9" TopLine="302"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="175" TopLine="152"/>
       </Position15>
       <Position16>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="338" Column="9" TopLine="307"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="176" TopLine="152"/>
       </Position16>
       <Position17>
-        <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="349" Column="9" TopLine="318"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="177" TopLine="152"/>
       </Position17>
+      <Position18>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="167" TopLine="152"/>
+      </Position18>
+      <Position19>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="255" TopLine="236"/>
+      </Position19>
+      <Position20>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="167" TopLine="152"/>
+      </Position20>
+      <Position21>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="168" TopLine="152"/>
+      </Position21>
+      <Position22>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="170" TopLine="152"/>
+      </Position22>
+      <Position23>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="171" TopLine="152"/>
+      </Position23>
+      <Position24>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="172" TopLine="152"/>
+      </Position24>
+      <Position25>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="173" TopLine="152"/>
+      </Position25>
+      <Position26>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="174" TopLine="152"/>
+      </Position26>
+      <Position27>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="175" Column="15" TopLine="152"/>
+      </Position27>
+      <Position28>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="176" TopLine="152"/>
+      </Position28>
+      <Position29>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="177" TopLine="152"/>
+      </Position29>
+      <Position30>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="178" TopLine="152"/>
+      </Position30>
     </JumpHistory>
   </ProjectSession>
 </CONFIG>

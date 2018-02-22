@@ -8,7 +8,7 @@ uses
 procedure PrintVersion;
 begin
   WriteLn('FITS RGB splitter  Maksym Pyatnytskyy  2018');
-  WriteLn('Version 2018.01.02.01');
+  WriteLn('Version 2018.02.22.01');
   WriteLn;
 end;
 
@@ -48,7 +48,7 @@ begin
     FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSfileName, '"'));
   NblocksInHeader := N div RecordsInBlock + 1;
   StartOfImage := NblocksInHeader * RecordsInBlock;
-  GetBitPixAndNaxis(FITSfile, FITSfileName, BitPix, NaxisN);
+  GetBitPixAndNaxis(FITSfile, BitPix, NaxisN);
   if (Length(NaxisN) <> 3) then
     FileError('Cannot work with NAXIS other than 3, got ' + IntToStr(Length(NaxisN)) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
   BytePix := Abs(BitPix) div 8;
@@ -90,10 +90,10 @@ begin
             Rewrite(OutFile);
             try
               BlockWrite(OutFile, Header^, StartOfImage);
-              SetKeywordValue(OutFile, OutFileName, 'NAXIS', '2', True, '', False);
+              SetKeywordValue(OutFile, 'NAXIS', '2', True, '', False);
               Seek(OutFile, StartOfImage);
               BlockWrite(OutFile, ImageLayer^, ImageLayerSizePadded div FITSRecordLen);
-              AddCommentLikeKeyword(OutFile, OutFileName, 'COMMENT', 'Color Layer: ' + ColorNames[ColorL], True);
+              AddCommentLikeKeyword(OutFile, 'COMMENT', 'Color Layer: ' + ColorNames[ColorL], True);
             finally
               CloseFile(OutFile);
             end;
@@ -118,13 +118,12 @@ end;
 procedure ProcessFile(const FileName: string; const OutputDir: string; Overwrite: Boolean);
 var
   FITSfile: FITSRecordFile;
-  Value: string;
 begin
   Write('Processing ', ExtractFileName(FileName));
   AssignFile(FITSfile, FileName);
   Reset(FITSfile);
   try
-    if (GetKeywordValue(FITSfile, KeywordSimple, Value, True, True) <> 0) or ((Value <> 'T') and (Value <> 'F')) then
+    if not IsFits(FITSfile) then
       FileError('Not a valid FITS file: ' + AnsiQuotedStr(FileName, '"'));
     FITSSplitRGB(FITSfile, FileName, OutputDir, Overwrite);
   finally
