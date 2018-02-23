@@ -8,7 +8,7 @@ uses
 procedure PrintVersion;
 begin
   WriteLn('AIJ photometry log parser  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2017.12.05.01');
+  WriteLn('Version 2018.02.22.01');
 end;
 
 procedure InvalidFloatingPointValueError(const Value: string);
@@ -171,6 +171,8 @@ var
   PrintHlp: Boolean;
   InputFileName: string;
   OutputFileName: string;
+  ParamN: Integer;
+  S: string;
 
 begin
   PrintVer := CmdObj.CmdLine.IsCmdOption('V') or CmdObj.CmdLine.IsCmdOption('version');
@@ -183,8 +185,33 @@ begin
     PrintHelp;
     Halt(1);
   end;
-  Quiet := CmdObj.CmdLine.IsCmdOption('Q');
-  TabbedOutput := CmdObj.CmdLine.IsCmdOption('T');
+
+  Quiet := False;
+  TabbedOutput := False;
+
+  for ParamN := 1 to CmdObj.CmdLine.ParamCount do begin
+    S := CmdObj.CmdLine.ParamStr(ParamN);
+    if CmdObj.CmdLine.FirstCharIsSwitch(S) then begin
+      if Length(S) = 1 then begin
+        WriteLn('**** Invalid command-line parameter: ' + S);
+        Halt(1);
+      end;
+      if CmdObj.CmdLine.ParamIsKey(S, 'V') or CmdObj.CmdLine.ParamIsKey(S, 'version') then begin
+        // nothing: already processed.
+      end
+      else
+      if CmdObj.CmdLine.ParamIsKey(S, 'Q') then
+        Quiet := True
+      else
+      if CmdObj.CmdLine.ParamIsKey(S, 'T') then
+        TabbedOutput := True
+      else begin
+        WriteLn('**** Invalid command-line parameter: ' + S);
+        Halt(1);
+      end;
+    end;
+  end;
+
   InputFileName := ExpandFileName(CmdObj.CmdLine.ParamFile(1));
   if ExtractFileExt(InputFileName) = '' then
     InputFileName := ChangeFileExt(InputFileName, '.dat');

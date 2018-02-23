@@ -19,6 +19,7 @@ uses
 
 const recordEND     = 'END                                                                             ';    
 const KeywordEND    = 'END';
+const KeywordSIMPLE = 'SIMPLE';
 const KeywordComment= 'COMMENT';
 const KeywordHistory= 'HISTORY';
 const KeywordHierarch='HIERARCH';

@@ -2,9 +2,7 @@
 
 program iconvraw;
 
-uses Windows, SysUtils, DateUtils, Classes, CmdObj, EnumFiles,
-  StringListNaturalSort, LibRawMxWrapper,
-  FITSUtils, FITSTimeUtils, FitsUtilsHelp, CommonIni;
+uses Windows, SysUtils, DateUtils, Classes, CmdObj, EnumFiles, StringListNaturalSort, LibRawMxWrapper, FITSUtils, FITSTimeUtils, FitsUtilsHelp, CommonIni;
 
 procedure PrintVersion;
 begin
@@ -484,13 +482,12 @@ var
   PixelRealNumber: Boolean;
   BzeroShift: Boolean;
   OutputExt: string;
-  ErrorPos: Integer;
-  PrintVer: Boolean;
   PrintInfo: Boolean;
   FITSparams: TStringList;
-  S: string;
-  N: Integer;
-  I: Integer;
+  PrintVer: Boolean;
+  ErrorPos: Integer;
+  S, S2: string;
+  ParamN: Integer;
 
 begin
   FileMode := fmOpenRead;
@@ -503,9 +500,7 @@ begin
     Halt(1);
   end;
 
-  N := CmdObj.CmdLine.FileCount;
-
-  if (N < 1) then begin
+  if (CmdObj.CmdLine.FileCount < 1) then begin
     if not PrintVer then begin
       WriteLn('**** At least one filemask must be specified');
       WriteLn;
@@ -514,76 +509,106 @@ begin
     Halt(1);
   end;
 
-  PrintInfo := CmdObj.CmdLine.IsCmdOption('I');
-
-  GenericName := CmdObj.CmdLine.KeyValue('G=');
-  // \/:*?
-  if (Pos('\', GenericName) <> 0) or
-     (Pos('/', GenericName) <> 0) or
-     (Pos(':', GenericName) <> 0) or
-     (Pos('*', GenericName) <> 0) or
-     (Pos('?', GenericName) <> 0)
-  then begin
-    WriteLn('**** Generic name must not contain \/:*?');
-    WriteLn;
-    PrintHelp;
-    Halt(1);
-  end;
-
-  OutputDir := CmdObj.CmdLine.KeyValue('O=');
-  if OutputDir <> '' then
-    OutputDir := IncludeTrailingPathDelimiter(ExpandFileName(OutputDir));
-
+  // Other options
+  InputFileMasks := nil;
+  GenericName := '';
+  OutputDir := '';
+  Overwrite := False;
   BaseNumber := 1;
-  S := CmdObj.CmdLine.KeyValue('B=');
-  if S <> '' then begin
-    Val(S, BaseNumber, ErrorPos);
-    if (ErrorPos <> 0) or (BaseNumber < 0) then begin
-      WriteLn('**** Base filenumber must be integer >= 0');
-      WriteLn;
-      PrintHelp;
-      Halt(1);
-    end;
-  end;
-
-  Overwrite := CmdObj.CmdLine.IsCmdOption('F');
-
-  DontTruncate := CmdObj.CmdLine.IsCmdOption('L');
-
-  PixelRealNumber := CmdObj.CmdLine.IsCmdOption('R');
-  BzeroShift := CmdObj.CmdLine.IsCmdOption('S');
-
-  OutputExt := CmdObj.CmdLine.KeyValue('X=');
-  if OutputExt = '' then
-    OutputExt := '.fit';
-  if OutputExt[1] <> '.' then OutputExt := '.' + OutputExt;
-
+  DontTruncate := False;
   TimeShiftInSeconds := 0;
-  S := CmdObj.CmdLine.KeyValue('TS');
-  if S <> '' then begin
-    Val(S, TimeShiftInSeconds, ErrorPos);
-    if ErrorPos <> 0 then begin
-      WriteLn('**** Time Shift must be integer number');
-      WriteLn;
-      PrintHelp;
-      Halt(1);
-    end;
-  end;
-
-  SetLength(InputFileMasks, N);
-  for I := 1 to N do begin
-    InputFileMasks[I - 1] := ExpandFileName(CmdObj.CmdLine.ParamFile(I));
-  end;
-
+  PixelRealNumber := False;
+  BzeroShift := False;
+  OutputExt := '.fit';
+  PrintInfo := False;
   FITSparams := TStringList.Create;
   try
-    for I := 1 to CmdObj.CmdLine.ParamCount do begin
-      S := CmdObj.CmdLine.ParamStr(I);
-      if CmdObj.CmdLine.FirstCharIsSwitch(S) and (Copy(S, 2, 1) = '$') and (Pos('=', S) <> 0) then begin
-          Delete(S, 1, 2);
-          FITSparams.Add(S);
+    for ParamN := 1 to CmdObj.CmdLine.ParamCount do begin
+      S := CmdObj.CmdLine.ParamStr(ParamN);
+      if CmdObj.CmdLine.FirstCharIsSwitch(S) then begin
+        if Length(S) = 1 then begin
+          WriteLn('**** Invalid command-line parameter: ' + S);
+          Halt(1);
+        end;
+        if CmdObj.CmdLine.ParamIsKey(S, 'V') or CmdObj.CmdLine.ParamIsKey(S, 'version') then begin
+          // nothing: already processed.
+        end
+        else
+        if CmdObj.CmdLine.ParamIsKey(S, 'I') then
+          PrintInfo := True
+        else
+        if CmdObj.CmdLine.ParamIsKey(S, 'F') then
+          Overwrite := True
+        else
+        if CmdObj.CmdLine.ParamIsKey(S, 'L') then
+          DontTruncate := True
+        else
+        if CmdObj.CmdLine.ParamIsKey(S, 'R') then
+          PixelRealNumber := True
+        else
+        if CmdObj.CmdLine.ParamIsKey(S, 'S') then
+          BzeroShift := True
+        else
+        if (Copy(S, 2, 1) = '$') and (Pos('=', S) <> 0) then
+          FITSparams.Add(Copy(S, 3, MaxInt))
+        else
+        if CmdObj.CmdLine.ExtractParamValue(S, 'G=', GenericName) then begin
+          if GenericName <> '' then begin
+            // \/:*?
+            if (Pos('\', GenericName) <> 0) or
+               (Pos('/', GenericName) <> 0) or
+               (Pos(':', GenericName) <> 0) or
+               (Pos('*', GenericName) <> 0) or
+               (Pos('?', GenericName) <> 0)
+            then begin
+              WriteLn('**** Generic name must not contain \/:*?');
+              Halt(1);
+            end;
+          end;
+        end
+        else
+        if CmdObj.CmdLine.ExtractParamValue(S, 'O=', OutputDir) then begin
+          if OutputDir <> '' then
+            OutputDir := IncludeTrailingPathDelimiter(ExpandFileName(OutputDir));
+        end
+        else
+        if CmdObj.CmdLine.ExtractParamValue(S, 'B=', S2) then begin
+          if S2 <> '' then begin
+            Val(S2, BaseNumber, ErrorPos);
+            if (ErrorPos <> 0) or (BaseNumber < 0) then begin
+              WriteLn('**** Base filenumber must be an integer >= 0');
+              Halt(1);
+            end;
+          end;
+        end
+        else
+        if CmdObj.CmdLine.ExtractParamValue(S, 'X=', S2) then begin
+          if S2 <> '' then OutputExt := S2;
+          if OutputExt[1] <> '.' then OutputExt := '.' + OutputExt;
+        end
+        else
+        if CmdObj.CmdLine.ExtractParamValue(S, 'TS', S2) then begin
+          if S2 <> '' then begin
+            Val(S2, TimeShiftInSeconds, ErrorPos);
+            if ErrorPos <> 0 then begin
+              WriteLn('**** Time Shift must be an integer number');
+              Halt(1);
+            end;
+          end;
+        end
+        else begin
+          WriteLn('**** Invalid command-line parameter: ' + S);
+          Halt(1);
+        end;
+      end
+      else begin
+        if S <> '' then begin
+          SetLength(InputFileMasks, Length(InputFileMasks) + 1);
+          InputFileMasks[Length(InputFileMasks) - 1] := ExpandFileName(S);
+        end;
       end;
     end;
+
     FileList := TStringListNaturalSort.Create;
     try
       ProcessInput(InputFileMasks, PrintInfo, GenericName, OutputDir, Overwrite, BaseNumber, DontTruncate, TimeShiftInSeconds, PixelRealNumber, BzeroShift, FITSParams, OutputExt);

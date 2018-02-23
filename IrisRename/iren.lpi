@@ -35,6 +35,7 @@
       <Unit0>
         <Filename Value="iren.lpr"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="IREN"/>
       </Unit0>
     </Units>
   </ProjectOptions>

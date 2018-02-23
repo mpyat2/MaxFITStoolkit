@@ -10,8 +10,8 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="FITSCFA"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="204"/>
-        <CursorPos Y="255"/>
+        <TopLine Value="342"/>
+        <CursorPos X="25" Y="368"/>
         <UsageCount Value="24"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>

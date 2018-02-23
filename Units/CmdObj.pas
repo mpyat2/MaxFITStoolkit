@@ -1,10 +1,3 @@
-{*****************************************************************************}
-{                                                                             }
-{ CmdObj -- command line utilities                                            }
-{ (c) 2000 Maksym Pyatnytskyy                                                 }
-{                                                                             }
-{*****************************************************************************}
-
 unit CmdObj;
 
 interface
@@ -12,6 +5,9 @@ interface
 uses Windows, SysUtils;
 
 type
+
+  { TCmdObj }
+
   TCmdObj = class(TObject)
   private
     FSwitches: TSysCharSet;
@@ -25,6 +21,8 @@ type
     function FileCount: Integer;
     function ParamCount: Integer;
     function ParamStr(No: Integer): String;
+    function ParamIsKey(const Param: string; const Key: string): Boolean;
+    function ExtractParamValue(const Param: string; const Key: string; var Value: string): Boolean;
     property Switches: TSysCharSet read FSwitches write SetSwitches;
   end;
 
@@ -133,6 +131,20 @@ end;
 function TCmdObj.ParamStr(No: Integer): String;
 begin
   Result := System.ParamStr(No);
+end;
+
+function TCmdObj.ParamIsKey(const Param: string; const Key: string): Boolean;
+begin
+  Result := FirstCharIsSwitch(Param) and (AnsiCompareText(Key, Copy(Param, 2, MaxInt)) = 0);
+end;
+
+function TCmdObj.ExtractParamValue(const Param: string; const Key: string; var Value: string): Boolean;
+begin
+  Result := False;
+  if FirstCharIsSwitch(Param) and (AnsiCompareText(Key, Copy(Param, 2, Length(Key))) = 0) then begin
+    Value := Copy(Param, Length(Key) + 2, MaxInt);
+    Result := True;
+  end;
 end;
 
 initialization

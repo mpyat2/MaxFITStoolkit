@@ -313,9 +313,8 @@ var
   PrintVer: Boolean;
   Overwrite: Boolean;
   Profile: string;
-  ProfileDefined: Boolean;
-  S: string;
-  N: Integer;
+  S, S2: string;
+  ParamN: Integer;
   I: Integer;
 
 begin
@@ -334,45 +333,67 @@ begin
     Halt(1);
   end;
 
-  N := CmdObj.CmdLine.FileCount;
-
-  if (N < 1) then begin
+  if (CmdObj.CmdLine.FileCount < 1) then begin
     if not PrintVer then begin
       WriteLn('**** At least one filemask must be specified');
       WriteLn;
-      PrintHelp;
     end;
     Halt(1);
   end;
 
-  SetLength(InputFileMasks, N);
-  for I := 1 to N do begin
-    InputFileMasks[I - 1] := ExpandFileName(CmdObj.CmdLine.ParamFile(I));
-    if ExtractFileExt(InputFileMasks[I - 1]) = '' then InputFileMasks[I - 1] := ChangeFileExt(InputFileMasks[I - 1], '.fit');
+  // Other options
+  InputFileMasks := nil;
+  Profile := 'DEFAULT';
+  OutputDir := '';
+  Overwrite := False;
+
+  for ParamN := 1 to CmdObj.CmdLine.ParamCount do begin
+    S := CmdObj.CmdLine.ParamStr(ParamN);
+    if CmdObj.CmdLine.FirstCharIsSwitch(S) then begin
+      if Length(S) = 1 then begin
+        WriteLn('**** Invalid command-line parameter: ' + S);
+        Halt(1);
+      end;
+      if CmdObj.CmdLine.ParamIsKey(S, 'V') or CmdObj.CmdLine.ParamIsKey(S, 'version') then begin
+        // nothing: already processed.
+      end
+      else
+      if CmdObj.CmdLine.ExtractParamValue(S, 'O=', OutputDir) then begin
+        if OutputDir <> '' then
+          OutputDir := IncludeTrailingPathDelimiter(ExpandFileName(OutputDir));
+      end
+      else
+      if CmdObj.CmdLine.ExtractParamValue(S, 'P=', S2) then begin
+        if S2 <> '' then
+          Profile := S2;
+      end
+      else
+      if CmdObj.CmdLine.ParamIsKey(S, 'F') then
+        Overwrite := True
+      else begin
+        WriteLn('**** Invalid command-line parameter: ' + S);
+        Halt(1);
+      end;
+    end
+    else begin
+      if S <> '' then begin
+        S := ExpandFileName(S);
+        if ExtractFileExt(S) = '' then S := ChangeFileExt(S, '.fit');
+        SetLength(InputFileMasks, Length(InputFileMasks) + 1);
+        InputFileMasks[Length(InputFileMasks) - 1] := S;
+      end;
+    end;
   end;
-
-  Profile := Trim(CmdObj.CmdLine.KeyValue('P='));
-  if Profile = '' then Profile := 'DEFAULT';
-
-  OutputDir := Trim(CmdObj.CmdLine.KeyValue('O='));
-  if OutputDir <> '' then OutputDir := ExpandFileName(OutputDir);
-
-  Overwrite := CmdObj.CmdLine.IsCmdOption('F');
 
   Ini := TMemIniFile.Create(ChangeFileExt(ParamStr(0), '.INI'));
   try
     // Check section
-    ProfileDefined := True;
     for I := 0 to 3 do begin
       S := Trim(Ini.ReadString(Profile, IntToStr(I+1), ''));
       if S = '' then begin
-        ProfileDefined := False;
-        Break;
+        WriteLn('**** Error: Profile ' + Profile + ' is not defined or partially undefined!');
+        Halt(1);
       end;
-    end;
-    if not ProfileDefined then begin
-      WriteLn('**** Error: Profile ' + Profile + ' is not defined or partially undefined!');
-      Halt(1);
     end;
     FileList := TStringListNaturalSort.Create;
     try

@@ -21,10 +21,10 @@ begin
 end;
 
 var
-  Keywords: TStringList;
   CSVmode: Boolean;
   TABmode: Boolean;
   SETmode: Boolean;
+  Keywords: TStringList;
   FileList: TStringListNaturalSort;  
   
 procedure ProcessFile(const FileName: string); 
@@ -85,7 +85,7 @@ begin
             P := Pos('=', S);
             if P > 0 then begin
               Name := AnsiUpperCase(Trim(Copy(S, 1, P - 1)));
-              if (Length(Name) <= FITSKeywordLen) and (Name <> KeywordEND) and (Name <> KeywordHierarch) and (Name <> KeywordContinue) then begin
+              if (Length(Name) <= FITSKeywordLen) and (Name <> KeywordEND) and (Name <> KeywordHierarch) and (Name <> KeywordContinue) and (Name <> KeywordSIMPLE) then begin
                 Value := Copy(S, P + 1, MaxInt);
                 if (Name = '') or (Name = KeywordComment) or (Name = KeywordHistory) then begin
                   if AddCommentLikeKeyword(FITSfile, Name, Value, True) then begin
@@ -100,13 +100,16 @@ begin
                       if (Value <> '') or (TempValue <> '') then
                         FileError('Internal Error: setting value of keyword ' + Name + ' failed.');
                     end;
-                    WriteLn('Keyword ', Name, ' set to ', TrimRight(TempValue));
+                    WriteLn('Keyword "', Name, '" set to "', TrimRight(TempValue) + '"');
                     Success := True;
                   end;
                 end;
               end;
               if not Success then
-                WriteLn('**** Keyword ', Name, ' cannot be set');
+                WriteLn('**** Keyword "', Name, '" cannot be set');
+            end
+            else begin
+              WriteLn('**** No value specified for keyword "', AnsiUpperCase(S), '"');
             end;
           end;
           WriteLn;
@@ -173,12 +176,11 @@ begin
 end;
   
 var
-  ParamList: TStringList;
   InputFileMasks: array of string;
-  PrintVer: Boolean;  
+  PrintVer: Boolean;
+  SwitchChar: Char;
   S: string;  
-  N: Integer;
-  I: Integer;
+  ParamN: Integer;
 
 begin
   FileMode := fmOpenRead;
@@ -191,55 +193,67 @@ begin
     Halt(1);
   end;
 
-  N := CmdObj.CmdLine.FileCount;
-
-  if (N < 1) then begin
+  if (CmdObj.CmdLine.FileCount < 1) then begin
     if not PrintVer then begin
       WriteLn('**** At least one filemask must be specified');
       WriteLn;
       PrintHelp;
-    end;  
+    end;
     Halt(1);
   end;
 
-  SetLength(InputFileMasks, N);
-  for I := 1 to N do begin
-    InputFileMasks[I - 1] := ExpandFileName(CmdObj.CmdLine.ParamFile(I));
-    if ExtractFileExt(InputFileMasks[I - 1]) = '' then InputFileMasks[I - 1] := ChangeFileExt(InputFileMasks[I - 1], '.fit');
-  end;
+  InputFileMasks := nil;
+  CSVmode := False;
+  TABmode := False;
+  SETmode := False;
 
-  ParamList := TStringList.Create;
+  Keywords := TStringList.Create;
   try
-    Keywords := TStringList.Create;
-    try
-      for I := 1 to CmdObj.CmdLine.ParamCount do begin
-        S := CmdObj.CmdLine.ParamStr(I);
+    for ParamN := 1 to CmdObj.CmdLine.ParamCount do begin
+      S := CmdObj.CmdLine.ParamStr(ParamN);
+      if CmdObj.CmdLine.FirstCharIsSwitch(S) then begin
+        SwitchChar := S[1];
+        Delete(S, 1, 1);
         if CmdObj.CmdLine.FirstCharIsSwitch(S) then begin
-            Delete(S, 1, 1);
-            // There can be multiply /comment or /hystory parameters... (also several identical columns in CSV or TAB modes)
-            {if ParamList.IndexOf(S) < 0 then }ParamList.Add(S);
+          if CmdObj.CmdLine.ParamIsKey(S, 'V') or CmdObj.CmdLine.ParamIsKey(S, 'version') then begin
+            // nothing: already processed.
+          end
+          else
+          if CmdObj.CmdLine.ParamIsKey(S, 'CSV') then
+            CSVmode := True
+          else
+          if CmdObj.CmdLine.ParamIsKey(S, 'TAB') then
+            TABmode := True
+          else
+          if CmdObj.CmdLine.ParamIsKey(S, 'SET') then
+            SETmode := True
+          else begin
+            WriteLn('**** Invalid command-line parameter: ' + SwitchChar + S);
+            Halt(1);
+          end;
+        end
+        else begin
+          // There can be multiply /comment or /hystory parameters... (also several identical columns in CSV or TAB modes)
+          // Empty keyword is allowed!
+          Keywords.Add(TrimRight(S));
+        end;
+      end
+      else begin
+        if S <> '' then begin
+          S := ExpandFileName(S);
+          if ExtractFileExt(S) = '' then S := ChangeFileExt(S, '.fit');
+          SetLength(InputFileMasks, Length(InputFileMasks) + 1);
+          InputFileMasks[Length(InputFileMasks) - 1] := S;
         end;
       end;
-      for I := 0 to ParamList.Count - 1 do begin
-        S := TrimRight(ParamList[I]);
-        // Empty keyword is allowed!
-        if not CmdObj.CmdLine.FirstCharIsSwitch(S) then begin
-          {if Keywords.IndexOf(S) < 0 then }Keywords.Add(S);
-        end;  
-      end;
-      CSVmode := ParamList.IndexOf('/CSV') >= 0;
-      TABmode := ParamList.IndexOf('/TAB') >= 0;
-      SETmode := ParamList.IndexOf('/SET') >= 0;
-      FileList := TStringListNaturalSort.Create;
-      try    
-        ProcessInput(InputFileMasks);
-      finally
-        FreeAndNil(FileList);
-      end;
+    end;
+    FileList := TStringListNaturalSort.Create;
+    try
+      ProcessInput(InputFileMasks);
     finally
-      FreeAndNil(Keywords);
-    end;  
+      FreeAndNil(FileList);
+    end;
   finally
-    FreeAndNil(ParamList);
-  end;  
+    FreeAndNil(Keywords);
+  end;
 end.

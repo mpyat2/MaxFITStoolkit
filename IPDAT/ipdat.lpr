@@ -8,7 +8,7 @@ uses
 procedure PrintVersion;
 begin
   WriteLn('IRIS photometry log parser  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2017.11.21.01');
+  WriteLn('Version 2018.02.23.01');
 end;
 
 procedure FileFormatError;
@@ -233,6 +233,8 @@ var
   InputFileName: string;
   OutputFileName: string;
   Mode2: Boolean;
+  ParamN: Integer;
+  S: string;
 
 begin
   PrintVer := CmdObj.CmdLine.IsCmdOption('V') or CmdObj.CmdLine.IsCmdOption('version');
@@ -245,9 +247,37 @@ begin
     PrintHelp;
     Halt(1);
   end;
-  Quiet := CmdObj.CmdLine.IsCmdOption('Q');
-  TabbedOutput := CmdObj.CmdLine.IsCmdOption('T');
-  Mode2 := CmdObj.CmdLine.IsCmdOption('2');
+
+  Quiet := False;
+  TabbedOutput := False;
+  Mode2 := False;
+
+  for ParamN := 1 to CmdObj.CmdLine.ParamCount do begin
+    S := CmdObj.CmdLine.ParamStr(ParamN);
+    if CmdObj.CmdLine.FirstCharIsSwitch(S) then begin
+      if Length(S) = 1 then begin
+        WriteLn('**** Invalid command-line parameter: ' + S);
+        Halt(1);
+      end;
+      if CmdObj.CmdLine.ParamIsKey(S, 'V') or CmdObj.CmdLine.ParamIsKey(S, 'version') then begin
+        // nothing: already processed.
+      end
+      else
+      if CmdObj.CmdLine.ParamIsKey(S, 'Q') then
+        Quiet := True
+      else
+      if CmdObj.CmdLine.ParamIsKey(S, 'T') then
+        TabbedOutput := True
+      else
+      if CmdObj.CmdLine.ParamIsKey(S, '2') then
+        Mode2 := CmdObj.CmdLine.IsCmdOption('2')
+      else begin
+        WriteLn('**** Invalid command-line parameter: ' + S);
+        Halt(1);
+      end;
+    end;
+  end;
+
   InputFileName := ExpandFileName(CmdObj.CmdLine.ParamFile(1));
   if ExtractFileExt(InputFileName) = '' then
     InputFileName := ChangeFileExt(InputFileName, '.dat');
