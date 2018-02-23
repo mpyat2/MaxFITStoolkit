@@ -69,7 +69,7 @@ begin
             DateTimeObs := DateTimeObs + ExpTime / (24.0*60.0*60.0) / 2.0;
           end;
           Write(^I, FormatDateTime('"Date:'^I'"YYYY-MM-DD" "hh:nn:ss', DateTimeObs));
-          Write(^I'Exposure: '^I, ExpTime:10:1);
+          Write(^I'Exposure: '^I, ExpTime:10:2);
           if (ExpTime <> 0) and CorrectByExposure then begin
             Write(^I'[Fixed by EXPTIME. Original Time: ', FormatDateTime('hh:nn:ss', DateTimeObs0), ']');
           end;
@@ -90,7 +90,7 @@ begin
     else begin
       WriteLn;
       SumDate := SumDate / N;
-      Write(^I'Middle  ', ^I, FormatDateTime('"Date:'^I'"YYYY-MM-DD" "hh:nn:ss', SumDate), ^I'Sum Exp :'^I, SumExp:10:1);
+      Write(^I'Middle  ', ^I, FormatDateTime('"Date:'^I'"YYYY-MM-DD" "hh:nn:ss', SumDate), ^I'Sum Exp :'^I, SumExp:10:2);
     end;
   except
     on E: Exception do begin

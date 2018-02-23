@@ -97,16 +97,15 @@ var
   N: LongWord;
   Make, Model, Software: string;
   Instrument: string;
-  ISO: Double;
-  ExposureTimeFloat: Double;
+  ISO: Single;
+  ISOstring: string;
+  ExposureTimeFloat: Single;
   //Timestamp: Int64;
   TimeStr: array[0..25] of Char;
   DateTime: TDateTime;
-  DateTimeFile: TDateTime;
   TempS: string;
   FITSHeader: TFITSRecordArray;
   Comments: TStringArray;
-  DateTimeComment: string;
   Axes: TIntArray;
   Success: Boolean;
   S: string;
@@ -160,6 +159,8 @@ begin
     ISO := RawProcessorISOspeed(RawProcessor);
     RawProcessorTime(RawProcessor, TimeStr, SizeOf(TimeStr));
     RawProcessorBayerPattern(RawProcessor, BayerPattern, SizeOf(BayerPattern));
+    for I := 0 to StrLen(BayerPattern) - 1 do
+      if (Ord(BayerPattern[I]) < 32) or (Ord(BayerPattern[I]) > 126) then BayerPattern[I] := '?';
 
     if PrintInfo then begin
       WriteLn;
@@ -167,7 +168,7 @@ begin
       WriteLn('Model        : ', Model);
       WriteLn('Software     : ', Software);
       WriteLn('Time         : ', TrimRight(TimeStr));
-      WriteLn('ISO          : ', Round(ISO));
+      WriteLn('ISO          : ', ISO:0:0);
       WriteLn('Exposure     : ', ExposureTimeFloat:9:7);
       WriteLn('Raw Size     : ', _width, 'x', _height);
       WriteLn('Image Size   : ', RawFrameWidth, 'x', RawFrameHeight);
@@ -326,11 +327,21 @@ begin
         Inc(N);
       end;
 
+      //if ISO <> 0 then begin
+      //  SetLength(Comments, N + 1);
+      //  Comments[N] := 'ISO ' + FloatToStr(ISO);
+      //  Inc(N);
+      //end;
+
+      ISOstring := '';
       if ISO <> 0 then begin
-        SetLength(Comments, N + 1);
-        Comments[N] := 'ISO ' + FloatToStr(ISO);
-        Inc(N);
+        Str(ISO:0:0, TempS);
+        ISOstring := 'ISO ' + TempS;
       end;
+
+      SetLength(Comments, N + 1);
+      Comments[N] := 'Bayer Pattern (8 rows x 2 pixels): ' + BayerPattern;
+      Inc(N);
 
       SetLength(Comments, N + 1);
       Comments[N] := 'MIN  PIXEL VALUE = ' + IntToStr(MinValue);
@@ -346,17 +357,14 @@ begin
       Comments[N] := 'SOFTWARE: ' + Software;
       Inc(N);
 
-      DateTimeFile := Now();
-
-      DateTimeComment := '';
-
       FITSHeader := MakeFITSHeader(
         FITSbpp,
         Axes,
         Bzero, 1,
-        DateTime,          DateTimeComment,
-        DateTimeFile,      'FITS creation time (reported by OS)',
+        DateTime, '',
+        LocalTimeToUniversal(Now()), 'FITS creation time (UTC)',
         ExposureTimeFloat, '',
+        ISOstring,
         Instrument,
         Comments);
 

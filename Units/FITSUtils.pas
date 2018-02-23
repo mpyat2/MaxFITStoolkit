@@ -70,7 +70,8 @@ function MakeFITSHeader(BitPix: Integer;
                         Bzero, Bscale: Double;
                         DateObs: TDateTime; DateObsComment: string;
                         Date: TDateTime;    DateComment: string;
-                        Exposure: Double;   ExposureComment: string;
+                        Exposure: Single;   ExposureComment: string;
+                        ISOspeed: string;
                         const Instrument: string;
                         const Comments: TStringArray): TFITSRecordArray;
 procedure GetBitPixAndNaxis(var FITSfile: FITSRecordfile; out BitPix: Integer; out NaxisN: TIntArray);
@@ -482,7 +483,8 @@ function MakeFITSHeader(BitPix: Integer;
                         Bzero, Bscale: Double;
                         DateObs: TDateTime; DateObsComment: string;
                         Date: TDateTime;    DateComment: string;
-                        Exposure: Double;   ExposureComment: string;
+                        Exposure: Single;   ExposureComment: string;
+                        ISOspeed: string;
                         const Instrument: string;
                         const Comments: TStringArray): TFITSRecordArray;
 var
@@ -563,6 +565,13 @@ begin
     if DateComment <> '' then
       TempS := TempS + ' / ' + DateComment;
     StrToFITSRecord(TempS, Result[N]);
+    Inc(N);
+  end;
+
+  if ISOspeed <> '' then begin
+    SetLength(Result, N + 1);
+    TempS := FITSQuotedValue(ISOspeed);
+    StrToFITSRecord('ISOSPEED= ' + TempS, Result[N]);
     Inc(N);
   end;
 

@@ -9,11 +9,11 @@
         <Filename Value="iconvraw.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="143"/>
-        <CursorPos X="48" Y="177"/>
-        <UsageCount Value="71"/>
+        <TopLine Value="321"/>
+        <CursorPos X="36" Y="339"/>
+        <UsageCount Value="74"/>
         <Bookmarks Count="1">
-          <Item0 Y="299" ID="1"/>
+          <Item0 Y="339" ID="1"/>
         </Bookmarks>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -56,10 +56,11 @@
       </Unit5>
       <Unit6>
         <Filename Value="..\Units\FITSUtils.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="525"/>
-        <CursorPos X="28" Y="559"/>
-        <UsageCount Value="11"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="449"/>
+        <CursorPos X="41" Y="486"/>
+        <UsageCount Value="12"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit6>
       <Unit7>
@@ -102,10 +103,10 @@
       </Unit11>
       <Unit12>
         <Filename Value="..\Units\CmdObj.pas"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="3"/>
         <TopLine Value="94"/>
         <CursorPos X="3" Y="119"/>
-        <UsageCount Value="11"/>
+        <UsageCount Value="13"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit12>
@@ -132,9 +133,9 @@
       </Unit15>
       <Unit16>
         <Filename Value="..\Units\LibRawMxWrapper.pas"/>
-        <EditorIndex Value="1"/>
-        <CursorPos X="35" Y="32"/>
-        <UsageCount Value="12"/>
+        <EditorIndex Value="2"/>
+        <CursorPos X="10" Y="30"/>
+        <UsageCount Value="14"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit16>
@@ -184,124 +185,131 @@
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit23>
     </Units>
-    <JumpHistory Count="30" HistoryIndex="29">
+    <JumpHistory Count="29" HistoryIndex="28">
       <Position1>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="491" Column="9" TopLine="472"/>
+        <Caret Line="171" Column="43" TopLine="148"/>
       </Position1>
       <Position2>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="514" Column="3" TopLine="488"/>
+        <Caret Line="330" Column="15" TopLine="307"/>
       </Position2>
       <Position3>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="490" Column="4" TopLine="478"/>
+        <Caret Line="332" Column="49" TopLine="307"/>
       </Position3>
       <Position4>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="539" Column="43" TopLine="507"/>
+        <Caret Line="336" Column="10" TopLine="307"/>
       </Position4>
       <Position5>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="490" TopLine="464"/>
+        <Caret Line="337" Column="13" TopLine="307"/>
       </Position5>
       <Position6>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="538" Column="43" TopLine="506"/>
+        <Caret Line="338" Column="45" TopLine="323"/>
       </Position6>
       <Position7>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="595" Column="9" TopLine="564"/>
+        <Caret Line="336" Column="23" TopLine="319"/>
       </Position7>
       <Position8>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="582" Column="37" TopLine="558"/>
+        <Caret Line="337" Column="13" TopLine="319"/>
       </Position8>
       <Position9>
         <Filename Value="iconvraw.lpr"/>
+        <Caret Line="338" Column="45" TopLine="319"/>
       </Position9>
       <Position10>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="425" Column="39" TopLine="393"/>
+        <Caret Line="366" Column="12" TopLine="335"/>
       </Position10>
       <Position11>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="450" Column="60" TopLine="419"/>
       </Position11>
       <Position12>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="484" Column="12" TopLine="452"/>
+        <Caret Line="100" Column="6" TopLine="69"/>
       </Position12>
       <Position13>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="520" Column="12" TopLine="488"/>
+        <Caret Line="101" Column="6" TopLine="70"/>
       </Position13>
       <Position14>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="588" Column="29" TopLine="566"/>
+        <Caret Line="159" Column="27" TopLine="128"/>
       </Position14>
       <Position15>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="481" Column="21" TopLine="462"/>
+        <Caret Line="171" Column="36" TopLine="152"/>
       </Position15>
       <Position16>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="517" Column="21" TopLine="485"/>
+        <Caret Line="332" Column="45" TopLine="301"/>
       </Position16>
       <Position17>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="555" TopLine="541"/>
       </Position17>
       <Position18>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="556" TopLine="541"/>
+        <Caret Line="332" Column="45" TopLine="301"/>
       </Position18>
       <Position19>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="557" TopLine="541"/>
       </Position19>
       <Position20>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="558" TopLine="541"/>
+        <Caret Line="100" Column="6" TopLine="69"/>
       </Position20>
       <Position21>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="553" TopLine="541"/>
+        <Caret Line="101" Column="6" TopLine="70"/>
       </Position21>
       <Position22>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="555" TopLine="541"/>
+        <Caret Line="159" Column="27" TopLine="128"/>
       </Position22>
       <Position23>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="581" Column="75" TopLine="581"/>
+        <Caret Line="170" Column="21" TopLine="140"/>
       </Position23>
       <Position24>
         <Filename Value="iconvraw.lpr"/>
+        <Caret Line="336" Column="33" TopLine="313"/>
       </Position24>
       <Position25>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="16"/>
+        <Caret Line="262" TopLine="213"/>
       </Position25>
       <Position26>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="452" Column="11" TopLine="452"/>
       </Position26>
       <Position27>
         <Filename Value="iconvraw.lpr"/>
+        <Caret Line="332" Column="45" TopLine="301"/>
       </Position27>
       <Position28>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="108" Column="10" TopLine="77"/>
+        <Caret Line="338" Column="41" TopLine="307"/>
       </Position28>
       <Position29>
         <Filename Value="iconvraw.lpr"/>
-        <Caret Line="109" Column="18" TopLine="78"/>
       </Position29>
-      <Position30>
-        <Filename Value="iconvraw.lpr"/>
-        <Caret Line="312" Column="24" TopLine="281"/>
-      </Position30>
     </JumpHistory>
   </ProjectSession>
+  <Debugging>
+    <Watches Count="3">
+      <Item1>
+        <Expression Value="I"/>
+      </Item1>
+      <Item2>
+        <Expression Value="BayerPattern[I]"/>
+      </Item2>
+      <Item3>
+        <Expression Value="BayerPattern"/>
+      </Item3>
+    </Watches>
+  </Debugging>
 </CONFIG>

@@ -20,7 +20,8 @@
     <VersionInfo>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
-      <BuildNr Value="9"/>
+      <BuildNr Value="10"/>
+      <StringTable ProductVersion="1.0.0.9"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
@@ -31,7 +32,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="/G=test /F TEST.CR2 /i &quot;&quot; /G="/>
+        <CommandLineParams Value="/G=test /F TEST.CR2 &quot;&quot; /G="/>
       </local>
     </RunParams>
     <Units Count="1">
