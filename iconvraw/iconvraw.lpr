@@ -113,6 +113,7 @@ var
   I, P: Integer;
   Name, Value, TempValue: string;
   Bzero: Integer;
+  BayerPattern: array[0..16] of Char;
 begin
   TimeShifted := False;
   RawFrameLeft := 0;
@@ -158,20 +159,22 @@ begin
     ExposureTimeFloat := RawProcessorShutter(RawProcessor);
     ISO := RawProcessorISOspeed(RawProcessor);
     RawProcessorTime(RawProcessor, TimeStr, SizeOf(TimeStr));
+    RawProcessorBayerPattern(RawProcessor, BayerPattern, SizeOf(BayerPattern));
 
     if PrintInfo then begin
       WriteLn;
-      WriteLn('Make        : ', Make);
-      WriteLn('Model       : ', Model);
-      WriteLn('Software    : ', Software);
-      WriteLn('Time        : ', TrimRight(TimeStr));
-      WriteLn('ISO         : ', Round(ISO));
-      WriteLn('Exposure    : ', ExposureTimeFloat:9:7);
-      WriteLn('Raw Size    : ', _width, 'x', _height);
-      WriteLn('Image Size  : ', RawFrameWidth, 'x', RawFrameHeight);
-      WriteLn('Left Margin : ', RawFrameLeft);
-      WriteLn('Top Margin  : ', RawFrameTop);
-      WriteLn('Output Size : ', Iwidth, 'x', Iheight);
+      WriteLn('Make         : ', Make);
+      WriteLn('Model        : ', Model);
+      WriteLn('Software     : ', Software);
+      WriteLn('Time         : ', TrimRight(TimeStr));
+      WriteLn('ISO          : ', Round(ISO));
+      WriteLn('Exposure     : ', ExposureTimeFloat:9:7);
+      WriteLn('Raw Size     : ', _width, 'x', _height);
+      WriteLn('Image Size   : ', RawFrameWidth, 'x', RawFrameHeight);
+      WriteLn('Left Margin  : ', RawFrameLeft);
+      WriteLn('Top Margin   : ', RawFrameTop);
+      WriteLn('Output Size  : ', Iwidth, 'x', Iheight);
+      WriteLn('Bayer Pattern: ', BayerPattern);
       Exit;
     end;
 

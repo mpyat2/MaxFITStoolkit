@@ -29,6 +29,7 @@ function RawProcessorTimestamp(RawProcessor: Pointer): Int64; stdcall; external 
 procedure RawProcessorTime(RawProcessor: Pointer; TimeStr: PChar; TimeStrLen: Integer); stdcall; external LibRawWrapper name '_RawProcessorTime@12';
 function RawProcessorShutter(RawProcessor: Pointer): Single; stdcall; external LibRawWrapper name '_RawProcessorShutter@4';
 function RawProcessorISOspeed(RawProcessor: Pointer): Single; stdcall; external LibRawWrapper name '_RawProcessorISOspeed@4';
+procedure RawProcessorBayerPattern(RawProcessor: Pointer; BayerPatternStr: PChar; BayerPatternStrLen: Integer); stdcall; external LibRawWrapper name '_RawProcessorBayerPattern@12';
 
 implementation
 end.
