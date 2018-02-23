@@ -197,6 +197,7 @@ begin
     if not PrintVer then begin
       WriteLn('**** At least one filemask must be specified');
       WriteLn;
+      PrintHelp;
     end;
     Halt(1);
   end;

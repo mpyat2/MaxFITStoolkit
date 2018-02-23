@@ -107,6 +107,8 @@ begin
     Assign(FITSFile, FITSFileName);
     Reset(FITSFile);
     try
+      if not IsFits(FITSFile) then
+        FileError('Not a valid FITS file: ' + AnsiQuotedStr(FITSFileName, '"'));
       Image := GetFITSimage2D(FITSFile, Width, Height, BitPix, Bscale, Bzero);
     finally
       CloseFile(FITSFile);
@@ -161,6 +163,8 @@ end;
 var
   PrintVer: Boolean;
   InputFileName: string;
+  S: string;
+  ParamN: Integer;
 
 begin
   FileMode := fmOpenRead;
@@ -175,11 +179,28 @@ begin
 
   if (CmdObj.CmdLine.FileCount <> 1) then begin
     if not PrintVer then begin
-      WriteLn('**** Input File Name is expected');
+      WriteLn('**** File Name is expected');
       WriteLn;
       PrintHelp;
     end;
     Halt(1);
+  end;
+
+  for ParamN := 1 to CmdObj.CmdLine.ParamCount do begin
+    S := CmdObj.CmdLine.ParamStr(ParamN);
+    if CmdObj.CmdLine.FirstCharIsSwitch(S) then begin
+      if Length(S) = 1 then begin
+        WriteLn('**** Invalid command-line parameter: ' + S);
+        Halt(1);
+      end;
+      if CmdObj.CmdLine.ParamIsKey(S, 'V') or CmdObj.CmdLine.ParamIsKey(S, 'version') then begin
+        // nothing: already processed.
+      end
+      else begin
+        WriteLn('**** Invalid command-line parameter: ' + S);
+        Halt(1);
+      end;
+    end;
   end;
 
   InputFileName := ExpandFileName(CmdObj.CmdLine.ParamFile(1));
