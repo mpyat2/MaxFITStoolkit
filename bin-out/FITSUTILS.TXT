@@ -1,7 +1,7 @@
 @iconvraw
 
 Usage:
-iconvraw in_file_mask1 [in_file_mask2 ...] [/G=generic_name] [/O=out_dir] [/B=nn] [/F] [/E] [/L] [/TS<xxxxx>] [/X=<ext>]
+iconvraw in_file_mask1 [in_file_mask2 ...] [/G=generic_name] [/O=out_dir] [/B=nn] [/X=<ext>] [/TS<xxxxx>] [/F] [/L] [/R] [/S]
 or
 iconvraw in_file_mask1 [in_file_mask2 ...] /I
 
@@ -13,17 +13,18 @@ Where:
                    (original directory will be used if no prefix specified)
   /B=nn            base file number (default = 1); must be >= 0 (only when generic_name is specified)
   /X=<ext>         extension for output files (.fit by default)
-  /F               overwrite existing files in output directory
   /TS<xxxxx>       shift DATE-OBS by xxxxx seconds (the value can be negative or positive)
                    Example: /TS-10800 shifts DATE-OBS by three hours backwards
+  /F               overwrite existing files in output directory
   /L               do not truncate image (show full RAW image)
   /R               generate floating-point FITS
+  /S               generate fits with BZERO = 32768
   /I               print image info only
   /V               print version
   /H               print help and halt
 
 Example:
-iconvraw dir1\IMG*.CR2 dir2\IMG*.CR2 dir3\IMG*.CR2 /G=src /O=C:\SKY\ /F /B=1 /E /TS-7200 /X=fits
+iconvraw dir1\IMG*.CR2 dir2\IMG*.CR2 dir3\IMG*.CR2 /G=src /O=C:\SKY\ /F /B=1 /TS-7200 /X=fits
 
 In an example shown above, all files having .CR2 extensions
 in directories dir1, dir2, dir3 will be converted to files
@@ -31,7 +32,6 @@ src1.fits, src2.fits, and so on.
 Output files will be placed in C:\SKY\ directory.
 Existing ones (if any) will be overwritten (due to /F switch).
 DATE-OBS will be shifted backwards by 2 hours (due to /TS-7200 option).
-DATE-OBS will be corrected by half of exposure time (due to /E switch).
 
 @fflip
 
