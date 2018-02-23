@@ -172,8 +172,8 @@ var
   InputFileMasks: array of string;
   PrintVer: Boolean;
   Vertically: Boolean;
-  N: Integer;
-  I: Integer;
+  S: string;
+  ParamN: Integer;
 
 begin
   FileMode := fmOpenReadWrite;
@@ -186,24 +186,45 @@ begin
     Halt(1);
   end;
 
-  N := CmdObj.CmdLine.FileCount;
-
-  if (N < 1) then begin
+  if (CmdObj.CmdLine.FileCount < 1) then begin
     if not PrintVer then begin
       WriteLn('**** At least one filemask must be specified');
       WriteLn;
-      PrintHelp;
     end;
     Halt(1);
   end;
 
-  SetLength(InputFileMasks, N);
-  for I := 1 to N do begin
-    InputFileMasks[I - 1] := ExpandFileName(CmdObj.CmdLine.ParamFile(I));
-    if ExtractFileExt(InputFileMasks[I - 1]) = '' then InputFileMasks[I - 1] := ChangeFileExt(InputFileMasks[I - 1], '.fit');
-  end;
+  // Other options
+  InputFileMasks := nil;
+  Vertically := True;
 
-  Vertically := not CmdObj.CmdLine.IsCmdOption('1');
+  for ParamN := 1 to CmdObj.CmdLine.ParamCount do begin
+    S := CmdObj.CmdLine.ParamStr(ParamN);
+    if CmdObj.CmdLine.FirstCharIsSwitch(S) then begin
+      if Length(S) = 1 then begin
+        WriteLn('**** Invalid command-line parameter: ' + S);
+        Halt(1);
+      end;
+      if CmdObj.CmdLine.ParamIsKey(S, 'V') or CmdObj.CmdLine.ParamIsKey(S, 'version') then begin
+        // nothing: already processed.
+      end
+      else
+      if CmdObj.CmdLine.ParamIsKey(S, '1') then
+        Vertically := False
+      else begin
+        WriteLn('**** Invalid command-line parameter: ' + S);
+        Halt(1);
+      end;
+    end
+    else begin
+      if S <> '' then begin
+        S := ExpandFileName(S);
+        if ExtractFileExt(S) = '' then S := ChangeFileExt(S, '.fit');
+        SetLength(InputFileMasks, Length(InputFileMasks) + 1);
+        InputFileMasks[Length(InputFileMasks) - 1] := S;
+      end;
+    end;
+  end;
 
   FileList := TStringListNaturalSort.Create;
   try
