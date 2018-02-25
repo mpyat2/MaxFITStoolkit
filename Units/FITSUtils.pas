@@ -65,12 +65,13 @@ function AddCommentLikeKeyword(var FITSfile: FITSRecordFile; const Keyword: stri
 procedure GetHeader(var FITSfile: FITSRecordFile; const Header: TStrings);
 function GetEndPosition(var FITSfile: FITSRecordFile): Integer;
 procedure RevertBytes(var FITSvalue: TFITSValue; BitPix: Integer);
+procedure StrToFITSRecord(const S: string; out FITSRecord: FITSRecordType);
 function MakeFITSHeader(BitPix: Integer;
                         const Axes: TIntArray;
                         Bzero, Bscale: Double;
                         DateObs: TDateTime; DateObsComment: string;
                         Date: TDateTime;    DateComment: string;
-                        Exposure: Single;   ExposureComment: string;
+                        Exposure: Double;   ExposureComment: string;
                         ISOspeed: string;
                         const Instrument: string;
                         const Comments: TStringArray): TFITSRecordArray;
@@ -483,7 +484,7 @@ function MakeFITSHeader(BitPix: Integer;
                         Bzero, Bscale: Double;
                         DateObs: TDateTime; DateObsComment: string;
                         Date: TDateTime;    DateComment: string;
-                        Exposure: Single;   ExposureComment: string;
+                        Exposure: Double;   ExposureComment: string;
                         ISOspeed: string;
                         const Instrument: string;
                         const Comments: TStringArray): TFITSRecordArray;
@@ -514,14 +515,11 @@ begin
     Inc(N);
   end;
 
-  if Bzero <> 0 then begin
+  if (Bzero <> 0) or (Bscale <> 1) then begin
     SetLength(Result, N + 1);
     Str(Bzero:FITSNumericAlign - FITSKeywordLen - 2, TempS);
     StrToFITSRecord('BZERO   = ' + TempS, Result[N]);
     Inc(N);
-  end;
-
-  if Bscale <> 1 then begin
     SetLength(Result, N + 1);
     Str(Bscale:FITSNumericAlign - FITSKeywordLen - 2, TempS);
     StrToFITSRecord('BSCALE  = ' + TempS, Result[N]);

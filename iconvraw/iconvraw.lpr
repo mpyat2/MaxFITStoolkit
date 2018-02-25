@@ -54,6 +54,40 @@ begin
   raise EConvertError.Create('Cannot convert Month string to a number');
 end;
 
+{$IFNDEF FPC}
+function GetLocalTimeOffset: Integer;
+var
+  TZInfo: TTimeZoneInformation;
+begin
+   case GetTimeZoneInformation(TZInfo) of
+     TIME_ZONE_ID_UNKNOWN:
+       Result := TZInfo.Bias;
+     TIME_ZONE_ID_STANDARD:
+       Result := TZInfo.Bias + TZInfo.StandardBias;
+     TIME_ZONE_ID_DAYLIGHT:
+       Result := TZInfo.Bias + TZInfo.DaylightBias;
+     else
+       Result := 0;
+   end;
+end;
+
+function LocalTimeToUniversal(LT: TDateTime;TZOffset: Integer): TDateTime; overload;
+begin
+  if (TZOffset > 0) then
+    Result := LT - EncodeTime(TZOffset div 60, TZOffset mod 60, 0, 0)
+  else if (TZOffset < 0) then
+    Result := LT + EncodeTime(Abs(TZOffset) div 60, Abs(TZOffset) mod 60, 0, 0)
+  else
+    Result := LT;
+end;
+
+function LocalTimeToUniversal(LT: TDateTime): TDateTime; overload;
+begin
+  Result:=LocalTimeToUniversal(LT,-GetLocalTimeOffset);
+end;
+
+{$ENDIF}
+
 procedure ConvertFile(const FileName: string;
                       PrintInfo: Boolean;
                       const NewFileName: string;
@@ -97,9 +131,9 @@ var
   N: LongWord;
   Make, Model, Software: string;
   Instrument: string;
-  ISO: Single;
+  ISO: Double;
   ISOstring: string;
-  ExposureTimeFloat: Single;
+  ExposureTimeFloat: Double;
   //Timestamp: Int64;
   TimeStr: array[0..25] of Char;
   DateTime: TDateTime;
@@ -112,7 +146,7 @@ var
   I, P: Integer;
   Name, Value, TempValue: string;
   Bzero: Integer;
-  BayerPattern: array[0..16] of Char;
+  //BayerPattern: array[0..16] of Char;
 begin
   TimeShifted := False;
   RawFrameLeft := 0;
@@ -158,9 +192,9 @@ begin
     ExposureTimeFloat := RawProcessorShutter(RawProcessor);
     ISO := RawProcessorISOspeed(RawProcessor);
     RawProcessorTime(RawProcessor, TimeStr, SizeOf(TimeStr));
-    RawProcessorBayerPattern(RawProcessor, BayerPattern, SizeOf(BayerPattern));
-    for I := 0 to StrLen(BayerPattern) - 1 do
-      if (Ord(BayerPattern[I]) < 32) or (Ord(BayerPattern[I]) > 126) then BayerPattern[I] := '?';
+    //RawProcessorBayerPattern(RawProcessor, BayerPattern, SizeOf(BayerPattern));
+    //for I := 0 to StrLen(BayerPattern) - 1 do
+    //  if (Ord(BayerPattern[I]) < 32) or (Ord(BayerPattern[I]) > 126) then BayerPattern[I] := '?';
 
     if PrintInfo then begin
       WriteLn;
@@ -175,7 +209,7 @@ begin
       WriteLn('Left Margin  : ', RawFrameLeft);
       WriteLn('Top Margin   : ', RawFrameTop);
       WriteLn('Output Size  : ', Iwidth, 'x', Iheight);
-      WriteLn('Bayer Pattern: ', BayerPattern);
+      //WriteLn('Bayer Pattern: ', BayerPattern);
       Exit;
     end;
 
@@ -339,9 +373,9 @@ begin
         ISOstring := 'ISO ' + TempS;
       end;
 
-      SetLength(Comments, N + 1);
-      Comments[N] := 'Bayer Pattern (8 rows x 2 pixels): ' + BayerPattern;
-      Inc(N);
+      //SetLength(Comments, N + 1);
+      //Comments[N] := 'Bayer Pattern (8 rows x 2 pixels): ' + BayerPattern;
+      //Inc(N);
 
       SetLength(Comments, N + 1);
       Comments[N] := 'MIN  PIXEL VALUE = ' + IntToStr(MinValue);

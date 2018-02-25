@@ -94,7 +94,7 @@ begin
             Move(Header[I * FITSRecordLen], Buf, FITSRecordLen);
             if Copy(Buf, 1, FITSKeywordLen) = PadCh('NAXIS', FITSKeywordLen, ' ') then begin
               Str(2:FITSNumericAlign - FITSKeywordLen - 2, S);
-              Buf := PadCh('NAXIS', FITSKeywordLen, ' ') + '= ' + S;
+              StrToFITSRecord(PadCh('NAXIS', FITSKeywordLen, ' ') + '= ' + S, Buf);
             end;
             if Copy(Buf, 1, FITSKeywordLen) <> PadCh('NAXIS3', FITSKeywordLen, ' ') then begin
               SetLength(HeaderNew, Length(HeaderNew) + 1);

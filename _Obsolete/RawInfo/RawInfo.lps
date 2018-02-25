@@ -9,8 +9,7 @@
         <Filename Value="RawInfo.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="76"/>
-        <CursorPos X="7" Y="82"/>
+        <CursorPos X="22" Y="6"/>
         <UsageCount Value="21"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -24,6 +23,11 @@
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit1>
     </Units>
-    <JumpHistory HistoryIndex="-1"/>
+    <JumpHistory Count="1">
+      <Position1>
+        <Filename Value="RawInfo.lpr"/>
+        <Caret Line="82" Column="7" TopLine="76"/>
+      </Position1>
+    </JumpHistory>
   </ProjectSession>
 </CONFIG>
