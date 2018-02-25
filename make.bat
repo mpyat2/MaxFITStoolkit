@@ -5,7 +5,7 @@ REM
 REM Should be compiled with NON-UNICODE 32bit Delphi Compiler!
 REM SET COMPILER="C:\PERSONAL\DC\DCC32" -UUnits\ -Ebin-out\
 REM
-SET COMPILER="c:\Personal\lazarus\fpc\3.0.2\bin\i386-win32\fpc.exe" -MDELPHI -Xg -FuUnits\ -FEbin-out\
+SET COMPILER="c:\lazarus\fpc\3.0.2\bin\i386-win32\fpc.exe" -MDELPHI -Xg -FuUnits\ -FEbin-out\
 REM
 REM To produce source-code ZIP, run this script with "A" command-line option: make.bat A
 SET A7z="c:\Program Files\7-zip\7z.exe"
@@ -74,6 +74,11 @@ REM IF ERRORLEVEL 1 GOTO :ERROR
 REM ECHO .
 
 REM ...
+%COMPILER% CFA2RGB\cfa2rgb.lpr
+IF ERRORLEVEL 1 GOTO :ERROR
+ECHO .
+
+REM ...
 %COMPILER% FITSstat\FITSstat.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
@@ -96,6 +101,7 @@ echo APDAT\apdat.*                >> ziplist.txt
 echo APDAT\testdata\*.dat         >> ziplist.txt
 echo FitsCfa\fitscfa.*            >> ziplist.txt
 echo FitsRGB\fitsrgb.*            >> ziplist.txt
+echo CFA2RGB\cfa2rgb.*            >> ziplist.txt
 echo FitsStat\fitsstat.*          >> ziplist.txt
 echo iconvraw\iconvraw.*          >> ziplist.txt
 echo iconvraw\libraw.dll          >> ziplist.txt

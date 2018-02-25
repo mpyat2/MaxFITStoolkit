@@ -44,6 +44,7 @@ Source: "..\bin-out\iren.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitscfa.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitscfa.ini"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitsrgb.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin-out\cfa2rgb.exe"; DestDir: "{app}"; Flags: ignoreversion
 ;Source: "..\bin-out\calcmed.exe"; DestDir: "{app}"; Flags: ignoreversion
 ;Source: "..\bin-out\calcsub.exe"; DestDir: "{app}"; Flags: ignoreversion
 ;Source: "..\bin-out\findhot.exe"; DestDir: "{app}"; Flags: ignoreversion

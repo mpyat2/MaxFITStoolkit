@@ -180,6 +180,12 @@ Where:
 Example:
 iren dir1\IMG*.CR2 dir2\IMG*.CR2 dir3\IMG*.CR2 /G=src /O=C:\SKY\ /F /B=1
 
+@cfa2rgb
+
+Usage:
+cfa2rgb file_mask1[.fit] [file_mask2[.fit] ...] [/G=generic_name] [/O=out_dir] [/P=<prefix>] [/F] /M=<FilterPattern>
+
+
 @fitsstat
 
 Usage:

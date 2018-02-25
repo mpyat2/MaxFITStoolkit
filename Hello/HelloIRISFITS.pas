@@ -12,6 +12,7 @@ begin
   WriteLn('fflip');  
   WriteLn('fitscfa');
   WriteLn('fitsrgb');
+  WriteLn('cfa2rgb');
   WriteLn('idobs');
   WriteLn('iren');
   WriteLn('ipdat');
