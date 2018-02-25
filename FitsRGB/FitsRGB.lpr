@@ -33,6 +33,8 @@ var
   NblocksInHeader: Integer;
   StartOfImage: Integer;
   Header: PChar;
+  Buf: FITSRecordType;
+  HeaderNew: TFITSRecordArray;
   Image: PChar;
   ImageLayer: PChar;
   ImageLayerSize: Integer;
@@ -42,6 +44,8 @@ var
   OutFile: FITSRecordfile;
   OutFileName: string;
   FileModeSaved: Integer;
+  S: string;
+  I: Integer;
 begin
   N := GetEndPosition(FITSfile);
   if N < 0 then
@@ -83,15 +87,42 @@ begin
           if not Overwrite and FileExists(OutFileName) then
             FileError('File ' + AnsiQuotedStr(OutFileName, '"') + ' already exists. Use /F switch to overwrite.');
           Move(Image[ImageLayerSize * ColorL], ImageLayer[0], ImageLayerSize);
+
+          // We should remove NAXIS3 record and update NAXIS.
+          HeaderNew := nil;
+          for I := 0 to StartOfImage - 1 do begin
+            Move(Header[I * FITSRecordLen], Buf, FITSRecordLen);
+            if Copy(Buf, 1, FITSKeywordLen) = PadCh('NAXIS', FITSKeywordLen, ' ') then begin
+              Str(2:FITSNumericAlign - FITSKeywordLen - 2, S);
+              Buf := PadCh('NAXIS', FITSKeywordLen, ' ') + '= ' + S;
+            end;
+            if Copy(Buf, 1, FITSKeywordLen) <> PadCh('NAXIS3', FITSKeywordLen, ' ') then begin
+              SetLength(HeaderNew, Length(HeaderNew) + 1);
+              Move(Buf, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
+            end;
+            if Buf = recordEND then
+              Break;
+          end;
+
+          // Padding
+          N := Length(HeaderNew) mod RecordsInBlock;
+          if N > 0 then begin
+            for I := 1 to RecordsInBlock - N do begin
+              SetLength(HeaderNew, Length(HeaderNew) + 1);
+              FillChar(HeaderNew[Length(HeaderNew) - 1], SizeOf(FITSRecordType), ' ');
+            end;
+          end;
+
+          // Updating StartOfImage
+          StartOfImage := Length(HeaderNew);
+
           AssignFile(OutFile, OutFileName);
           FileModeSaved := FileMode;
           FileMode := fmOpenReadWrite;
           try
             Rewrite(OutFile);
             try
-              BlockWrite(OutFile, Header^, StartOfImage);
-              SetKeywordValue(OutFile, 'NAXIS', '2', True, '', False);
-              Seek(OutFile, StartOfImage);
+              BlockWrite(OutFile, HeaderNew[0], StartOfImage);
               BlockWrite(OutFile, ImageLayer^, ImageLayerSizePadded div FITSRecordLen);
               AddCommentLikeKeyword(OutFile, 'COMMENT', 'Color Layer: ' + ColorNames[ColorL], True);
             finally
