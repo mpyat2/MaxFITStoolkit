@@ -3,8 +3,8 @@
 program MakeStack;
 
 uses
-  SysUtils, Classes, Math, DateUtils, CmdObj{, CmdObjStdSwitches},
-  Version, EnumFiles, FITSUtils, StringListNaturalSort, FitsUtilsHelp, CommonIni;
+  SysUtils, Classes, Math, DateUtils, CmdObj{, CmdObjStdSwitches}, Version,
+  EnumFiles, FITSUtils, FITSTimeUtils, StringListNaturalSort, FitsUtilsHelp, CommonIni;
 
 {$R *.res}
 
@@ -217,6 +217,7 @@ begin
   MinBitPix := FileInfo.BitPix;
   MaxBitPix := FileInfo.BitPix;
   DestNaxis := Copy(FileInfo.Naxis , 0, MaxInt);
+  Comments := nil;
   SetLength(Images, StackList.Count);
   for I := 0 to Length(Images) - 1 do
     Images[I] := nil;

@@ -8,9 +8,7 @@
       <Unit0>
         <Filename Value="MakeStack.lpr"/>
         <IsPartOfProject Value="True"/>
-        <IsVisibleTab Value="True"/>
-        <TopLine Value="605"/>
-        <CursorPos X="44" Y="612"/>
+        <CursorPos X="3" Y="7"/>
         <UsageCount Value="33"/>
         <Bookmarks Count="1">
           <Item0 X="9" Y="272" ID="1"/>
@@ -49,12 +47,16 @@
       </Unit4>
       <Unit5>
         <Filename Value="..\Units\FITSTimeUtils.pas"/>
-        <EditorIndex Value="-1"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="25"/>
+        <CursorPos Y="54"/>
         <UsageCount Value="10"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit5>
     </Units>
-    <JumpHistory Count="25" HistoryIndex="24">
+    <JumpHistory Count="27" HistoryIndex="26">
       <Position1>
         <Filename Value="MakeStack.lpr"/>
         <Caret Line="8" Column="30"/>
@@ -155,6 +157,14 @@
         <Filename Value="MakeStack.lpr"/>
         <Caret Line="515" Column="12" TopLine="490"/>
       </Position25>
+      <Position26>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="607" Column="30" TopLine="605"/>
+      </Position26>
+      <Position27>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="7" Column="3"/>
+      </Position27>
     </JumpHistory>
   </ProjectSession>
 </CONFIG>

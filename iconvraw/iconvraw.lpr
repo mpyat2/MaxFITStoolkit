@@ -91,39 +91,6 @@ begin
   raise EConvertError.Create('Cannot convert Month string to a number');
 end;
 
-{$IFNDEF FPC}
-function GetLocalTimeOffset: Integer;
-var
-  TZInfo: TTimeZoneInformation;
-begin
-   case GetTimeZoneInformation(TZInfo) of
-     TIME_ZONE_ID_UNKNOWN:
-       Result := TZInfo.Bias;
-     TIME_ZONE_ID_STANDARD:
-       Result := TZInfo.Bias + TZInfo.StandardBias;
-     TIME_ZONE_ID_DAYLIGHT:
-       Result := TZInfo.Bias + TZInfo.DaylightBias;
-     else
-       Result := 0;
-   end;
-end;
-
-function LocalTimeToUniversal(LT: TDateTime;TZOffset: Integer): TDateTime; overload;
-begin
-  if (TZOffset > 0) then
-    Result := LT - EncodeTime(TZOffset div 60, TZOffset mod 60, 0, 0)
-  else if (TZOffset < 0) then
-    Result := LT + EncodeTime(Abs(TZOffset) div 60, Abs(TZOffset) mod 60, 0, 0)
-  else
-    Result := LT;
-end;
-
-function LocalTimeToUniversal(LT: TDateTime): TDateTime; overload;
-begin
-  Result:=LocalTimeToUniversal(LT,-GetLocalTimeOffset);
-end;
-{$ENDIF}
-
 procedure ConvertFile(const FileName: string;
                       PrintInfo: Boolean;
                       const NewFileName: string;
