@@ -5,6 +5,8 @@
 {                                                                             }
 {*****************************************************************************}
 
+{$IFDEF FPC} {$MODE DELPHI} {$ENDIF}
+
 unit StringListNaturalSort;
 
 interface
@@ -12,7 +14,7 @@ interface
 uses
   Windows, SysUtils, Classes;
 
-function StrCmpLogicalW(P1, P2: PWideChar): Integer;  stdcall; external 'Shlwapi.dll';  
+function StrCmpLogicalW(P1, P2: PWideChar): Integer;  stdcall; external 'Shlwapi.dll';
   
 type
   TStringListNaturalSort = class(TStringList)

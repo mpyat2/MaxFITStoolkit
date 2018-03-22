@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <PathDelim Value="\"/>
+    <Version Value="10"/>
+    <BuildModes Active="Default"/>
+    <Units Count="6">
+      <Unit0>
+        <Filename Value="MakeStack.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="605"/>
+        <CursorPos X="44" Y="612"/>
+        <UsageCount Value="33"/>
+        <Bookmarks Count="1">
+          <Item0 X="9" Y="272" ID="1"/>
+        </Bookmarks>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="659"/>
+        <CursorPos X="5" Y="688"/>
+        <UsageCount Value="15"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="C:\lazarus\fpc\3.0.2\source\rtl\inc\systemh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="1227"/>
+        <CursorPos X="11" Y="1246"/>
+        <UsageCount Value="10"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="C:\lazarus\fpc\3.0.2\source\rtl\inc\text.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="219"/>
+        <CursorPos X="3" Y="221"/>
+        <UsageCount Value="10"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="C:\lazarus\fpc\3.0.4\source\rtl\objpas\math.pp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="68"/>
+        <CursorPos X="7" Y="83"/>
+        <UsageCount Value="11"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="..\Units\FITSTimeUtils.pas"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit5>
+    </Units>
+    <JumpHistory Count="25" HistoryIndex="24">
+      <Position1>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="8" Column="30"/>
+      </Position1>
+      <Position2>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="350" Column="7" TopLine="338"/>
+      </Position2>
+      <Position3>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="196" Column="13" TopLine="181"/>
+      </Position3>
+      <Position4>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="350" Column="17" TopLine="326"/>
+      </Position4>
+      <Position5>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="361" TopLine="346"/>
+      </Position5>
+      <Position6>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="360" Column="12" TopLine="346"/>
+      </Position6>
+      <Position7>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="361" TopLine="346"/>
+      </Position7>
+      <Position8>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="356" Column="49" TopLine="343"/>
+      </Position8>
+      <Position9>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="635" Column="45" TopLine="617"/>
+      </Position9>
+      <Position10>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="32" TopLine="32"/>
+      </Position10>
+      <Position11>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="589" Column="18" TopLine="566"/>
+      </Position11>
+      <Position12>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="515" Column="3" TopLine="500"/>
+      </Position12>
+      <Position13>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="50" Column="13" TopLine="35"/>
+      </Position13>
+      <Position14>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="163" Column="44" TopLine="138"/>
+      </Position14>
+      <Position15>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="183" Column="32" TopLine="158"/>
+      </Position15>
+      <Position16>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="227" Column="86" TopLine="203"/>
+      </Position16>
+      <Position17>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="290" Column="21" TopLine="266"/>
+      </Position17>
+      <Position18>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="325" Column="46" TopLine="301"/>
+      </Position18>
+      <Position19>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="382" Column="31" TopLine="357"/>
+      </Position19>
+      <Position20>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="394" Column="30" TopLine="369"/>
+      </Position20>
+      <Position21>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="400" Column="28" TopLine="375"/>
+      </Position21>
+      <Position22>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="469" Column="67" TopLine="444"/>
+      </Position22>
+      <Position23>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="492" Column="79" TopLine="467"/>
+      </Position23>
+      <Position24>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="494" Column="27" TopLine="469"/>
+      </Position24>
+      <Position25>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="515" Column="12" TopLine="490"/>
+      </Position25>
+    </JumpHistory>
+  </ProjectSession>
+</CONFIG>

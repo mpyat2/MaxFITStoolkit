@@ -2,12 +2,14 @@
 
 program IREN;
 
-uses Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, EnumFiles, StringListNaturalSort, FitsUtilsHelp, CommonIni;
+uses Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles, StringListNaturalSort, FitsUtilsHelp, CommonIni;
+
+{$R *.res}
 
 procedure PrintVersion;
 begin
   WriteLn('Rename files accorting to IRIS standard  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2018.02.23.01');
+  WriteLn(GetVersionString(ParamStr(0)));
   WriteLn;
 end;
 

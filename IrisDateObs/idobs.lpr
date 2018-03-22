@@ -2,12 +2,14 @@
 
 program IDOBS;
 
-uses Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, EnumFiles, StringListNaturalSort, FITSUtils, FitsUtilsHelp, CommonIni;
+uses Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles, StringListNaturalSort, FITSUtils, FitsUtilsHelp, CommonIni;
+
+{$R *.res}
 
 procedure PrintVersion;
 begin
   WriteLn('Calculate mean DATE-OBS  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2018.02.21.01');
+  WriteLn(GetVersionString(ParamStr(0)));
   WriteLn;
 end;
 

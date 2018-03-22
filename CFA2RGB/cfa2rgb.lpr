@@ -1,14 +1,17 @@
 {$APPTYPE CONSOLE}
 {$ASSERTIONS ON}
+
 program cfa2rgb;
 
 uses
-  SysUtils, CmdObj{, CmdObjStdSwitches}, FITSUtils, EnumFiles, StringListNaturalSort, FitsUtilsHelp, CommonIni;
+  SysUtils, CmdObj{, CmdObjStdSwitches}, Version, FITSUtils, EnumFiles, StringListNaturalSort, FitsUtilsHelp, CommonIni;
+
+{$R *.res}
 
 procedure PrintVersion;
 begin
   WriteLn('CFA -> RGB superpixel converter  Maksym Pyatnytskyy  2018');
-  WriteLn('Version 2018.02.25.01');
+  WriteLn(GetVersionString(ParamStr(0)));
   WriteLn;
 end;
 
@@ -69,6 +72,7 @@ var
   BytePix: Integer;
   NaxisN: TIntArray;
   Naxis1, Naxis2: Integer;
+  Naxis1new, Naxis2new: Integer;
   NrecordsToRead: Integer;
   NRecordsToWrite: Integer;
   Header: PChar;
@@ -104,6 +108,10 @@ begin
   Naxis1 := NaxisN[0];
   Naxis2 := NaxisN[1];
   Write(' [', Naxis1, 'x', Naxis2, '] [BITPIX=', BitPix, '] -> ');
+  //Naxis1new := (Naxis1 - 1) div 2 + 1;
+  //Naxis2new := (Naxis2 - 1) div 2 + 1;
+  Naxis1new := Naxis1 div 2;
+  Naxis2new := Naxis2 div 2;
   NrecordsToRead := ((Naxis1 * Naxis2 * BytePix - 1) div FITSRecordLen + 1);
   GetMem(Header, StartOfImage * FITSRecordLen);
   try
@@ -116,7 +124,7 @@ begin
       FillChar(Image^, ImageMemSize, 0);
       Seek(FITSfile, StartOfImage);
       BlockRead(FITSfile, Image^, NrecordsToRead);
-      ImageLayerMemSize := (Naxis1 div 2) * (Naxis2 div 2) * BytePix;
+      ImageLayerMemSize := Naxis1new * Naxis2new * BytePix;
       for ColorL := 0 to 3 do ImageC[ColorL] := nil;
       try
         // Reading 4 color planes
@@ -129,13 +137,16 @@ begin
               for R := 0 to Naxis2 - 1 do begin
                 C2 := C + ShiftH;
                 R2 := R + ShiftV;
-                PixAddr := (R2 * Naxis1 + C2) * BytePix;
-                if (C mod 2 = 0) and (R mod 2 = 0) then begin
-                  X := C div 2;
-                  Y := R div 2;
-                  if (X < Naxis1 div 2) and (Y < Naxis2 div 2) then begin
-                    PixAddr2 := (Y * (Naxis1 div 2) + X) * BytePix;
-                    Move(Image[PixAddr], ImageC[ColorL][PixAddr2], BytePix);
+                R2 := Naxis2 - 1 - (R + ShiftV); // start from the end of Naxis2, for "correct" order of pixels
+                if (C2 >= 0) and (C2 < Naxis1) and (R2 >= 0) and (R2 < Naxis2) then begin
+                  PixAddr := (R2 * Naxis1 + C2) * BytePix;
+                  if (C mod 2 = 0) and (R mod 2 = 0) then begin
+                    X := C div 2;
+                    Y := R div 2;
+                    if (X >= 0) and (X < Naxis1new) and (Y >= 0) and (Y < Naxis2new) then begin
+                      PixAddr2 := ((Naxis2new - 1 - Y) * Naxis1new + X) * BytePix;
+                      Move(Image[PixAddr], ImageC[ColorL][PixAddr2], BytePix);
+                    end;
                   end;
                 end;
               end;
@@ -144,6 +155,7 @@ begin
         end;
 
         // Averaging 2 G-planes
+        ImageToAverage := nil;
         for ColorL := 0 to 4 do begin
           if BayerPattern[ColorL] = 'G' then begin
             SetLength(ImageToAverage, Length(ImageToAverage) + 1);
@@ -159,7 +171,7 @@ begin
         Assert(RedL <> nil);
         Assert(BlueL <> nil);
         Assert(Length(ImageToAverage) = 2);
-        AverageLayers(ImageToAverage, (Naxis1 div 2) * (Naxis2 div 2) * BytePix, BitPix);
+        AverageLayers(ImageToAverage, Naxis1new * Naxis2new * BytePix, BitPix);
         GreenL := ImageToAverage[0];
 
         OutFileName := Prefix + ExtractFileName(FITSfileName);
@@ -184,13 +196,13 @@ begin
           else
           if Copy(Buf, 1, FITSKeywordLen) = PadCh('NAXIS1', FITSKeywordLen, ' ') then begin
             // Fix NAXIS1
-            Str(Naxis1 div 2:FITSNumericAlign - FITSKeywordLen - 2, S);
+            Str(Naxis1new:FITSNumericAlign - FITSKeywordLen - 2, S);
             StrToFITSRecord(PadCh('NAXIS1', FITSKeywordLen, ' ') + '= ' + S, Buf);
           end
           else
           if Copy(Buf, 1, FITSKeywordLen) = PadCh('NAXIS2', FITSKeywordLen, ' ') then begin
             // Fix NAXIS2 ...
-            Str(Naxis2 div 2:FITSNumericAlign - FITSKeywordLen - 2, S);
+            Str(Naxis2new:FITSNumericAlign - FITSKeywordLen - 2, S);
             StrToFITSRecord(PadCh('NAXIS2', FITSKeywordLen, ' ') + '= ' + S, Buf);
           end;
           SetLength(HeaderNew, Length(HeaderNew) + 1);

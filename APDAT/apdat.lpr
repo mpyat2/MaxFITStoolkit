@@ -3,12 +3,14 @@
 program APDAT;
 
 uses
-  Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, Math, FitsUtilsHelp, CommonIni;
+  Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, Version, Math, FitsUtilsHelp, CommonIni;
+
+{$R *.res}
 
 procedure PrintVersion;
 begin
   WriteLn('AIJ photometry log parser  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2018.02.22.01');
+  WriteLn(GetVersionString(ParamStr(0)));
 end;
 
 procedure InvalidFloatingPointValueError(const Value: string);

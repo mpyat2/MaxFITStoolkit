@@ -3,12 +3,14 @@
 program FITSstat;
 
 uses
-  SysUtils, CmdObj{, CmdObjStdSwitches}, FITSUtils, FitsUtilsHelp, CommonIni;
+  SysUtils, CmdObj{, CmdObjStdSwitches}, Version, FITSUtils, FitsUtilsHelp, CommonIni;
+
+{$R *.res}
 
 procedure PrintVersion;
 begin
   WriteLn('FITSstat  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2018.02.22.01');
+  WriteLn(GetVersionString(ParamStr(0)));
   WriteLn;
 end;
 

@@ -5,13 +5,15 @@ program FIHED;
 // https://fits.gsfc.nasa.gov/fits_primer.html
 
 uses
-  Windows, SysUtils, CmdObj, Classes, FITSUtils, EnumFiles, StringListNaturalSort, FitsUtilsHelp, CommonIni;
+  Windows, SysUtils, Classes, CmdObj, Version, FITSUtils, EnumFiles, StringListNaturalSort, FitsUtilsHelp, CommonIni;
 // do not include CmdObjStdSwitches!
+
+{$R *.res}
 
 procedure PrintVersion;
 begin
-  WriteLn('FITS Header Viewer/Editor  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2018.02.22.01');
+  WriteLn('FITS Header Viewer/Editor  Maksym Pyatnytskyy  2018');
+  WriteLn(GetVersionString(ParamStr(0)));
   WriteLn;
 end;  
   

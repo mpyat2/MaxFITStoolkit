@@ -2,13 +2,24 @@
 
 program iconvraw;
 
-uses Windows, SysUtils, DateUtils, Classes, CmdObj, EnumFiles, StringListNaturalSort, LibRawMxWrapper, FITSUtils, FITSTimeUtils, FitsUtilsHelp, CommonIni;
+uses Windows, SysUtils, Variants, DateUtils, Classes, CmdObj, Version, EnumFiles,
+     StringListNaturalSort, LibRawMxWrapper, FITSUtils, FITSTimeUtils,
+     FitsUtilsHelp, CommonIni;
+
+{$R *.res}
+
+var
+  LibRawLoaded: Boolean = False;
+  LibRawWrapperName: string = '';
 
 procedure PrintVersion;
 begin
   WriteLn('RAW -> CFA converter  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2018.01.26.01');
-  WriteLn('Libraw version: ', RawProcessorVersion);
+  WriteLn(GetVersionString(ParamStr(0)));
+  if LibRawLoaded then begin
+    WriteLn('Libraw Wrapper: ', LibRawWrapperName);
+    WriteLn('Libraw Version: ', RawProcessorVersion);
+  end;
   WriteLn;
 end;
 
@@ -35,6 +46,32 @@ procedure CheckLibRawError(RawProcessor: Pointer; LibRawError: Integer);
 begin
   if LibRawError <> 0 then
     FileError(RawProcessorStrError(RawProcessor, LibRawError));
+end;
+
+const
+  Months: array[1..12] of string = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec');
+  Days:   array[1..7]  of string = ('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat');
+
+function GetMonth(D: TDateTime): string;
+var
+  N: Integer;
+begin
+  N := MonthOf(D);
+  if (N > 0) and (N <= 12) then
+    Result := Months[N]
+  else
+    raise EConvertError.Create('Cannot get month abbreviation');
+end;
+
+function GetDayOfWeek(D: TDateTime): string;
+var
+  N: Integer;
+begin
+  N := DayOfWeek(D);
+  if (N > 0) and (N <= 7) then
+    Result := Days[N]
+  else
+    raise EConvertError.Create('Cannot get day abbreviation');
 end;
 
 function MMMtoMonth(const MMM: string): Word;
@@ -85,7 +122,6 @@ function LocalTimeToUniversal(LT: TDateTime): TDateTime; overload;
 begin
   Result:=LocalTimeToUniversal(LT,-GetLocalTimeOffset);
 end;
-
 {$ENDIF}
 
 procedure ConvertFile(const FileName: string;
@@ -93,10 +129,11 @@ procedure ConvertFile(const FileName: string;
                       const NewFileName: string;
                       CheckExistence: Boolean;
                       DontTruncate: Boolean;
-                      TimeShiftInSeconds: Integer;
+                      DoFlip: Boolean;
                       PixelRealNumber: Boolean;
                       BzeroShift: Boolean;
                       FITSParams: TStrings;
+                      var TimeShiftInSecondsV: Variant;
                       out TimeShifted: Boolean);
 var
   RawProcessor: Pointer;
@@ -118,7 +155,7 @@ var
   PixelAsSignedIntBytes: array[0..1] of Char absolute PixelAsSignedInt;
   PixelR: Single;
   PixelRBytes: array[0..3] of Char absolute PixelR;
-  X, Y: Word;
+  X, Y, Y2: Word;
   FirstPixel: Boolean;
   MinValue, MaxValue: Word;
   PixelCount: LongWord;
@@ -129,14 +166,16 @@ var
   ImageSizeInBlocks: LongWord;
   AverageValue: Double;
   N: LongWord;
-  Make, Model, Software: string;
+  Make, Model, Software, Software2: string;
   Instrument: string;
   ISO: Double;
-  ISOstring: string;
+  //ISOstring: string;
   ExposureTimeFloat: Double;
-  //Timestamp: Int64;
   TimeStr: array[0..25] of Char;
+  TimeStamp: Int64; // !!
+  TimeStampD: TDateTime;
   DateTime: TDateTime;
+  TimeShift: Int64;
   TempS: string;
   FITSHeader: TFITSRecordArray;
   Comments: TStringArray;
@@ -146,7 +185,7 @@ var
   I, P: Integer;
   Name, Value, TempValue: string;
   Bzero: Integer;
-  //BayerPattern: array[0..16] of Char;
+  BayerPattern: array[0..16] of Char;
 begin
   TimeShifted := False;
   RawFrameLeft := 0;
@@ -191,25 +230,31 @@ begin
     Software := RawProcessorSoftware(RawProcessor);
     ExposureTimeFloat := RawProcessorShutter(RawProcessor);
     ISO := RawProcessorISOspeed(RawProcessor);
+    TimeStamp := RawProcessorTimestamp(RawProcessor);
+    TimeStampD := UnixToDateTime(TimeStamp);
     RawProcessorTime(RawProcessor, TimeStr, SizeOf(TimeStr));
-    //RawProcessorBayerPattern(RawProcessor, BayerPattern, SizeOf(BayerPattern));
-    //for I := 0 to StrLen(BayerPattern) - 1 do
-    //  if (Ord(BayerPattern[I]) < 32) or (Ord(BayerPattern[I]) > 126) then BayerPattern[I] := '?';
+    RawProcessorBayerPattern(RawProcessor, BayerPattern, SizeOf(BayerPattern));
+    for I := 0 to StrLen(BayerPattern) - 1 do
+      if (Ord(BayerPattern[I]) < 32) or (Ord(BayerPattern[I]) > 126) then BayerPattern[I] := '?';
 
     if PrintInfo then begin
       WriteLn;
-      WriteLn('Make         : ', Make);
-      WriteLn('Model        : ', Model);
-      WriteLn('Software     : ', Software);
-      WriteLn('Time         : ', TrimRight(TimeStr));
-      WriteLn('ISO          : ', ISO:0:0);
-      WriteLn('Exposure     : ', ExposureTimeFloat:9:7);
-      WriteLn('Raw Size     : ', _width, 'x', _height);
-      WriteLn('Image Size   : ', RawFrameWidth, 'x', RawFrameHeight);
-      WriteLn('Left Margin  : ', RawFrameLeft);
-      WriteLn('Top Margin   : ', RawFrameTop);
-      WriteLn('Output Size  : ', Iwidth, 'x', Iheight);
-      //WriteLn('Bayer Pattern: ', BayerPattern);
+      WriteLn('File          : ', ExtractFileName(FileName));
+      WriteLn('Make          : ', Make);
+      WriteLn('Model         : ', Model);
+      WriteLn('Software      : ', Software);
+      WriteLn('Time (local)  : ', TrimRight(TimeStr));
+      WriteLn('TimeStamp (UT): ', GetDayOfWeek(TimeStampD), ' ', GetMonth(TimeStampD), ' ', FormatDateTime('dd hh:nn:ss yyyy', TimeStampD));
+      WriteLn('ISO           : ', ISO:0:0);
+      WriteLn('Exposure      : ', ExposureTimeFloat:9:7);
+      WriteLn('Raw Size      : ', _width, 'x', _height);
+      WriteLn('Image Size    : ', RawFrameWidth, 'x', RawFrameHeight);
+      WriteLn('Left Margin   : ', RawFrameLeft);
+      WriteLn('Top Margin    : ', RawFrameTop);
+      WriteLn('Output Size   : ', Iwidth, 'x', Iheight);
+      WriteLn('Bayer Pattern : ', BayerPattern);
+      //WriteLn;
+      //WriteLn('Note: Time is a value of EXIF TimeStamp reported by LibRaw formatted by ctime()');
       Exit;
     end;
 
@@ -230,8 +275,6 @@ begin
     if RawProcessorCheck(RawProcessor) <> 0 then
       FileError('Don''t know how to work with non-Bayer RAW.');
 
-    //Timestamp := RawProcessorTimestamp(RawProcessor);
-    //DateTime := UnixToDateTime(Timestamp);
     DateTime := 0;
     if StrLen(TimeStr) = 25 then begin
       try
@@ -247,6 +290,13 @@ begin
         on E: EConvertError do DateTime := 0;
       end;
     end;
+
+    if VarIsNull(TimeShiftInSecondsV) then begin
+      TimeShift := TimeStamp - DateTimeToUnix(DateTime); // in seconds
+      TimeShiftInSecondsV := TimeShift;
+    end
+    else
+      TimeShift := TimeShiftInSecondsV;
 
     if BzeroShift then begin
       Bzero := 32768;
@@ -278,7 +328,11 @@ begin
       FillChar(Image[0], ImageSize, 0);
       N := 0;
       for Y := RawFrameTop + RawFrameHeight - 1 downto RawFrameTop do begin
-        scanline := @bits[Y * _width * 2];
+        if DoFlip then
+          Y2 := (RawFrameTop + RawFrameHeight - 1) - Y + RawFrameTop
+        else
+          Y2 := Y;
+        scanline := @bits[Y2 * _width * 2];
         for X := RawFrameLeft to RawFrameLeft + RawFrameWidth - 1 do begin
           Pixel := PWord(@scanline[X * 2])^;
           if FirstPixel then begin
@@ -332,13 +386,11 @@ begin
       Instrument := '';
       if (Make <> '') or (Model <> '') then
         Instrument := Trim(Make + ' ' + Model);
-      if Software <> '' then
-        Software := Software + ' / ';
-      Software := 'libraw ' + RawProcessorVersion + ' / ' + ExtractFileName(ParamStr(0));
+      Software2 := 'libraw ' + RawProcessorVersion + ' / ' + ExtractFileName(ParamStr(0)) + ' ' + GetVersionString2(ParamStr(0));
 
       if DateTime <> 0 then begin
-        DateTime := DateTime + TimeShiftInSeconds / (24.0*60.0*60.0);
-        TimeShifted := TimeShiftInSeconds <> 0;
+        DateTime := DateTime + TimeShift / (24.0*60.0*60.0);
+        TimeShifted := TimeShift <> 0;
       end;
 
       SetLength(Axes, 2);
@@ -348,47 +400,61 @@ begin
       N := 0;
 
       SetLength(Comments, N + 1);
-      Comments[N] := 'Original filename: ' + ExtractFileName(FileName);
+      Comments[N] := 'RAW: Original filename: ' + ExtractFileName(FileName);
       Inc(N);
 
       SetLength(Comments, N + 1);
-      Comments[N] := 'Original EXIF time: ' + TimeStr;
+      Comments[N] := 'RAW: Original EXIF time: ' + TimeStr;
       Inc(N);
 
       if TimeShifted then begin
         SetLength(Comments, N + 1);
-        Comments[N] := 'DATE-OBS = Original EXIF time shifted by ' + IntToStr(TimeShiftInSeconds) + ' seconds';
+        Comments[N] := 'RAW: DATE-OBS: Original EXIF time shifted by ' + IntToStr(TimeShift) + ' seconds';
         Inc(N);
       end;
 
-      //if ISO <> 0 then begin
-      //  SetLength(Comments, N + 1);
-      //  Comments[N] := 'ISO ' + FloatToStr(ISO);
-      //  Inc(N);
-      //end;
-
-      ISOstring := '';
       if ISO <> 0 then begin
         Str(ISO:0:0, TempS);
-        ISOstring := 'ISO ' + TempS;
+        SetLength(Comments, N + 1);
+        Comments[N] := 'RAW: ISO ' + TempS;
+        Inc(N);
       end;
 
-      //SetLength(Comments, N + 1);
-      //Comments[N] := 'Bayer Pattern (8 rows x 2 pixels): ' + BayerPattern;
-      //Inc(N);
+      //ISOstring := '';
+      //if ISO <> 0 then begin
+      //  Str(ISO:0:0, TempS);
+      //  ISOstring := 'ISO ' + TempS;
+      //end;
+
+      if not DoFlip and not DontTruncate then begin
+        SetLength(Comments, N + 1);
+        Comments[N] := 'RAW: Bayer Pattern (8 rows x 2 pixels): ' + BayerPattern;
+        Inc(N);
+      end;
+
+      if DoFlip then begin
+        SetLength(Comments, N + 1);
+        Comments[N] := 'RAW: Y-axis is reversed';
+        Inc(N);
+      end;
 
       SetLength(Comments, N + 1);
-      Comments[N] := 'MIN  PIXEL VALUE = ' + IntToStr(MinValue);
+      Comments[N] := 'RAW: MIN  PIXEL VALUE = ' + IntToStr(MinValue);
       Inc(N);
       SetLength(Comments, N + 1);
-      Comments[N] := 'MAX  PIXEL VALUE = ' + IntToStr(MaxValue);
+      Comments[N] := 'RAW: MAX  PIXEL VALUE = ' + IntToStr(MaxValue);
       Inc(N);
       SetLength(Comments, N + 1);
       Str(AverageValue:0:1, TempS);
-      Comments[N] := 'MEAN PIXEL VALUE = ' + TempS;
+      Comments[N] := 'RAW: MEAN PIXEL VALUE = ' + TempS;
       Inc(N);
+      if Software <> '' then begin
+        SetLength(Comments, N + 1);
+        Comments[N] := 'RAW: ' + Software;
+        Inc(N);
+      end;
       SetLength(Comments, N + 1);
-      Comments[N] := 'SOFTWARE: ' + Software;
+      Comments[N] := 'RAW: ' + Software2;
       Inc(N);
 
       FITSHeader := MakeFITSHeader(
@@ -398,7 +464,8 @@ begin
         DateTime, '',
         LocalTimeToUniversal(Now()), 'FITS creation time (UTC)',
         ExposureTimeFloat, '',
-        ISOstring,
+        '',
+        '',
         Instrument,
         Comments);
 
@@ -463,10 +530,11 @@ procedure ProcessInput(const FileMasks: array of string;
                        Overwrite: Boolean;
                        BaseNumber: Integer;
                        DontTruncate: Boolean;
-                       TimeShiftInSeconds: Integer;
+                       DoFlip: Boolean;
                        PixelRealNumber: Boolean;
                        BzeroShift: Boolean;
                        FITSParams: TStrings;
+                       TimeShiftInSecondsV: Variant;
                        const OutputExt: string);
 var
   I, N: Integer;
@@ -493,11 +561,11 @@ begin
         else
           NewFileName := TempOutputDir + FileName;
         NewFileName := ChangeFileExt(NewFileName, OutputExt);
-        Write(FileName);
-        if not PrintInfo then
-          Write(^I'->'^I, NewFileName);
-        ConvertFile(FileList[I], PrintInfo, NewFileName, not Overwrite, DontTruncate, TimeShiftInSeconds, PixelRealNumber, BzeroShift, FITSParams, TimeShifted);
-        if TimeShifted then Write('DATE-OBS shifted by ', TimeShiftInSeconds, ' seconds');
+        if not PrintInfo then begin
+          Write(FileName, ^I'->'^I, NewFileName);
+        end;
+        ConvertFile(FileList[I], PrintInfo, NewFileName, not Overwrite, DontTruncate, DoFlip, PixelRealNumber, BzeroShift, FITSParams, TimeShiftInSecondsV, TimeShifted);
+        if TimeShifted then Write('DATE-OBS shifted by ', VarToStrDef(TimeShiftInSecondsV, 'NULL'), ' seconds');
         WriteLn;
         Inc(FileNumber);
       end;
@@ -523,9 +591,11 @@ var
   Overwrite: Boolean;
   BaseNumber: Integer;
   DontTruncate: Boolean;
-  TimeShiftInSeconds: Integer;
+  TimeShiftInSecondsV: Variant;
+  TimeShift: Int64;
   PixelRealNumber: Boolean;
   BzeroShift: Boolean;
+  DoFlip: Boolean;
   OutputExt: string;
   PrintInfo: Boolean;
   FITSparams: TStringList;
@@ -536,6 +606,22 @@ var
 
 begin
   FileMode := fmOpenRead;
+  LibRawLoaded := False;
+
+  LibRawWrapperName := CmdObj.CmdLine.KeyValue('DLL=');
+  if LibRawWrapperName = '' then begin
+    LibRawWrapperName := CommonIni.Ini.ReadString('SETTINGS', 'LIBRAWWRAPPER', '');
+    if LibRawWrapperName = '' then LibRawWrapperName := LibRawWrapper;
+  end;
+  if ExtractFilePath(LibRawWrapperName) = '' then LibRawWrapperName := ExtractFilePath(ParamStr(0)) + LibRawWrapperName;
+
+  try
+    InitLibrary(LibRawWrapperName);
+    LibRawLoaded := True;
+  except
+    on E: Exception do
+      WriteLn(^M^J'**** Problem loading ' + LibRawWrapperName + '.'^M^J'**** Error: ' + E.Message + ^M^J);
+  end;
 
   PrintVer := (CmdObj.CmdLine.IsCmdOption('V') or CmdObj.CmdLine.IsCmdOption('version'));
   if PrintVer then PrintVersion;
@@ -544,6 +630,9 @@ begin
     PrintHelp;
     Halt(1);
   end;
+
+  if not LibRawLoaded then
+    Halt(1);
 
   if (CmdObj.CmdLine.FileCount < 1) then begin
     if not PrintVer then begin
@@ -561,9 +650,11 @@ begin
   Overwrite := False;
   BaseNumber := 1;
   DontTruncate := False;
-  TimeShiftInSeconds := 0;
+  TimeShiftInSecondsV := 0;
+  TimeShift := 0;
   PixelRealNumber := False;
   BzeroShift := False;
+  DoFlip := False;
   OutputExt := '.fit';
   PrintInfo := False;
   FITSparams := TStringList.Create;
@@ -576,6 +667,10 @@ begin
           Halt(1);
         end;
         if CmdObj.CmdLine.ParamIsKey(S, 'V') or CmdObj.CmdLine.ParamIsKey(S, 'version') then begin
+          // nothing: already processed.
+        end
+        else
+        if CmdObj.CmdLine.ExtractParamValue(S, 'DLL=', S2) then begin
           // nothing: already processed.
         end
         else
@@ -593,6 +688,9 @@ begin
         else
         if CmdObj.CmdLine.ParamIsKey(S, 'S') then
           BzeroShift := True
+        else
+        if CmdObj.CmdLine.ParamIsKey(S, 'Y') then
+          DoFlip := True
         else
         if (Copy(S, 2, 1) = '$') and (Pos('=', S) <> 0) then
           FITSparams.Add(Copy(S, 3, MaxInt))
@@ -634,10 +732,16 @@ begin
         else
         if CmdObj.CmdLine.ExtractParamValue(S, 'TS', S2) then begin
           if S2 <> '' then begin
-            Val(S2, TimeShiftInSeconds, ErrorPos);
-            if ErrorPos <> 0 then begin
-              WriteLn('**** Time Shift must be an integer number');
-              Halt(1);
+            if AnsiSameText(S2, 'A') then begin
+              TimeShiftInSecondsV := Null;
+            end
+            else begin
+             Val(S2, TimeShift, ErrorPos);
+              if ErrorPos <> 0 then begin
+                WriteLn('**** Time Shift must be an integer number or ''A'' for autoshift');
+                Halt(1);
+              end;
+              TimeShiftInSecondsV := TimeShift;
             end;
           end;
         end
@@ -656,7 +760,7 @@ begin
 
     FileList := TStringListNaturalSort.Create;
     try
-      ProcessInput(InputFileMasks, PrintInfo, GenericName, OutputDir, Overwrite, BaseNumber, DontTruncate, TimeShiftInSeconds, PixelRealNumber, BzeroShift, FITSParams, OutputExt);
+      ProcessInput(InputFileMasks, PrintInfo, GenericName, OutputDir, Overwrite, BaseNumber, DontTruncate, DoFlip, PixelRealNumber, BzeroShift, FITSParams, TimeShiftInSecondsV, OutputExt);
       WriteLn;
     finally
       FreeAndNil(FileList);

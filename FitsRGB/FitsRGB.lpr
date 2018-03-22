@@ -3,12 +3,14 @@
 program FITSRGB;
 
 uses
-  SysUtils, CmdObj{, CmdObjStdSwitches}, FITSUtils, EnumFiles, StringListNaturalSort, FitsUtilsHelp, CommonIni;
+  SysUtils, CmdObj{, CmdObjStdSwitches}, Version, FITSUtils, EnumFiles, StringListNaturalSort, FitsUtilsHelp, CommonIni;
+
+{$R *.res}
 
 procedure PrintVersion;
 begin
   WriteLn('FITS RGB splitter  Maksym Pyatnytskyy  2018');
-  WriteLn('Version 2018.02.23.01');
+  WriteLn(GetVersionString(ParamStr(0)));
   WriteLn;
 end;
 

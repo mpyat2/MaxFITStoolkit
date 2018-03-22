@@ -3,12 +3,14 @@
 program IPDAT;
 
 uses
-  Windows, SysUtils, CmdObj{, CmdObjStdSwitches}, FitsUtilsHelp, CommonIni;
+  Windows, SysUtils, CmdObj{, CmdObjStdSwitches}, Version, FitsUtilsHelp, CommonIni;
+
+{$R *.res}
 
 procedure PrintVersion;
 begin
   WriteLn('IRIS photometry log parser  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2018.02.23.01');
+  WriteLn(GetVersionString(ParamStr(0)));
 end;
 
 procedure FileFormatError;

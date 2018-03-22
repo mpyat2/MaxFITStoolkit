@@ -1,26 +1,28 @@
 @iconvraw
 
 Usage:
-iconvraw in_file_mask1 [in_file_mask2 ...] [/G=generic_name] [/O=out_dir] [/B=nn] [/X=<ext>] [/TS<xxxxx>] [/F] [/L] [/R] [/S]
+iconvraw in_file_mask1 [in_file_mask2 ...] [/G=generic_name] [/O=out_dir] [/B=nn] [/X=<ext>] [/TS<xxxxx>] [/F] [/L] [/R] [/S] [/Y] [/DLL=<libraw_wrapper_dll>]
 or
 iconvraw in_file_mask1 [in_file_mask2 ...] /I
 
 Where:
   in_file_maskX    masks of input files to be processed, i.e. IMG*.CR2
   /G=generic_name  prefix to be used to construct new file name
-                   (original filename will be used if no prefix specified)
-  /O=out_dir       directory for files having new names
-                   (original directory will be used if no prefix specified)
+                   (original filename will be used if not specified)
+  /O=out_dir       directory for output files
+                   (original directory will be used if not specified)
   /B=nn            base file number (default = 1); must be >= 0 (only when generic_name is specified)
   /X=<ext>         extension for output files (.fit by default)
   /TS<xxxxx>       shift DATE-OBS by xxxxx seconds (the value can be negative or positive)
                    Example: /TS-10800 shifts DATE-OBS by three hours backwards
+                   It is possible to specify /TSa value to attemt to auto-calculate time shift to UT.
   /F               overwrite existing files in output directory
   /L               do not truncate image (show full RAW image)
   /R               generate floating-point FITS
   /S               generate fits with BZERO = 32768
+  /Y               flip image by Y-axis
   /I               print image info only
-  /V               print version
+  /V               print version (including libraw version)
   /H               print help and halt
 
 Example:
@@ -88,8 +90,9 @@ Where:
 
 
 Correspondence between individual color channels and Buyer's pattern
-should be defined in fitscfa.INI file.
-For example, for RAW files converted by IRIS one can use the following profile:
+should be defined in FITSCFA.INI file.
+For example, for RAW files converted by IRIS (or iconvraw) having RGGB pattern 
+one can define (in FITSCFA.INI) the following profile to generate R, G=(G1+G2)/2, and B layers:
 
 [PROFILE1]
 1 = R
@@ -99,23 +102,6 @@ For example, for RAW files converted by IRIS one can use the following profile:
 
 Values to the right of equation sign are the perfixes of individual output files.
 If some prefixes are the same, corresponding colors will be combined together (averaged)
-
-Example 1 (two green channels are averaged):
-
-;G1 and G2 will be combined: TG=(G1+G2)/2 because they have identical ID
-[RGB]
-1 = TR
-2 = TG
-3 = TG
-4 = TB
-
-Example 2 (all channels will be averaged):
-
-[GRAY]
-1 = N
-2 = N
-3 = N
-4 = N
 
 Name of a profile (INI-file's section) to be used should be specified in the command line
 by "/P=" option.
@@ -183,10 +169,36 @@ iren dir1\IMG*.CR2 dir2\IMG*.CR2 dir3\IMG*.CR2 /G=src /O=C:\SKY\ /F /B=1
 @cfa2rgb
 
 Usage:
-cfa2rgb file_mask1[.fit] [file_mask2[.fit] ...] [/G=generic_name] [/O=out_dir] [/P=<prefix>] [/F] /M=<FilterPattern>
+cfa2rgb file_mask1[.fit] [file_mask2[.fit] ...] [/O=out_dir] [/P=<prefix>] [/F] /M=<FilterPattern>
 
+Demosaicing CFA image using "superpixel" approach.
+
+where:
+  file_maskX          masks of input files to be processed
+  /O=out_dir          directory for output files
+                      (original directory will be used if not specified)
+  /F                  overwrite existing files in output directory
+  /M=<FilterPattern>  Bayer pattern of input CFA FITS, for example, RGGB
 
 @fitsstat
 
 Usage:
 fitsstat file
+
+@makestack
+
+Usage:
+makestack file_mask1[.fit] [file_mask2[.fit] ...] /G=generic_name [/N=mm] [/M=<mode>] [/O=out_dir] [/B=nn] [/X=<ext>] [/F]
+
+Where:
+  file_maskX       masks of input files to be processed
+  /G=generic_name  prefix to be used to construct new file name
+  /N=mm            number of files in stacking group. If not specified, all files will be stacked 
+  /M=<mode>        stacking mode: /M=S (sum, default value); /M=A (average); /M=M (median)
+  /O=out_dir       directory for output files
+                   (original directory will be used if not specified)
+  /B=nn            base file number (default = 1); must be >= 0
+  /X=<ext>         extension for output files (.fit by default)
+  /F               overwrite existing files in output directory
+  /V               print version
+  /H               print help and halt

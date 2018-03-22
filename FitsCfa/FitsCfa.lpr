@@ -3,12 +3,14 @@
 program FITSCFA;
 
 uses
-  SysUtils, CmdObj{, CmdObjStdSwitches}, FITSUtils, EnumFiles, StringListNaturalSort, IniFiles, FitsUtilsHelp, CommonIni;
+  SysUtils, CmdObj{, CmdObjStdSwitches}, Version, FITSUtils, EnumFiles, StringListNaturalSort, IniFiles, FitsUtilsHelp, CommonIni;
+
+{$R *.res}
 
 procedure PrintVersion;
 begin
   WriteLn('FITS CFA splitter  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2018.02.22.01');
+  WriteLn(GetVersionString(ParamStr(0)));
   WriteLn;
 end;
 
@@ -99,6 +101,7 @@ var
   BytePix: Integer;
   NaxisN: TIntArray;
   Naxis1, Naxis2: Integer;
+  Naxis1new, Naxis2new: Integer;
   NblocksInHeader: Integer;
   NrecordsToRead: Integer;
   NRecordsToWrite: Integer;
@@ -132,8 +135,12 @@ begin
   Naxis1 := NaxisN[0];
   Naxis2 := NaxisN[1];
   Write(' [', Naxis1, 'x', Naxis2, '] [BITPIX=', BitPix, '] -> ');
+  //Naxis1new := (Naxis1 - 1) div 2 + 1;
+  //Naxis2new := (Naxis2 - 1) div 2 + 1;
+  Naxis1new := Naxis1 div 2;
+  Naxis2new := Naxis2 div 2;
   NrecordsToRead := ((Naxis1 * Naxis2 * BytePix - 1) div FITSRecordLen + 1);
-  NRecordsToWrite := (((Naxis1 div 2) * (Naxis2 div 2) * BytePix - 1) div FITSRecordLen + 1);
+  NRecordsToWrite := ((Naxis1new * Naxis2new * BytePix - 1) div FITSRecordLen + 1);
   NRecordsToWrite := ((NRecordsToWrite - 1) div RecordsInBlock + 1) * RecordsInBlock;
   GetMem(Header, StartOfImage * FITSRecordLen);
   try
@@ -155,20 +162,20 @@ begin
             ImageNames[ColorL] := Trim(Ini.ReadString(Profile, IntToStr(ColorL + 1), ''));
             if ImageNames[ColorL] = '' then ImageNames[ColorL] := 'p' + IntToStr(ColorL + 1);
             GetMem(ImageC[ColorL], Image2MemSize);
-            //FillChar(ImageC[ColorL]^, Image2MemSize, ' ');
-            //FillChar(ImageC[ColorL]^, (Naxis1 div 2) * (Naxis2 div 2) * BytePix, 0);
             FillChar(ImageC[ColorL]^, Image2MemSize, 0);
             for C := 0 to Naxis1 - 1 do begin
               for R := 0 to Naxis2 - 1 do begin
                 C2 := C + ShiftH;
-                R2 := R + ShiftV;
-                PixAddr := (R2 * Naxis1 + C2) * BytePix;
-                if (C mod 2 = 0) and (R mod 2 = 0) then begin
-                  X := C div 2;
-                  Y := R div 2;
-                  if (X < Naxis1 div 2) and (Y < Naxis2 div 2) then begin
-                    PixAddr2 := (Y * (Naxis1 div 2) + X) * BytePix;
-                    Move(Image[PixAddr], ImageC[ColorL][PixAddr2], BytePix);
+                R2 := Naxis2 - 1 - (R + ShiftV); // start from the end of Naxis2, for "correct" order of pixels
+                if (C2 >= 0) and (C2 < Naxis1) and (R2 >= 0) and (R2 < Naxis2) then begin
+                  PixAddr := (R2 * Naxis1 + C2) * BytePix;
+                  if (C mod 2 = 0) and (R mod 2 = 0) then begin
+                    X := C div 2;
+                    Y := R div 2;
+                    if (X >= 0) and (X < Naxis1new) and (Y >= 0) and (Y < Naxis2new) then begin
+                      PixAddr2 := ((Naxis2new - 1 - Y) * Naxis1new + X) * BytePix;
+                      Move(Image[PixAddr], ImageC[ColorL][PixAddr2], BytePix);
+                    end;
                   end;
                 end;
               end;
@@ -187,7 +194,7 @@ begin
               end;
             end;
             if Length(ImageToAverage) > 1 then begin
-              AverageLayers(ImageToAverage, (Naxis1 div 2) * (Naxis2 div 2) * BytePix, BitPix);
+              AverageLayers(ImageToAverage, Naxis1new * Naxis2new * BytePix, BitPix);
               for ColorL2 := 1 to Length(ImageToAverage) - 1 do begin
                 for LL := ColorL + 1 to 3 do begin
                   if ImageC[LL] = ImageToAverage[ColorL2] then begin
@@ -218,8 +225,8 @@ begin
               Rewrite(OutFile);
               try
                 BlockWrite(OutFile, Header^, StartOfImage);
-                SetKeywordValue(OutFile, 'NAXIS1', IntToStr(Naxis1 div 2), True, '', False);
-                SetKeywordValue(OutFile, 'NAXIS2', IntToStr(Naxis2 div 2), True, '', False);
+                SetKeywordValue(OutFile, 'NAXIS1', IntToStr(Naxis1new), True, '', False);
+                SetKeywordValue(OutFile, 'NAXIS2', IntToStr(Naxis2new), True, '', False);
                 Seek(OutFile, StartOfImage);
                 BlockWrite(OutFile, ImageC[ColorL]^, NrecordsToWrite);
                 SetKeywordValue(OutFile, 'FILTER', FITSQuotedValue(' ' + ImageNames[ColorL]), False, 'Color Layer', True);

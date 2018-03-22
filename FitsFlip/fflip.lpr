@@ -3,12 +3,14 @@
 program FFLIP;
 
 uses
-  SysUtils, CmdObj{, CmdObjStdSwitches}, FITSUtils, EnumFiles, StringListNaturalSort, FitsUtilsHelp, CommonIni;
+  SysUtils, CmdObj{, CmdObjStdSwitches}, Version, FITSUtils, EnumFiles, StringListNaturalSort, FitsUtilsHelp, CommonIni;
+
+{$R *.res}
 
 procedure PrintVersion;
 begin
   WriteLn('FITS Flip  Maksym Pyatnytskyy  2017');
-  WriteLn('Version 2018.02.22.01');
+  WriteLn(GetVersionString(ParamStr(0)));
   WriteLn;
 end;
 

@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "FITS utils"
-#define MyAppVersion "1.0"
+#define MyAppVersion "1.1"
 #define MyAppPublisher "mpyat2@gmail.com"
 #define MyAppURL "https://sites.google.com/site/theskyaboveusmp/home"
 #define MyAppExeName "HelloIRISFITS.exe"
@@ -48,11 +48,13 @@ Source: "..\bin-out\cfa2rgb.exe"; DestDir: "{app}"; Flags: ignoreversion
 ;Source: "..\bin-out\calcmed.exe"; DestDir: "{app}"; Flags: ignoreversion
 ;Source: "..\bin-out\calcsub.exe"; DestDir: "{app}"; Flags: ignoreversion
 ;Source: "..\bin-out\findhot.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin-out\makestack.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitsstat.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\iconvraw.exe"; DestDir: "{app}"; Flags: ignoreversion
 ;Source: "..\bin-out\FreeImage.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\bin-out\libraw.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\bin-out\LibRawMxWrapper.dll"; DestDir: "{app}"; Flags: ignoreversion
+;Source: "..\bin-out\libraw.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin-out\LibRawMxWrapper_s.dll";     DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin-out\LibRawMxWrapper_s_crt.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitsutils.ini"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitsutils.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Scripts\CleanIRIS.bat"; DestDir: "{app}"; Flags: ignoreversion
@@ -64,10 +66,10 @@ Source: "..\IPDAT\TESTDATA\*"; DestDir: "{app}\TESTDATA\IPDAT"; Flags: ignorever
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]
-Root: HKCU; Subkey: "Environment"; ValueType: expandsz; ValueName: "PATH"; ValueData: "{olddata};{app}"; Check: NeedsAddPath(ExpandConstant('{app}'))
+Root: HKCU; Subkey: "Environment"; ValueType: expandsz; ValueName: "PATH"; ValueData: "{olddata};{app}"; Check: PathNotExist(ExpandConstant('{app}'))
 
 [Code]
-function NeedsAddPath(Param: string): boolean;
+function PathNotExist(Param: string): boolean;
 var
   OrigPath: string;
 begin

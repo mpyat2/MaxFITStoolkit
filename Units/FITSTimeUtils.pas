@@ -5,6 +5,8 @@
 {                                                                             }
 {*****************************************************************************}
 
+{$IFDEF FPC} {$MODE DELPHI} {$ENDIF}
+
 unit FITSTimeUtils;
 
 interface 

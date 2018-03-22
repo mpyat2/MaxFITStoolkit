@@ -5,7 +5,9 @@
 {                                                                             }
 {*****************************************************************************}
 
-{$R+}
+{$IFDEF FPC} {$MODE DELPHI} {$ENDIF}
+
+{$R+} // can be commented out in release mode
 
 unit FITSUtils;
 
@@ -72,7 +74,8 @@ function MakeFITSHeader(BitPix: Integer;
                         DateObs: TDateTime; DateObsComment: string;
                         Date: TDateTime;    DateComment: string;
                         Exposure: Double;   ExposureComment: string;
-                        ISOspeed: string;
+                        const ObjectName: string;
+                        const Telescope: string;
                         const Instrument: string;
                         const Comments: TStringArray): TFITSRecordArray;
 procedure GetBitPixAndNaxis(var FITSfile: FITSRecordfile; out BitPix: Integer; out NaxisN: TIntArray);
@@ -485,11 +488,12 @@ function MakeFITSHeader(BitPix: Integer;
                         DateObs: TDateTime; DateObsComment: string;
                         Date: TDateTime;    DateComment: string;
                         Exposure: Double;   ExposureComment: string;
-                        ISOspeed: string;
+                        const ObjectName: string;
+                        const Telescope: string;
                         const Instrument: string;
                         const Comments: TStringArray): TFITSRecordArray;
 var
-  I, N: Integer;
+  I, N, N2: Integer;
   TempS: string;
 begin
   N := 0;
@@ -540,6 +544,20 @@ begin
     Inc(N);
   end;
 
+  if ObjectName <> '' then begin
+    SetLength(Result, N + 1);
+    TempS := FITSQuotedValue(ObjectName);
+    StrToFITSRecord('OBJECT  = ' + TempS, Result[N]);
+    Inc(N);
+  end;
+
+  if Telescope <> '' then begin
+    SetLength(Result, N + 1);
+    TempS := FITSQuotedValue(Telescope);
+    StrToFITSRecord('TELESCOP= ' + TempS, Result[N]);
+    Inc(N);
+  end;
+
   if Instrument <> '' then begin
     SetLength(Result, N + 1);
     TempS := FITSQuotedValue(Instrument);
@@ -566,13 +584,6 @@ begin
     Inc(N);
   end;
 
-  if ISOspeed <> '' then begin
-    SetLength(Result, N + 1);
-    TempS := FITSQuotedValue(ISOspeed);
-    StrToFITSRecord('ISOSPEED= ' + TempS, Result[N]);
-    Inc(N);
-  end;
-
   for I := 0 to Length(Comments) - 1 do begin
     SetLength(Result, N + 1);
     StrToFITSRecord('COMMENT ' + Comments[I], Result[N]);
@@ -583,9 +594,10 @@ begin
   Result[N] := recordEND;
   Inc(N);
 
-  N := N mod RecordsInBlock;
-  if N > 0 then begin
-    for I := 1 to RecordsInBlock - N do begin
+  // Padding to FITS block size
+  N2 := N mod RecordsInBlock;
+  if N2 > 0 then begin
+    for I := 1 to RecordsInBlock - N2 do begin
       SetLength(Result, N + 1);
       FillChar(Result[N], SizeOf(FITSRecordType), ' ');
       Inc(N);

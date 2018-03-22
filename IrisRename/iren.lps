@@ -10,17 +10,20 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="IREN"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="102"/>
-        <CursorPos X="40" Y="124"/>
+        <CursorPos X="72" Y="5"/>
         <UsageCount Value="20"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
     </Units>
-    <JumpHistory Count="1">
+    <JumpHistory Count="2" HistoryIndex="1">
       <Position1>
         <Filename Value="iren.lpr"/>
       </Position1>
+      <Position2>
+        <Filename Value="iren.lpr"/>
+        <Caret Line="109" Column="25" TopLine="102"/>
+      </Position2>
     </JumpHistory>
   </ProjectSession>
 </CONFIG>

@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * File: libraw_const.h
- * Copyright 2008-2017 LibRaw LLC (info@libraw.org)
+ * Copyright 2008-2018 LibRaw LLC (info@libraw.org)
  * Created: Sat Mar  8 , 2008
  * LibRaw error codes
 LibRaw is free software; you can redistribute it and/or modify
@@ -19,6 +19,10 @@ it under the terms of the one of two licenses as you choose:
 
 #define LIBRAW_DEFAULT_ADJUST_MAXIMUM_THRESHOLD 0.75
 #define LIBRAW_DEFAULT_AUTO_BRIGHTNESS_THRESHOLD 0.01
+/* limit allocation size, default is 2Gb */
+#ifndef LIBRAW_MAX_ALLOC_MB
+#define LIBRAW_MAX_ALLOC_MB 2048L
+#endif
 
 #define LIBRAW_IFD_MAXCOUNT 10
 
@@ -95,6 +99,14 @@ enum LibRaw_whitebalance_code
   LIBRAW_WBI_Other = 255
 };
 
+enum LibRaw_MultiExposure_related
+{
+  LIBRAW_ME_NONE = 0,
+  LIBRAW_ME_SIMPLE = 1,
+  LIBRAW_ME_OVERLAY = 2,
+  LIBRAW_ME_HDR = 3
+};
+
 enum LibRaw_dng_processing
 {
   LIBRAW_DNG_NONE = 0,
@@ -113,9 +125,7 @@ enum LibRaw_dng_processing
 enum LibRaw_runtime_capabilities
 {
   LIBRAW_CAPS_RAWSPEED = 1,
-  LIBRAW_CAPS_DNGSDK = 2,
-  LIBRAW_CAPS_DEMOSAICSGPL2 = 4,
-  LIBRAW_CAPS_DEMOSAICSGPL3 = 8
+  LIBRAW_CAPS_DNGSDK = 2
 };
 
 enum LibRaw_camera_mounts
@@ -183,7 +193,6 @@ enum LibRaw_processing_options
   LIBRAW_PROCESSING_CONVERTFLOAT_TO_INT = 1 << 7,
   LIBRAW_PROCESSING_SRAW_NO_RGB = 1 << 8,
   LIBRAW_PROCESSING_SRAW_NO_INTERPOLATE = 1 << 9,
-  LIBRAW_PROCESSING_FORCE_FOVEON_X3F = 1 << 10,
   LIBRAW_PROCESSING_NO_ROTATE_FOR_KODAK_THUMBNAILS = 1 << 11,
   LIBRAW_PROCESSING_USE_DNG_DEFAULT_CROP = 1 << 12,
   LIBRAW_PROCESSING_USE_PPM16_THUMBS = 1 << 13
@@ -198,6 +207,7 @@ enum LibRaw_decoder_flags
   LIBRAW_DECODER_FIXEDMAXC = 1 << 8,
   LIBRAW_DECODER_ADOBECOPYPIXEL = 1 << 9,
   LIBRAW_DECODER_LEGACY_WITH_MARGINS = 1 << 10,
+  LIBRAW_DECODER_3CHANNEL = 1 << 11,
   LIBRAW_DECODER_NOTSET = 1 << 15
 };
 
@@ -213,8 +223,6 @@ enum LibRaw_constructor_flags
 enum LibRaw_warnings
 {
   LIBRAW_WARN_NONE = 0,
-  LIBRAW_WARN_FOVEON_NOMATRIX = 1,
-  LIBRAW_WARN_FOVEON_INVALIDWB = 1 << 1,
   LIBRAW_WARN_BAD_CAMERA_WB = 1 << 2,
   LIBRAW_WARN_NO_METADATA = 1 << 3,
   LIBRAW_WARN_NO_JPEGLIB = 1 << 4,
