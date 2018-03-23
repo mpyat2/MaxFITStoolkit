@@ -1,7 +1,11 @@
-1) FileMode: not needed to set it to fmOpenReadWrite before Rewrite. Remove unnecessary FileModeSaved.
-2) CalcMed: sort procedure: do not copy array, sort inplace
+-- 1) FileMode: not needed to set it to fmOpenReadWrite before Rewrite. Remove unnecessary FileModeSaved.
+-- 2) CalcMed: sort procedure: do not copy array, sort inplace
 3) FindHot: option to specify maximum number of hot pixel for autofit the level
-4) FITSstat: include into the package
+-- 4) FITSstat: include into the package
 5) Deinstall: remove PATH
-6) iconvraw / FreeImage: error while converting FUJIFILM S500 RAF and similar (sizes!)
+-- 6) iconvraw / FreeImage: error while converting FUJIFILM S500 RAF and similar (sizes!)
 7) iconvraw / libraw: check X/Y pixel ratio and other values....
+8) LibRawMxWrapper: add LibRawMxWrapper.h (remove declarations from LibRawMxWrapper.cpp)
+9) LibRawMxWrapper: targetver.h: // set the _WIN32_WINNT macro to the platform you wish to support BEFORE including SDKDDKVer.h.
+10) LibRawMxWrapper: RawProcessorStrError(LibRaw* RawProcessor, int p): first parameter is not needed, name it as "reserved" and pass NULL from pascal code.
+                     RawProcessorStrError(void* reserved, int p)
