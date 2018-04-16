@@ -96,11 +96,11 @@ one can define (in FITSCFA.INI) the following profile to generate R, G=(G1+G2)/2
 
 [PROFILE1]
 1 = R
-2 = G1
-3 = G2
+2 = G
+3 = G
 4 = B
 
-Values to the right of equation sign are the perfixes of individual output files.
+Values to the right of equation sign are perfixes of individual output files.
 If some prefixes are the same, corresponding colors will be combined together (averaged)
 
 Name of a profile (INI-file's section) to be used should be specified in the command line
