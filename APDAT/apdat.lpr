@@ -19,6 +19,7 @@ begin
 end;
 
 const
+  Label_header = 'Label';
   JD_UTC_header = 'JD_UTC';
   SourceMinusSky_header = 'Source-Sky_';
 
@@ -85,11 +86,13 @@ var
   ValError: Integer;
   TempF: Double;
   I, II: Integer;
+  Label_Pos: Integer;
   JD_UTC_Pos: Integer;
   IntensityPos: array of Integer;
 begin
   try
     LineN := 0;
+    Label_Pos := -1;
     JD_UTC_Pos := -1;
     IntensityPos := nil;
     AssignFile(OutF, OutFile);
@@ -104,6 +107,10 @@ begin
           TempS := InputList[0];
           for II := 1 to WordCount1(TempS, [^I]) do begin
             TempS2 := ExtractWord1(II, TempS, [^I]);
+            if AnsiSametext(TempS2, Label_Header) then begin
+              Label_Pos := II;
+            end
+            else
             if AnsiSameText(TempS2, JD_UTC_header) then begin
               JD_UTC_Pos := II;
             end
@@ -114,8 +121,14 @@ begin
             end;
           end;
           S := '';
-          if JD_UTC_Pos >= 0 then
+          if Label_Pos >= 0 then begin
+            if S <> '' then S := S + Delimiter[TabbedOutput];
+            S := S + ExtractWord1(Label_Pos, TempS, [^I]);
+          end;
+          if JD_UTC_Pos >= 0 then begin
+            if S <> '' then S := S + Delimiter[TabbedOutput];
             S := S + ExtractWord1(JD_UTC_Pos, TempS, [^I]);
+          end;
           for II := 0 to Length(IntensityPos) - 1 do begin
             if S <> '' then S := S + Delimiter[TabbedOutput];
             S := S + 'Magnitude(' + ExtractWord1(IntensityPos[II], TempS, [^I]) + ')';
@@ -126,7 +139,13 @@ begin
             if not Quiet then Progress(LineN);
             TempS := InputList[I];
             S := '';
+            if (Label_Pos >= 0) then begin
+              if S <> '' then S := S + Delimiter[TabbedOutput];
+              TempS2 := Trim(ExtractWord1(Label_Pos, TempS, [^I]));
+              S := S + TempS2;
+            end;
             if (JD_UTC_Pos >= 0) then begin
+              if S <> '' then S := S + Delimiter[TabbedOutput];
               TempS2 := Trim(ExtractWord1(JD_UTC_Pos, TempS, [^I]));
               Val(TempS2, TempF, ValError);
               if ValError <> 0 then

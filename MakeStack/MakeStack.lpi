@@ -22,7 +22,8 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="1"/>
-      <BuildNr Value="18"/>
+      <RevisionNr Value="1"/>
+      <BuildNr Value="20"/>
       <StringTable ProductVersion="0.0.0.0"/>
     </VersionInfo>
     <BuildModes Count="1">
@@ -34,7 +35,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="a* /g=out /f /M=a"/>
+        <CommandLineParams Value="c:\personal\SKY2\stack* /g=out /f"/>
       </local>
     </RunParams>
     <Units Count="1">

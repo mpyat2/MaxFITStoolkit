@@ -330,7 +330,7 @@ begin
       DestBitPix := -64
     else
     if MinBitPix = -32 then begin
-      if (StackedResultMax < MaxSingle) and (StackedResultMin > MinSingle) then
+      if (StackedResultMax < MaxSingle) and (StackedResultMin > -MaxSingle) then
         DestBitPix := -32
       else
         DestBitPix := -64

@@ -9,3 +9,5 @@
 9) LibRawMxWrapper: targetver.h: // set the _WIN32_WINNT macro to the platform you wish to support BEFORE including SDKDDKVer.h.
 10) LibRawMxWrapper: RawProcessorStrError(LibRaw* RawProcessor, int p): first parameter is not needed, name it as "reserved" and pass NULL from pascal code.
                      RawProcessorStrError(void* reserved, int p)
+
+11) Check output directories: sometimes current, sometimes source?
