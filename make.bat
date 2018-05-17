@@ -54,8 +54,8 @@ ECHO .
 REM iconvraw.exe: RAW->FITS converter
 %COMPILER% iconvraw\iconvraw.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
-copy iconvraw\librawmxwrapper_s.dll     bin-out\
-rem copy iconvraw\librawmxwrapper_s_crt.dll bin-out\
+copy iconvraw\LibRawMxWrapper_s_crt_0_19_0-beta1.dll bin-out\
+copy iconvraw\librawmxwrapper_s_crt.dll              bin-out\
 ECHO .
 
 REM MakeStack
