@@ -5,7 +5,7 @@ REM
 REM Should be compiled with NON-UNICODE 32bit Delphi Compiler!
 REM SET COMPILER="C:\PERSONAL\DC\DCC32" -UUnits\ -Ebin-out\
 REM
-SET COMPILER="c:\lazarus\fpc\3.0.4\bin\i386-win32\fpc.exe" -MDELPHI -Xg -FuUnits\ -FEbin-out\
+SET COMPILER="c:\personal\lazarus\fpc\3.0.2\bin\i386-win32\fpc.exe" -MDELPHI -Xg -FuUnits\ -FEbin-out\
 REM
 REM To produce source-code ZIP, run this script with "A" command-line option: make.bat A
 SET A7z="c:\Program Files\7-zip\7z.exe"
@@ -55,7 +55,7 @@ REM iconvraw.exe: RAW->FITS converter
 %COMPILER% iconvraw\iconvraw.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
 copy iconvraw\librawmxwrapper_s.dll     bin-out\
-copy iconvraw\librawmxwrapper_s_crt.dll bin-out\
+rem copy iconvraw\librawmxwrapper_s_crt.dll bin-out\
 ECHO .
 
 REM MakeStack

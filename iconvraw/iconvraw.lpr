@@ -42,10 +42,10 @@ begin
   Result := True;
 end;
 
-procedure CheckLibRawError(RawProcessor: Pointer; LibRawError: Integer);
+procedure CheckLibRawError(LibRawError: Integer);
 begin
   if LibRawError <> 0 then
-    FileError(RawProcessorStrError(RawProcessor, LibRawError));
+    FileError(RawProcessorStrError(nil, LibRawError));
 end;
 
 const
@@ -175,11 +175,11 @@ begin
   RawProcessor := RawProcessorCreate;
   if RawProcessor = nil then FileError('Cannot create RawProcessor');
   try
-    CheckLibRawError(RawProcessor, RawProcessorOpenFile(RawProcessor, PChar(FileName)));
+    CheckLibRawError(RawProcessorOpenFile(RawProcessor, PChar(FileName)));
     if not PrintInfo then
-      CheckLibRawError(RawProcessor, RawProcessorUnpack(RawProcessor))
+      CheckLibRawError(RawProcessorUnpack(RawProcessor))
     else
-      CheckLibRawError(RawProcessor, RawProcessorAdjustSizesInfoOnly(RawProcessor));
+      CheckLibRawError(RawProcessorAdjustSizesInfoOnly(RawProcessor));
 
     RawProcessorSizes(
       RawProcessor,

@@ -12,7 +12,7 @@ const LibRawWrapper = 'LibRawMxWrapper_s_crt.dll';
 (*
 function RawProcessorCreate: Pointer; stdcall; external LibRawWrapper name '_RawProcessorCreate@0';
 procedure RawProcessorFree(RawProcessor: Pointer); stdcall; external LibRawWrapper name '_RawProcessorFree@4';
-function RawProcessorStrError(RawProcessor: Pointer; P: Integer): PChar; stdcall; external LibRawWrapper name '_RawProcessorStrError@8';
+function RawProcessorStrError(Reserved: Pointer; P: Integer): PChar; stdcall; external LibRawWrapper name '_RawProcessorStrError@8';
 function RawProcessorVersion: PChar; stdcall; external LibRawWrapper name '_RawProcessorVersion@0';
 function RawProcessorOpenFile(RawProcessor: Pointer; FileName: PChar): Integer; stdcall; external LibRawWrapper name '_RawProcessorOpenFile@8';
 procedure RawProcessorSizes(
@@ -41,7 +41,7 @@ procedure RawProcessorBayerPattern(RawProcessor: Pointer; BayerPatternStr: PChar
 var
   RawProcessorCreate: function : Pointer; stdcall;
   RawProcessorFree: procedure (RawProcessor: Pointer); stdcall;
-  RawProcessorStrError: function (RawProcessor: Pointer; P: Integer): PChar; stdcall;
+  RawProcessorStrError: function (Reserved: Pointer; P: Integer): PChar; stdcall;
   RawProcessorVersion: function : PChar; stdcall;
   RawProcessorOpenFile: function (RawProcessor: Pointer; FileName: PChar): Integer; stdcall;
   RawProcessorSizes: procedure (
