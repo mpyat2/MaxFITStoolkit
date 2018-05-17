@@ -109,8 +109,7 @@ echo FitsRGB\fitsrgb.*              >> ziplist.txt
 echo CFA2RGB\cfa2rgb.*              >> ziplist.txt
 echo FitsStat\fitsstat.*            >> ziplist.txt
 echo iconvraw\iconvraw.*            >> ziplist.txt
-echo iconvraw\LibRawMxWrapper_s.dll >> ziplist.txt
-echo iconvraw\LibRawMxWrapper_s_crt.dll >> ziplist.txt
+echo iconvraw\LibRawMxWrapper*.dll  >> ziplist.txt
 echo makestack\makestack.*          >> ziplist.txt
 echo Hello\*.pas                    >> ziplist.txt
 echo Units\*.pas                    >> ziplist.txt
