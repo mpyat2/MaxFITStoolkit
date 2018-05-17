@@ -24,6 +24,19 @@ it under the terms of the one of two licenses as you choose:
 #define LIBRAW_MAX_ALLOC_MB 2048L
 #endif
 
+/* Check if enough file space exists before tag read */
+#ifndef LIBRAW_NO_IOSPACE_CHECK
+#define LIBRAW_IOSPACE_CHECK
+#endif
+/* LibRaw uses own memory pool management, with LIBRAW_MSIZE (512)
+entries. It is enough for parsing/decoding non-damaged files, but
+may overflow on specially crafted files (eg. with many string values
+like XMP blocks.
+LIBRAW_MEMPOOL_CHECK define will result in error on pool overflow */
+#ifndef LIBRAW_NO_MEMPOOL_CHECK
+#define LIBRAW_MEMPOOL_CHECK
+#endif
+
 #define LIBRAW_IFD_MAXCOUNT 10
 
 enum LibRaw_openbayer_patterns
@@ -195,7 +208,8 @@ enum LibRaw_processing_options
   LIBRAW_PROCESSING_SRAW_NO_INTERPOLATE = 1 << 9,
   LIBRAW_PROCESSING_NO_ROTATE_FOR_KODAK_THUMBNAILS = 1 << 11,
   LIBRAW_PROCESSING_USE_DNG_DEFAULT_CROP = 1 << 12,
-  LIBRAW_PROCESSING_USE_PPM16_THUMBS = 1 << 13
+  LIBRAW_PROCESSING_USE_PPM16_THUMBS = 1 << 13,
+  LIBRAW_PROCESSING_CHECK_DNG_ILLUMINANT = 1 << 15
 };
 
 enum LibRaw_decoder_flags
@@ -251,7 +265,8 @@ enum LibRaw_exceptions
   LIBRAW_EXCEPTION_CANCELLED_BY_CALLBACK = 6,
   LIBRAW_EXCEPTION_BAD_CROP = 7,
   LIBRAW_EXCEPTION_IO_BADFILE = 8,
-  LIBRAW_EXCEPTION_DECODE_JPEG2000 = 9
+  LIBRAW_EXCEPTION_DECODE_JPEG2000 = 9,
+  LIBRAW_EXCEPTION_TOOBIG = 10
 };
 
 enum LibRaw_progress
@@ -309,7 +324,8 @@ enum LibRaw_errors
   LIBRAW_DATA_ERROR = -100008,
   LIBRAW_IO_ERROR = -100009,
   LIBRAW_CANCELLED_BY_CALLBACK = -100010,
-  LIBRAW_BAD_CROP = -100011
+  LIBRAW_BAD_CROP = -100011,
+  LIBRAW_TOO_BIG = -100012
 };
 
 #define LIBRAW_FATAL_ERROR(ec) ((ec) < -100000)
