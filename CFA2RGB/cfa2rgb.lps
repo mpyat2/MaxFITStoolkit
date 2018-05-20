@@ -4,16 +4,16 @@
     <PathDelim Value="\"/>
     <Version Value="10"/>
     <BuildModes Active="Default"/>
-    <Units Count="3">
+    <Units Count="4">
       <Unit0>
         <Filename Value="cfa2rgb.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="339"/>
-        <CursorPos X="32" Y="373"/>
-        <UsageCount Value="55"/>
+        <TopLine Value="398"/>
+        <CursorPos X="5" Y="97"/>
+        <UsageCount Value="63"/>
         <Bookmarks Count="1">
-          <Item0 Y="141" ID="1"/>
+          <Item0 Y="134" ID="1"/>
         </Bookmarks>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -23,7 +23,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="38"/>
         <CursorPos X="22" Y="47"/>
-        <UsageCount Value="21"/>
+        <UsageCount Value="20"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit1>
       <Unit2>
@@ -31,130 +31,139 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="23"/>
         <CursorPos X="14" Y="34"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit2>
+      <Unit3>
+        <Filename Value="..\Units\FitsUtilsHelp.pas"/>
+        <UnitName Value="FITSUtilsHelp"/>
+        <EditorIndex Value="1"/>
+        <CursorPos X="3" Y="8"/>
+        <UsageCount Value="14"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit3>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="100" TopLine="92"/>
+        <Caret Line="85" TopLine="71"/>
       </Position1>
       <Position2>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="101" TopLine="92"/>
+        <Caret Line="86" TopLine="71"/>
       </Position2>
       <Position3>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="105" TopLine="92"/>
+        <Caret Line="93" TopLine="72"/>
       </Position3>
       <Position4>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="100" TopLine="92"/>
+        <Caret Line="84" TopLine="72"/>
       </Position4>
       <Position5>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="101" TopLine="92"/>
+        <Caret Line="79" Column="9" TopLine="66"/>
       </Position5>
       <Position6>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="102" TopLine="92"/>
+        <Caret Line="85" Column="15" TopLine="66"/>
       </Position6>
       <Position7>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="100" TopLine="92"/>
+        <Caret Line="108" Column="17" TopLine="88"/>
       </Position7>
       <Position8>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="101" TopLine="92"/>
+        <Caret Line="79" Column="6" TopLine="71"/>
       </Position8>
       <Position9>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="100" TopLine="92"/>
+        <Caret Line="81" TopLine="71"/>
       </Position9>
       <Position10>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="101" TopLine="92"/>
+        <Caret Line="82" TopLine="71"/>
       </Position10>
       <Position11>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="105" TopLine="92"/>
+        <Caret Line="83" TopLine="71"/>
       </Position11>
       <Position12>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="127" Column="13" TopLine="107"/>
+        <Caret Line="84" TopLine="71"/>
       </Position12>
       <Position13>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="78" TopLine="74"/>
+        <Caret Line="97" TopLine="86"/>
       </Position13>
       <Position14>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="79" TopLine="74"/>
+        <Caret Line="98" TopLine="86"/>
       </Position14>
       <Position15>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="80" TopLine="74"/>
+        <Caret Line="99" TopLine="92"/>
       </Position15>
       <Position16>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="81" TopLine="74"/>
+        <Caret Line="100" TopLine="92"/>
       </Position16>
       <Position17>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="82" TopLine="74"/>
+        <Caret Line="111" TopLine="101"/>
       </Position17>
       <Position18>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="78" TopLine="74"/>
+        <Caret Line="112" TopLine="101"/>
       </Position18>
       <Position19>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="143" Column="17" TopLine="141"/>
+        <Caret Line="113" TopLine="101"/>
       </Position19>
       <Position20>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="79" Column="52" TopLine="70"/>
+        <Caret Line="114" TopLine="101"/>
       </Position20>
       <Position21>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="329" Column="46" TopLine="319"/>
+        <Caret Line="115" TopLine="101"/>
       </Position21>
       <Position22>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="327" Column="10" TopLine="320"/>
+        <Caret Line="116" TopLine="104"/>
       </Position22>
       <Position23>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="163" Column="9" TopLine="148"/>
+        <Caret Line="117" TopLine="104"/>
       </Position23>
       <Position24>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="165" Column="9" TopLine="153"/>
+        <Caret Line="118" TopLine="104"/>
       </Position24>
       <Position25>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="359" Column="29" TopLine="140"/>
+        <Caret Line="119" TopLine="104"/>
       </Position25>
       <Position26>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="330" Column="23" TopLine="295"/>
+        <Caret Line="120" TopLine="104"/>
       </Position26>
       <Position27>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="154" Column="25" TopLine="144"/>
+        <Caret Line="115" TopLine="104"/>
       </Position27>
       <Position28>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="186" Column="15" TopLine="170"/>
+        <Caret Line="123" TopLine="104"/>
       </Position28>
       <Position29>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="176" Column="8" TopLine="154"/>
+        <Caret Line="111" TopLine="104"/>
       </Position29>
       <Position30>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="328" Column="9" TopLine="321"/>
+        <Caret Line="125" TopLine="105"/>
       </Position30>
     </JumpHistory>
   </ProjectSession>

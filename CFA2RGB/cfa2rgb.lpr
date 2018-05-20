@@ -74,57 +74,52 @@ procedure InterpolateLayer16bit(Layer: PChar; Color: Char; Naxis1, Naxis2: Integ
 var
   A1, A2, A3, A4: SmallInt;
   C, R: Integer;
-  Shift: Integer;
+  OddColumn: Boolean;
   ActiveRow: Boolean;
 begin
   if Color = 'G' then begin
-    if BayerPattern[0] = 'G' then Shift := 0 else Shift := 1;
-    if Shift = 0 then Shift := 1 else Shift := 0; // 0 row skipped!
+    OddColumn := BayerPattern[2] = 'G'; // column to process (one row skipped)
     for R := Naxis2 - 2 downto 1 do begin // start from the end of Naxis2, for "correct" order of pixels
       for C := 1 to Naxis1 - 2 do begin
-        if Odd(C + Shift) then begin
+        if not (Odd(C) xor OddColumn) then begin
           GetPixelValue16bit(Layer, C - 1, R, Naxis1, A1);
-          GetPixelValue16bit(Layer, C, R - 1, Naxis1, A2);
+          GetPixelValue16bit(Layer, C,     R - 1, Naxis1, A2);
           GetPixelValue16bit(Layer, C + 1, R, Naxis1, A3);
-          GetPixelValue16bit(Layer, C, R + 1, Naxis1, A4);
-          SetPixelValue16bit(Layer, C, R, Naxis1, Round((A1 + A2 + A3 + A4) / 4));
+          GetPixelValue16bit(Layer, C,     R + 1, Naxis1, A4);
+          SetPixelValue16bit(Layer, C,     R, Naxis1, Round((A1 + A2 + A3 + A4) / 4));
         end;
       end;
-      if Shift = 0 then Shift := 1 else Shift := 0;
+      OddColumn := not OddColumn;
     end;
   end
   else begin
-    ActiveRow := (BayerPattern[0] = Color) or (BayerPattern[1] = Color);
-    if ActiveRow then begin
-      if (BayerPattern[0] = Color) then Shift := 0 else Shift := 1;
-    end
-    else begin
-      if (BayerPattern[2] = Color) then Shift := 0 else Shift := 1;
-    end;
-    ActiveRow := not ActiveRow; // 0-row skipped!
+    // 'R' or 'B'
+    // First pass: process rows with 'R' or 'B' pixels
+    ActiveRow := (BayerPattern[2] = Color) or (BayerPattern[3] = Color); // one row skipped.
+    OddColumn := (BayerPattern[0] = Color) or (BayerPattern[2] = Color); // column to process.
     for R := Naxis2 - 2 downto 1 do begin // start from the end of Naxis2, for "correct" order of pixels
       if ActiveRow then begin
         for C := 1 to Naxis1 - 2 do begin
-          if Odd(C + Shift) then begin
+          if not (Odd(C) xor OddColumn) then begin
             GetPixelValue16bit(Layer, C - 1, R, Naxis1, A1);
             GetPixelValue16bit(Layer, C + 1, R, Naxis1, A2);
-            SetPixelValue16bit(Layer, C, R, Naxis1, Round((A1 + A2) / 2));
+            SetPixelValue16bit(Layer, C,     R, Naxis1, Round((A1 + A2) / 2));
           end;
         end;
       end;
       ActiveRow := not ActiveRow;
     end;
-    ActiveRow := not ((BayerPattern[0] = Color) or (BayerPattern[1] = Color));
-    ActiveRow := not ActiveRow; // 0-row skipped!
+    // Second pass: process dark rows
+    ActiveRow := not ((BayerPattern[2] = Color) or (BayerPattern[3] = Color)); // one row skipped.
     for R := Naxis2 - 2 downto 1 do begin // start from the end of Naxis2, for "correct" order of pixels
       if ActiveRow then begin
         for C := 1 to Naxis1 - 2 do begin
-          if Odd(C + Shift) then begin
+          if not (Odd(C) xor OddColumn) then begin
             GetPixelValue16bit(Layer, C - 1, R - 1, Naxis1, A1);
             GetPixelValue16bit(Layer, C + 1, R - 1, Naxis1, A2);
             GetPixelValue16bit(Layer, C - 1, R + 1, Naxis1, A3);
             GetPixelValue16bit(Layer, C + 1, R + 1, Naxis1, A4);
-            SetPixelValue16bit(Layer, C, R, Naxis1, Round((A1 + A2 + A3 + A4) / 4));
+            SetPixelValue16bit(Layer, C,     R, Naxis1, Round((A1 + A2 + A3 + A4) / 4));
           end
           else begin
             GetPixelValue16bit(Layer, C, R - 1, Naxis1, A1);
