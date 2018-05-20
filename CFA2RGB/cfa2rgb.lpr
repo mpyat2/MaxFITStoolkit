@@ -162,6 +162,7 @@ var
   Header: PChar;
   Buf: FITSRecordType;
   HeaderNew: TFITSRecordArray;
+  EndOfHeaderFound: Boolean;
   Image: PChar;
   ImageC: array[0..3] of PChar;
   ImageToAverage: TPCharArray;
@@ -324,7 +325,7 @@ begin
         end;
 
         // Saving file
-        N := -1;
+        EndOfHeaderFound := False;
         // Creating new header with NAXIS=3 and new sizes
         HeaderNew := nil;
         for I := 0 to StartOfImage - 1 do begin
@@ -364,12 +365,12 @@ begin
             Move(Buf, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
             SetLength(HeaderNew, Length(HeaderNew) + 1);
             Move(recordEND, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
-            N := I + 1;
+            EndOfHeaderFound := True;
             Break;
           end;
         end;
 
-        Assert(N >= 0);
+        Assert(EndOfHeaderFound);
 
         // Padding header...
         N := Length(HeaderNew) mod RecordsInBlock;
