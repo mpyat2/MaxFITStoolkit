@@ -26,100 +26,121 @@ type
 type
   TPCharArray = array of PChar;
 
-procedure AverageLayers(const Layers: TPCharArray; Len: Integer; BitPix: Integer);
-// result -> [0] layer
+// 16-bit FITSes only are supported in the current version! (for efficiency)
+
+procedure AverageIntLayers(Layer1, Layer2: PChar; Len: Integer);
+// result -> 1st layer
 var
-  A1: TFITSValue;
-  Asum: TFITSValue;
-  N, NN, Addr: Integer;
-  NLayers: Integer;
-  BytePix: Integer;
+  A1, A2: SmallInt;
+  A1Bytes: array[0..1] of Char absolute A1;
+  A2Bytes: array[0..1] of Char absolute A2;
+  ASum: SmallInt;
+  ASumBytes: array[0..1] of Char absolute ASum;
+  NN, Addr: Integer;
 begin
-  BytePix := Abs(BitPix) div 8;
-  NLayers := Length(Layers);
-  for NN := 0 to Len div BytePix do begin
-    FillChar(Asum, SizeOf(Asum), 0);
-    Addr := NN * BytePix;
-    for N := 0 to NLayers - 1 do begin
-      Move(Layers[N][Addr], A1, BytePix);
-      RevertBytes(A1, BitPix);
-      case BitPix of
-          8: Asum.H := Asum.H + A1.B;
-         16: Asum.H := Asum.H + A1.I;
-         32: Asum.H := Asum.H + A1.L;
-        -32: Asum.E := Asum.E + A1.S;
-        -64: Asum.E := Asum.E + A1.D;
-      end;
-    end;
-    case BitPix of
-        8: Asum.B := Round(Asum.H / NLayers);
-       16: Asum.I := Round(Asum.H / NLayers);
-       32: Asum.L := Round(Asum.H / NLayers);
-      -32: Asum.S := Asum.E / NLayers;
-      -64: Asum.D := Asum.E / NLayers;
-    end;
-    RevertBytes(Asum, BitPix);
-    Move(Asum, Layers[0][Addr], BytePix);
+  for NN := 0 to Len do begin
+    Addr := NN * 2;
+    A1Bytes[1] := Layer1[Addr];
+    A1Bytes[0] := Layer1[Addr + 1];
+    A2Bytes[1] := Layer2[Addr];
+    A2Bytes[0] := Layer2[Addr + 1];
+    ASum := Round((A1 + A2) / 2);
+    Layer1[Addr]     := ASumBytes[1];
+    Layer1[Addr + 1] := ASumBytes[0];
   end;
 end;
 
-procedure InterpolateLayer(Layer: PChar; Color: Char; Naxis1, Naxis2: Integer; BitPix: Integer; const BayerPattern: TBayerPattern);
+procedure GetPixelValue(Layer: PChar; C, R: Integer; Naxis1: Integer; var A: SmallInt); inline;
 var
-  A1: TFITSValue;
-  Asum: TFITSValue;
-  PixelCountToAverage: Integer;
-  PixAddr: Integer;
-  C, R, C2, R2, X, Y: Integer;
-  ColorL: Integer;
-  BytePix: Integer;
+  ABytes: array[0..1] of Char absolute A;
+  Addr: Integer;
 begin
-  BytePix := Abs(BitPix) div 8;
-  for C := 0 to Naxis1 - 1 do begin
-    for R := Naxis2 - 1 downto 0 do begin // start from the end of Naxis2, for "correct" order of pixels
-      ColorL := C mod 2 + 2 * ((Naxis2 - 1 - R) mod 2);
-      if BayerPattern[ColorL] <> Color then begin
-        FillChar(Asum, SizeOf(Asum), 0);
-        PixelCountToAverage := 0;
-        for X := -1 to 1 do begin
-          for Y := -1 to 1 do begin
-            R2 := R + X;
-            C2 := C + Y;
-            if (R2 >= 0) and (R2 < Naxis2) and (C2 >= 0) and (C2 < Naxis1) then begin
-              PixAddr := (R2 * Naxis1 + C2) * BytePix;
-              ColorL := C2 mod 2 + 2 * ((Naxis2 - 1 - R2) mod 2);
-              if BayerPattern[ColorL] = Color then begin
-                Move(Layer[PixAddr], A1, BytePix);
-                RevertBytes(A1, BitPix);
-                case BitPix of
-                    8: Asum.H := Asum.H + A1.B;
-                   16: Asum.H := Asum.H + A1.I;
-                   32: Asum.H := Asum.H + A1.L;
-                  -32: Asum.E := Asum.E + A1.S;
-                  -64: Asum.E := Asum.E + A1.D;
-                end;
-                Inc(PixelCountToAverage);
-              end;
-            end;
-          end;
-        end;
-        if PixelCountToAverage > 0 then begin
-          case BitPix of
-              8: Asum.B := Round(Asum.H / PixelCountToAverage);
-             16: Asum.I := Round(Asum.H / PixelCountToAverage);
-             32: Asum.L := Round(Asum.H / PixelCountToAverage);
-            -32: Asum.S := Asum.E / PixelCountToAverage;
-            -64: Asum.D := Asum.E / PixelCountToAverage;
-          end;
-          RevertBytes(Asum, BitPix);
-          PixAddr := (R * Naxis1 + C) * BytePix;
-          Move(Asum, Layer[PixAddr], BytePix);
+  Addr := (R * Naxis1 + C) * 2;
+  ABytes[1] := Layer[Addr];
+  ABytes[0] := Layer[Addr + 1];
+end;
+
+procedure InterpolateLayer(Layer: PChar; Color: Char; Naxis1, Naxis2: Integer; const BayerPattern: TBayerPattern);
+var
+  A1, A2, A3, A4: SmallInt;
+  Asum: SmallInt;
+  ASumBytes: array[0..1] of Char absolute ASum;
+  Addr: Integer;
+  C, R: Integer;
+  Shift: Integer;
+  ActiveRow: Boolean;
+begin
+  if Color = 'G' then begin
+    if BayerPattern[0] = 'G' then Shift := 0 else Shift := 1;
+    if Shift = 0 then Shift := 1 else Shift := 0; // 0 row skipped!
+    for R := Naxis2 - 2 downto 1 do begin // start from the end of Naxis2, for "correct" order of pixels
+      for C := 1 to Naxis1 - 2 do begin
+        if Odd(C + Shift) then begin
+          GetPixelValue(Layer, C - 1, R, Naxis1, A1);
+          GetPixelValue(Layer, C, R - 1, Naxis1, A2);
+          GetPixelValue(Layer, C + 1, R, Naxis1, A3);
+          GetPixelValue(Layer, C, R + 1, Naxis1, A4);
+          ASum := Round((A1 + A2 + A3 + A4) / 4);
+          Addr := (R * Naxis1 + C) * 2;
+          Layer[Addr] := ASumBytes[1];
+          Layer[Addr + 1] := ASumBytes[0];
         end;
       end;
+      if Shift = 0 then Shift := 1 else Shift := 0;
+    end;
+  end
+  else begin
+    ActiveRow := (BayerPattern[0] = Color) or (BayerPattern[1] = Color);
+    if ActiveRow then begin
+      if (BayerPattern[0] = Color) then Shift := 0 else Shift := 1;
+    end
+    else begin
+      if (BayerPattern[2] = Color) then Shift := 0 else Shift := 1;
+    end;
+    ActiveRow := not ActiveRow; // 0-row skipped!
+    for R := Naxis2 - 2 downto 1 do begin // start from the end of Naxis2, for "correct" order of pixels
+      if ActiveRow then begin
+        for C := 1 to Naxis1 - 2 do begin
+          if Odd(C + Shift) then begin
+            GetPixelValue(Layer, C - 1, R, Naxis1, A1);
+            GetPixelValue(Layer, C + 1, R, Naxis1, A2);
+            ASum := Round((A1 + A2) / 2);
+            Addr := (R * Naxis1 + C) * 2;
+            Layer[Addr] := ASumBytes[1];
+            Layer[Addr + 1] := ASumBytes[0];
+          end;
+        end;
+      end;
+      ActiveRow := not ActiveRow;
+    end;
+    ActiveRow := not ((BayerPattern[0] = Color) or (BayerPattern[1] = Color));
+    ActiveRow := not ActiveRow; // 0-row skipped!
+    for R := Naxis2 - 2 downto 1 do begin // start from the end of Naxis2, for "correct" order of pixels
+      if ActiveRow then begin
+        for C := 1 to Naxis1 - 2 do begin
+          if Odd(C + Shift) then begin
+            GetPixelValue(Layer, C - 1, R - 1, Naxis1, A1);
+            GetPixelValue(Layer, C + 1, R - 1, Naxis1, A2);
+            GetPixelValue(Layer, C - 1, R + 1, Naxis1, A3);
+            GetPixelValue(Layer, C + 1, R + 1, Naxis1, A4);
+            ASum := Round((A1 + A2 + A3 + A4) / 4);
+          end
+          else begin
+            GetPixelValue(Layer, C, R - 1, Naxis1, A1);
+            GetPixelValue(Layer, C, R + 1, Naxis1, A2);
+            ASum := Round((A1 + A2) / 2);
+          end;
+          Addr := (R * Naxis1 + C) * 2;
+          Layer[Addr] := ASumBytes[1];
+          Layer[Addr + 1] := ASumBytes[0];
+        end;
+      end;
+      ActiveRow := not ActiveRow;
     end;
   end;
 end;
 
-procedure CFAtoRGB(var FITSfile: FITSRecordFile; const FITSFileName: string; const OutputDir: string; const Prefix: string; const BayerPattern: TBayerPattern; Overwrite: Boolean; Linear: Boolean);
+function CFAtoRGB(var FITSfile: FITSRecordFile; const FITSFileName: string; const OutputDir: string; const Prefix: string; const BayerPattern: TBayerPattern; Overwrite: Boolean; Linear: Boolean): Boolean;
 var
   N: Integer;
   NblocksInHeader: Integer;
@@ -150,6 +171,7 @@ var
   S: string;
   I: Integer;
 begin
+  Result := False;
   N := GetEndPosition(FITSfile);
   if N < 0 then
     FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSfileName, '"'));
@@ -158,8 +180,10 @@ begin
   GetBitPixAndNaxis(FITSfile, BitPix, NaxisN);
   if (Length(NaxisN) <> 2) then
     FileError('Cannot work with NAXIS other than 2, got ' + IntToStr(Length(NaxisN)) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
-  if (BitPix <> 8) and (BitPix <> 16) and (BitPix <> 32) and (BitPix <> -32) and (BitPix <> -64) then
-    FileError('Unsupported BITPIX value: ' + IntToStr(BitPix) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
+  if BitPix <> 16 then begin
+    Write(' Unsupported BITPIX value: ' + IntToStr(BitPix) + '.');
+    Exit;
+  end;
   BytePix := Abs(BitPix) div 8;
   Naxis1 := NaxisN[0];
   Naxis2 := NaxisN[1];
@@ -239,7 +263,7 @@ begin
           Assert(RedL <> nil);
           Assert(BlueL <> nil);
           Assert(Length(ImageToAverage) = 2);
-          AverageLayers(ImageToAverage, Naxis1new * Naxis2new * BytePix, BitPix);
+          AverageIntLayers(ImageToAverage[0], ImageToAverage[1], Naxis1new * Naxis2new);
           GreenL := ImageToAverage[0];
         end
         else begin
@@ -284,9 +308,9 @@ begin
             end;
           end;
           // Interpolating
-          InterpolateLayer(GreenL, 'G', Naxis1, Naxis2, BitPix, BayerPattern);
-          InterpolateLayer(RedL,   'R', Naxis1, Naxis2, BitPix, BayerPattern);
-          InterpolateLayer(BlueL,  'B', Naxis1, Naxis2, BitPix, BayerPattern);
+          InterpolateLayer(GreenL, 'G', Naxis1, Naxis2, BayerPattern);
+          InterpolateLayer(RedL,   'R', Naxis1, Naxis2, BayerPattern);
+          InterpolateLayer(BlueL,  'B', Naxis1, Naxis2, BayerPattern);
         end;
 
         OutFileName := Prefix + ExtractFileName(FITSfileName);
@@ -387,11 +411,13 @@ begin
     FreeMem(Header);
     Header := nil;
   end;
+  Result := True;
 end;
 
 procedure ProcessFile(const FileName: string; const OutputDir: string; const Prefix: string; const BayerPattern: TBayerPattern; Overwrite: Boolean; Linear: Boolean);
 var
   FITSfile: FITSRecordFile;
+  R: Boolean;
 begin
   Write('Processing ', ExtractFileName(FileName));
   AssignFile(FITSfile, FileName);
@@ -399,11 +425,11 @@ begin
   try
     if not IsFits(FITSfile) then
       FileError('Not a valid FITS file: ' + AnsiQuotedStr(FileName, '"'));
-    CFAtoRGB(FITSfile, FileName, OutputDir, Prefix, BayerPattern, Overwrite, Linear);
+    R := CFAtoRGB(FITSfile, FileName, OutputDir, Prefix, BayerPattern, Overwrite, Linear);
   finally
     CloseFile(FITSfile);
   end;
-  WriteLn(': done.');
+  if R then WriteLn(': done.') else WriteLn(' Skipped.');
 end;
 
 
@@ -452,16 +478,6 @@ begin
   end;
 end;
 
-function CCount(C: Char; BayerPattern: TBayerPattern): Integer;
-var
-  I: Integer;
-begin
-  Result := 0;
-  for I := 0 to Length(BayerPattern) - 1 do
-    if BayerPattern[I] = C then
-      Inc(Result);
-end;
-
 var
   InputFileMasks: array of string;
   OutputDir: string;
@@ -471,8 +487,8 @@ var
   Linear: Boolean;
   PrintVer: Boolean;
   S: string;
-  I: Integer;
   ParamN: Integer;
+  I: Integer;
 
 var
   BayerPattern: TBayerPattern = (#0, #0, #0, #0);
@@ -553,20 +569,17 @@ begin
     WriteLn('**** Bayer pattern is not defined: use /M=<pattent> parameter');
     Halt(1);
   end;
-  if Length(BayerPatternStr) <> 4 then begin
-    WriteLn('**** Invalid Bayer pattern definition');
+  //if Length(BayerPatternStr) <> 4 then begin
+  //  WriteLn('**** Invalid Bayer pattern definition');
+  //  Halt(1);
+  //end;
+  BayerPatternStr := AnsiUpperCase(BayerPatternStr);
+  if (BayerPatternStr <> 'RGGB') and (BayerPatternStr <> 'BGGR') and (BayerPatternStr <> 'GBRG') and (BayerPatternStr <> 'GRBG') then begin
+    WriteLn('**** Invalid or unsupported Bayer pattern');
     Halt(1);
   end;
-  BayerPatternStr := AnsiUpperCase(BayerPatternStr);
-  for I := 0 to 3 do begin
-    if ((BayerPatternStr[I+1] in ['R', 'B']) and (CCount(BayerPatternStr[I+1], BayerPattern) = 0)) or
-       ((BayerPatternStr[I+1] = 'G') and (CCount(BayerPatternStr[I+1], BayerPattern) < 2)) then
-      BayerPattern[I] := BayerPatternStr[I+1]
-    else begin
-      WriteLn('**** Invalid Bayer pattern definition');
-      Halt(1);
-    end;
-  end;
+  for I := 0 to 3 do BayerPattern[I] := BayerPatternStr[I + 1];
+
 
   if (Prefix = '') then begin
     WriteLn('**** Output file prefix is not defined: use /P=<prefix> parameter');
