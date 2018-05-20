@@ -50,7 +50,7 @@ begin
   end;
 end;
 
-procedure GetPixelValue(Layer: PChar; C, R: Integer; Naxis1: Integer; var A: SmallInt); inline;
+procedure GetPixelValue16bit(Layer: PChar; C, R: Integer; Naxis1: Integer; out A: SmallInt); inline;
 var
   ABytes: array[0..1] of Char absolute A;
   Addr: Integer;
@@ -60,12 +60,19 @@ begin
   ABytes[0] := Layer[Addr + 1];
 end;
 
-procedure InterpolateLayer(Layer: PChar; Color: Char; Naxis1, Naxis2: Integer; const BayerPattern: TBayerPattern);
+procedure SetPixelValue16bit(Layer: PChar; C, R: Integer; Naxis1: Integer; A: SmallInt); inline;
+var
+  ABytes: array[0..1] of Char absolute A;
+  Addr: Integer;
+begin
+  Addr := (R * Naxis1 + C) * 2;
+  Layer[Addr] := ABytes[1];
+  Layer[Addr + 1] := ABytes[0];
+end;
+
+procedure InterpolateLayer16bit(Layer: PChar; Color: Char; Naxis1, Naxis2: Integer; const BayerPattern: TBayerPattern);
 var
   A1, A2, A3, A4: SmallInt;
-  Asum: SmallInt;
-  ASumBytes: array[0..1] of Char absolute ASum;
-  Addr: Integer;
   C, R: Integer;
   Shift: Integer;
   ActiveRow: Boolean;
@@ -76,14 +83,11 @@ begin
     for R := Naxis2 - 2 downto 1 do begin // start from the end of Naxis2, for "correct" order of pixels
       for C := 1 to Naxis1 - 2 do begin
         if Odd(C + Shift) then begin
-          GetPixelValue(Layer, C - 1, R, Naxis1, A1);
-          GetPixelValue(Layer, C, R - 1, Naxis1, A2);
-          GetPixelValue(Layer, C + 1, R, Naxis1, A3);
-          GetPixelValue(Layer, C, R + 1, Naxis1, A4);
-          ASum := Round((A1 + A2 + A3 + A4) / 4);
-          Addr := (R * Naxis1 + C) * 2;
-          Layer[Addr] := ASumBytes[1];
-          Layer[Addr + 1] := ASumBytes[0];
+          GetPixelValue16bit(Layer, C - 1, R, Naxis1, A1);
+          GetPixelValue16bit(Layer, C, R - 1, Naxis1, A2);
+          GetPixelValue16bit(Layer, C + 1, R, Naxis1, A3);
+          GetPixelValue16bit(Layer, C, R + 1, Naxis1, A4);
+          SetPixelValue16bit(Layer, C, R, Naxis1, Round((A1 + A2 + A3 + A4) / 4));
         end;
       end;
       if Shift = 0 then Shift := 1 else Shift := 0;
@@ -102,12 +106,9 @@ begin
       if ActiveRow then begin
         for C := 1 to Naxis1 - 2 do begin
           if Odd(C + Shift) then begin
-            GetPixelValue(Layer, C - 1, R, Naxis1, A1);
-            GetPixelValue(Layer, C + 1, R, Naxis1, A2);
-            ASum := Round((A1 + A2) / 2);
-            Addr := (R * Naxis1 + C) * 2;
-            Layer[Addr] := ASumBytes[1];
-            Layer[Addr + 1] := ASumBytes[0];
+            GetPixelValue16bit(Layer, C - 1, R, Naxis1, A1);
+            GetPixelValue16bit(Layer, C + 1, R, Naxis1, A2);
+            SetPixelValue16bit(Layer, C, R, Naxis1, Round((A1 + A2) / 2));
           end;
         end;
       end;
@@ -119,24 +120,30 @@ begin
       if ActiveRow then begin
         for C := 1 to Naxis1 - 2 do begin
           if Odd(C + Shift) then begin
-            GetPixelValue(Layer, C - 1, R - 1, Naxis1, A1);
-            GetPixelValue(Layer, C + 1, R - 1, Naxis1, A2);
-            GetPixelValue(Layer, C - 1, R + 1, Naxis1, A3);
-            GetPixelValue(Layer, C + 1, R + 1, Naxis1, A4);
-            ASum := Round((A1 + A2 + A3 + A4) / 4);
+            GetPixelValue16bit(Layer, C - 1, R - 1, Naxis1, A1);
+            GetPixelValue16bit(Layer, C + 1, R - 1, Naxis1, A2);
+            GetPixelValue16bit(Layer, C - 1, R + 1, Naxis1, A3);
+            GetPixelValue16bit(Layer, C + 1, R + 1, Naxis1, A4);
+            SetPixelValue16bit(Layer, C, R, Naxis1, Round((A1 + A2 + A3 + A4) / 4));
           end
           else begin
-            GetPixelValue(Layer, C, R - 1, Naxis1, A1);
-            GetPixelValue(Layer, C, R + 1, Naxis1, A2);
-            ASum := Round((A1 + A2) / 2);
+            GetPixelValue16bit(Layer, C, R - 1, Naxis1, A1);
+            GetPixelValue16bit(Layer, C, R + 1, Naxis1, A2);
+            SetPixelValue16bit(Layer, C, R, Naxis1, Round((A1 + A2) / 2));
           end;
-          Addr := (R * Naxis1 + C) * 2;
-          Layer[Addr] := ASumBytes[1];
-          Layer[Addr + 1] := ASumBytes[0];
         end;
       end;
       ActiveRow := not ActiveRow;
     end;
+  end;
+  // Zero border
+  for R := 0 to Naxis2 - 1 do begin
+    SetPixelValue16bit(Layer, 0, R, Naxis1, 0);
+    SetPixelValue16bit(Layer, Naxis1 - 1, R, Naxis1, 0);
+  end;
+  for C := 0 to Naxis1 - 1 do begin
+    SetPixelValue16bit(Layer, C, 0, Naxis1, 0);
+    SetPixelValue16bit(Layer, C, Naxis2 - 1, Naxis1, 0);
   end;
 end;
 
@@ -190,6 +197,7 @@ begin
   Write(' [', Naxis1, 'x', Naxis2, '] [BITPIX=', BitPix, '] -> ');
 
   if not Linear then begin
+    // Superpixel debayering
     Naxis1new := Naxis1 div 2;
     Naxis2new := Naxis2 div 2;
   end
@@ -269,6 +277,7 @@ begin
         else begin
           // Linear interpolation
           // Reading 4 color planes
+          // Step1: allocating memory
           for ColorL := 0 to 3 do begin
             if BayerPattern[ColorL] = 'R' then begin
               GetMem(ImageC[ColorL], ImageLayerMemSize);
@@ -293,6 +302,7 @@ begin
           Assert(GreenL <> nil);
           Assert(RedL <> nil);
           Assert(BlueL <> nil);
+          // Moving exisiting pixels to color planes
           for C := 0 to Naxis1 - 1 do begin
             for R := Naxis2 - 1 downto 0 do begin // start from the end of Naxis2, for "correct" order of pixels
               PixAddr := (R * Naxis1 + C) * BytePix;
@@ -308,20 +318,12 @@ begin
             end;
           end;
           // Interpolating
-          InterpolateLayer(GreenL, 'G', Naxis1, Naxis2, BayerPattern);
-          InterpolateLayer(RedL,   'R', Naxis1, Naxis2, BayerPattern);
-          InterpolateLayer(BlueL,  'B', Naxis1, Naxis2, BayerPattern);
+          InterpolateLayer16bit(GreenL, 'G', Naxis1, Naxis2, BayerPattern);
+          InterpolateLayer16bit(RedL,   'R', Naxis1, Naxis2, BayerPattern);
+          InterpolateLayer16bit(BlueL,  'B', Naxis1, Naxis2, BayerPattern);
         end;
 
-        OutFileName := Prefix + ExtractFileName(FITSfileName);
-        if OutputDir = '' then
-          OutFileName := ExtractFilePath(FITSfileName) + OutFileName
-        else
-          OutFileName := IncludeTrailingPathDelimiter(OutputDir) + OutFileName;
-        Write(' ', ExtractFileName(OutFileName));
-        if not Overwrite and FileExists(OutFileName) then
-          FileError('File ' + AnsiQuotedStr(OutFileName, '"') + ' already exists. Use /F switch to overwrite.');
-
+        // Saving file
         N := -1;
         // Creating new header with NAXIS=3 and new sizes
         HeaderNew := nil;
@@ -352,9 +354,17 @@ begin
             StrToFITSRecord(PadCh('NAXIS3', FITSKeywordLen, ' ') + '= ' + S, Buf);
             SetLength(HeaderNew, Length(HeaderNew) + 1);
             Move(Buf, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
-          end;
+          end
+          else
           if Buf = recordEND then begin
-            N := I;
+            // adding comment before END
+            S := PadCh('COMMENT', FITSKeywordLen, ' ') + 'Debayered by CFA2RGB';
+            if not Linear then S := S + ' (superpixel mode)' else S := S + ' (linear interpolation)';
+            StrToFITSRecord(S, Buf);
+            Move(Buf, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
+            SetLength(HeaderNew, Length(HeaderNew) + 1);
+            Move(recordEND, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
+            N := I + 1;
             Break;
           end;
         end;
@@ -382,6 +392,14 @@ begin
         Move(BlueL[0], Image[ImageLayerMemSize * 2], ImageLayerMemSize);
 
         // Writing file
+        OutFileName := Prefix + ExtractFileName(FITSfileName);
+        if OutputDir = '' then
+          OutFileName := ExtractFilePath(FITSfileName) + OutFileName
+        else
+          OutFileName := IncludeTrailingPathDelimiter(OutputDir) + OutFileName;
+        Write(ExtractFileName(OutFileName));
+        if not Overwrite and FileExists(OutFileName) then
+          FileError('File ' + AnsiQuotedStr(OutFileName, '"') + ' already exists. Use /F switch to overwrite.');
         AssignFile(OutFile, OutFileName);
         FileModeSaved := FileMode;
         FileMode := fmOpenReadWrite;
