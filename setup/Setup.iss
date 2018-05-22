@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "FITS utils"
-#define MyAppVersion "1.1"
+#define MyAppVersion "1.1.(1/2)"
 #define MyAppPublisher "mpyat2@gmail.com"
 #define MyAppURL "https://sites.google.com/site/theskyaboveusmp/home"
 #define MyAppExeName "HelloIRISFITS.exe"
