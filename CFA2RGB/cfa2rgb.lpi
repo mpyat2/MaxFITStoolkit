@@ -35,7 +35,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="TEST /M=rggb /P=rgb- /F /2"/>
+        <CommandLineParams Value="TEST* /M=rggb /P=rgb- /F /2"/>
       </local>
     </RunParams>
     <Units Count="1">

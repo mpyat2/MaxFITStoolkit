@@ -22,7 +22,7 @@ begin
 end;
 
 {$IFDEF ROUND_C}
-function Round_C(R: Double): Integer; inline;
+function Round_C(R: Double): Int64; inline;
 begin
   if R > 0.0 then Result := Trunc(R + 0.5) else Result := Trunc(R - 0.5);
 end;
@@ -78,7 +78,7 @@ begin
   Layer[Addr + 1] := ABytes[0];
 end;
 
-procedure InterpolateLayer16bit(Layer: PChar; Color: Char; Naxis1, Naxis2: Integer; const BayerPattern: TBayerPattern);
+procedure InterpolateLayer16bit(Layer: PChar; Color: Char; Naxis1, Naxis2: Integer; const BayerPattern: TBayerPattern; BlackLevel: SmallInt);
 var
   A1, A2, A3, A4: SmallInt;
   C, R: Integer;
@@ -141,12 +141,12 @@ begin
   end;
   // Zero border
   for R := 0 to Naxis2 - 1 do begin
-    SetPixelValue16bit(Layer, 0, R, Naxis1, 0);
-    SetPixelValue16bit(Layer, Naxis1 - 1, R, Naxis1, 0);
+    SetPixelValue16bit(Layer, 0,          R, Naxis1, BlackLevel);
+    SetPixelValue16bit(Layer, Naxis1 - 1, R, Naxis1, BlackLevel);
   end;
   for C := 0 to Naxis1 - 1 do begin
-    SetPixelValue16bit(Layer, C, 0, Naxis1, 0);
-    SetPixelValue16bit(Layer, C, Naxis2 - 1, Naxis1, 0);
+    SetPixelValue16bit(Layer, C, 0,          Naxis1, BlackLevel);
+    SetPixelValue16bit(Layer, C, Naxis2 - 1, Naxis1, BlackLevel);
   end;
 end;
 
@@ -155,6 +155,8 @@ var
   N: Integer;
   NblocksInHeader: Integer;
   StartOfImage: Integer;
+  Bscale, Bzero: Double;
+  BlackLevel: SmallInt;
   BitPix: Integer;
   BytePix: Integer;
   NaxisN: TIntArray;
@@ -199,6 +201,16 @@ begin
     Exit;
   end;
   BytePix := Abs(BitPix) div 8;
+
+  BlackLevel := 0;
+  GetBscaleBzero(FITSfile, Bscale, Bzero); // Bzero -- for border pixels
+  if Bzero <> 0 then begin
+    if ({$IFDEF ROUND_C}Round_C{$ELSE}Round{$ENDIF}(-Bzero) <= High(SmallInt)) and
+       ({$IFDEF ROUND_C}Round_C{$ELSE}Round{$ENDIF}(-Bzero) >= Low(SmallInt))
+    then
+      BlackLevel := {$IFDEF ROUND_C}Round_C{$ELSE}Round{$ENDIF}(-Bzero);
+  end;
+
 
   if not Linear then begin
     // Superpixel debayering
@@ -322,9 +334,9 @@ begin
             end;
           end;
           // Interpolating
-          InterpolateLayer16bit(GreenL, 'G', Naxis1, Naxis2, BayerPattern);
-          InterpolateLayer16bit(RedL,   'R', Naxis1, Naxis2, BayerPattern);
-          InterpolateLayer16bit(BlueL,  'B', Naxis1, Naxis2, BayerPattern);
+          InterpolateLayer16bit(GreenL, 'G', Naxis1, Naxis2, BayerPattern, BlackLevel);
+          InterpolateLayer16bit(RedL,   'R', Naxis1, Naxis2, BayerPattern, BlackLevel);
+          InterpolateLayer16bit(BlueL,  'B', Naxis1, Naxis2, BayerPattern, BlackLevel);
         end;
 
         // Saving file
