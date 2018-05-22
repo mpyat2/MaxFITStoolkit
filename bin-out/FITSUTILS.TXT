@@ -171,7 +171,7 @@ iren dir1\IMG*.CR2 dir2\IMG*.CR2 dir3\IMG*.CR2 /G=src /O=C:\SKY\ /F /B=1
 Usage:
 cfa2rgb file_mask1[.fit] [file_mask2[.fit] ...] [/O=out_dir] [/P=<prefix>] [/F] /M=<FilterPattern>
 
-Demosaicing CFA image using "superpixel" approach.
+Demosaicing CFA image using "superpixel" or "linear interpolation" approach.
 
 where:
   file_maskX          masks of input files to be processed
@@ -179,6 +179,10 @@ where:
                       (original directory will be used if not specified)
   /F                  overwrite existing files in output directory
   /M=<FilterPattern>  Bayer pattern of input CFA FITS, for example, RGGB
+  /2                  Use linear interpolation (superpixel by default)
+
+When /2 option is specified, output image has the same size as input one.
+Otherwise, the output is half-size of input (each 2x2 superpixel is converted to single pixel).
 
 @fitsstat
 

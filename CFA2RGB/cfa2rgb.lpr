@@ -1,5 +1,6 @@
 {$APPTYPE CONSOLE}
 {$ASSERTIONS ON}
+{.DEFINE ROUND_C}
 
 program cfa2rgb;
 
@@ -10,7 +11,7 @@ uses
 
 procedure PrintVersion;
 begin
-  WriteLn('CFA -> RGB superpixel converter  Maksym Pyatnytskyy  2018');
+  WriteLn('CFA(16-bit) -> RGB converter  Maksym Pyatnytskyy  2018');
   WriteLn(GetVersionString(ParamStr(0)));
   WriteLn;
 end;
@@ -19,6 +20,13 @@ procedure FileError(const S: string);
 begin
   raise Exception.Create(S);
 end;
+
+{$IFDEF ROUND_C}
+function Round_C(R: Double): Integer; inline;
+begin
+  if R > 0.0 then Result := Trunc(R + 0.5) else Result := Trunc(R - 0.5);
+end;
+{$ENDIF}
 
 type
   TBayerPattern = array[0..3] of Char;
@@ -44,7 +52,7 @@ begin
     A1Bytes[0] := Layer1[Addr + 1];
     A2Bytes[1] := Layer2[Addr];
     A2Bytes[0] := Layer2[Addr + 1];
-    ASum := Round((A1 + A2) / 2);
+    ASum := {$IFDEF ROUND_C}Round_C{$ELSE}Round{$ENDIF}((A1 + A2) / 2);
     Layer1[Addr]     := ASumBytes[1];
     Layer1[Addr + 1] := ASumBytes[0];
   end;
@@ -86,7 +94,7 @@ begin
           GetPixelValue16bit(Layer, C,     R - 1, Naxis1, A2);
           GetPixelValue16bit(Layer, C + 1, R, Naxis1, A3);
           GetPixelValue16bit(Layer, C,     R + 1, Naxis1, A4);
-          SetPixelValue16bit(Layer, C,     R, Naxis1, Round((A1 + A2 + A3 + A4) / 4));
+          SetPixelValue16bit(Layer, C,     R, Naxis1, {$IFDEF ROUND_C}Round_C{$ELSE}Round{$ENDIF}((A1 + A2 + A3 + A4) / 4));
         end;
       end;
       OddColumn := not OddColumn;
@@ -103,7 +111,7 @@ begin
           if not (Odd(C) xor OddColumn) then begin
             GetPixelValue16bit(Layer, C - 1, R, Naxis1, A1);
             GetPixelValue16bit(Layer, C + 1, R, Naxis1, A2);
-            SetPixelValue16bit(Layer, C,     R, Naxis1, Round((A1 + A2) / 2));
+            SetPixelValue16bit(Layer, C,     R, Naxis1, {$IFDEF ROUND_C}Round_C{$ELSE}Round{$ENDIF}((A1 + A2) / 2));
           end;
         end;
       end;
@@ -119,12 +127,12 @@ begin
             GetPixelValue16bit(Layer, C + 1, R - 1, Naxis1, A2);
             GetPixelValue16bit(Layer, C - 1, R + 1, Naxis1, A3);
             GetPixelValue16bit(Layer, C + 1, R + 1, Naxis1, A4);
-            SetPixelValue16bit(Layer, C,     R, Naxis1, Round((A1 + A2 + A3 + A4) / 4));
+            SetPixelValue16bit(Layer, C,     R, Naxis1, {$IFDEF ROUND_C}Round_C{$ELSE}Round{$ENDIF}((A1 + A2 + A3 + A4) / 4));
           end
           else begin
             GetPixelValue16bit(Layer, C, R - 1, Naxis1, A1);
             GetPixelValue16bit(Layer, C, R + 1, Naxis1, A2);
-            SetPixelValue16bit(Layer, C, R, Naxis1, Round((A1 + A2) / 2));
+            SetPixelValue16bit(Layer, C, R, Naxis1, {$IFDEF ROUND_C}Round_C{$ELSE}Round{$ENDIF}((A1 + A2) / 2));
           end;
         end;
       end;
@@ -183,14 +191,14 @@ begin
   GetBitPixAndNaxis(FITSfile, BitPix, NaxisN);
   if (Length(NaxisN) <> 2) then
     FileError('Cannot work with NAXIS other than 2, got ' + IntToStr(Length(NaxisN)) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
-  if BitPix <> 16 then begin
-    Write(' Unsupported BITPIX value: ' + IntToStr(BitPix) + '.');
-    Exit;
-  end;
-  BytePix := Abs(BitPix) div 8;
   Naxis1 := NaxisN[0];
   Naxis2 := NaxisN[1];
   Write(' [', Naxis1, 'x', Naxis2, '] [BITPIX=', BitPix, '] -> ');
+  if BitPix <> 16 then begin
+    Write(' Only BITPIX=16 is currently supported.');
+    Exit;
+  end;
+  BytePix := Abs(BitPix) div 8;
 
   if not Linear then begin
     // Superpixel debayering
