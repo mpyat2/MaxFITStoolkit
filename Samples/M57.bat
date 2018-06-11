@@ -34,9 +34,12 @@ CLS
 PAUSE
 CLS
 
+ECHO .
 ECHO Cleaning output %OUT% ...
 DEL "%OUT%\offset*.fit" "%OUT%\dark*.fit" "%OUT%\flat*.fit" "%OUT%\light*.fit"
-IF ERRORLEVEL 1 GOTO :ERROR
+REM The following ERRORLEVEL check is disabled because in most cases it is 0 under Windows 
+REM (even if deletion was unsuccessfull); under Wine ERRORLEVEL 1 if no files exist.
+REM IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 ECHO .
 ECHO .
