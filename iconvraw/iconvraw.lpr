@@ -371,7 +371,7 @@ begin
       Inc(N);
 
       SetLength(Comments, N + 1);
-      Comments[N] := 'RAW: Original EXIF time: ' + TimeStr;
+      Comments[N] := 'RAW: Original EXIF time: ' + TrimRight(TimeStr); // To remove '\n'!
       Inc(N);
 
       if TimeShifted then begin
