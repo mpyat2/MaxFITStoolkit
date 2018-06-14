@@ -3,14 +3,19 @@
 program MakeStack;
 
 uses
-  SysUtils, Classes, Math, DateUtils, CmdObj{, CmdObjStdSwitches}, Version,
-  EnumFiles, FITSUtils, FITSTimeUtils, StringListNaturalSort, FitsUtilsHelp, CommonIni;
+  Windows, SysUtils, Classes, Math, DateUtils, CmdObj{, CmdObjStdSwitches}, Version,
+  EnumFiles, FITSUtils, FITSTimeUtils, StringListNaturalSort, FitsUtilsHelp,
+  CalcThread, CommonIni;
 
 {$R *.res}
 
+const
+  MIN_PIXELS_PER_THREAD = 1024;
+  MAX_THREADS           = 32;
+
 procedure PrintVersion;
 begin
-  WriteLn('FITS stack  Maksym Pyatnytskyy  2018');
+  WriteLn('FITS stack (multithreaded)  Maksym Pyatnytskyy  2018');
   WriteLn(GetVersionString(ParamStr(0)));
   WriteLn;
 end;
@@ -20,145 +25,9 @@ begin
   raise Exception.Create(S);
 end;
 
-type
-
-  { TFITSFileInfo }
-
-  TFITSFileInfo = class(TObject)
-    DateObs: TDateTime;
-    BitPix: Integer;
-    Naxis: TIntArray;
-    BScale: Double;
-    BZero: Double;
-    StartOfImage: Integer;
-    ImageMemSize: Integer; // Padded!
-    ObjectName: string;
-    Telescope: string;
-    Instrument: string;
-    Exposure: Double;
-    destructor Destroy; override;
-  end;
-
-  { TFITSFileInfo }
-
-  destructor TFITSFileInfo.Destroy;
-  begin
-    inherited Destroy;
-  end;
-
-type
-  TStackMode = ( smAdd, smAvg, smMed );
-
 var
   FileList: TStringListNaturalSort;
   FileListAllFiles: TStringList;
-
-type
-  TExtendedArray = array of Extended;
-  TDoubleArray = array of Double;
-
-////////////////////////////////////////////////////////////////////////////////
-// http://wiki.freepascal.org/Functions_for_descriptive_statistics
-
-procedure SortExtendedArray(var data: TExtendedArray);
-{ Based on Shell Sort - avoiding recursion allows for sorting of very
-  large arrays, too }
-var
-  arrayLength, i, j, k: longint;
-  h: extended;
-begin
-  arrayLength := high(data);
-  k := arrayLength div 2;
-  while k > 0 do
-  begin
-    for i := 0 to arrayLength - k do
-    begin
-      j := i;
-      while (j >= 0) and (data[j] > data[j + k]) do
-      begin
-        h := data[j];
-        data[j] := data[j + k];
-        data[j + k] := h;
-        if j > k then
-          dec(j, k)
-        else
-          j := 0;
-      end;
-    end;
-    k := k div 2
-  end;
-end;
-
-// modifies data!
-function median(var data: TExtendedArray): extended;
-var
-  centralElement: integer;
-begin
-  SortExtendedArray(data);
-  centralElement := length(data) div 2;
-  if odd(length(data)) then
-    result := data[centralElement]
-  else
-    result := (data[centralElement - 1] + data[centralElement]) / 2;
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-function sum(const data: TExtendedArray): extended;
-var
-  I: Integer;
-begin
-  Result := 0;
-  if Length(data) = 0 then Exit;
-  for I := 0 to Length(data) - 1 do
-    Result := Result + data[I];
-end;
-
-function average(const data: TExtendedArray): extended;
-begin
-  Result := sum(data) / Length(data);
-end;
-
-function GetFITSpixelAsExtended(FITSdata: PChar; N, BitPix: Integer; BScale: Double; BZero: Double): Extended;
-var
-  FITSValue: TFITSValue;
-  BytePix: Integer;
-  Addr: Integer;
-  I: Integer;
-begin
-  BytePix := Abs(BitPix) div 8;
-  Addr := N * BytePix;
-  for I := 0 to BytePix - 1 do
-    FITSValue.A[BytePix - 1 - I] := Byte(FITSdata[Addr + I]);
-  case BitPix of
-      8: Result := FITSValue.B;
-     16: Result := FITSValue.I;
-     32: Result := FITSValue.L;
-    -32: Result := FITSValue.S;
-    -64: Result := FITSValue.D;
-  end;
-  Result := BScale * Result + BZero;
-end;
-
-procedure SetFITSpixel(FITSdata: PChar; N, BitPix: Integer; Value: Double);
-var
-  FITSValue: TFITSValue;
-  BytePix: Integer;
-  Addr: Integer;
-  I: Integer;
-begin
-  case BitPix of
-      8: FITSValue.B := Round(Value);
-     16: FITSValue.I := Round(Value);
-     32: FITSValue.L := Round(Value);
-    -32: FITSValue.S := Value;
-    -64: FITSValue.D := Value;
-  end;
-  BytePix := Abs(BitPix) div 8;
-  Addr := N * BytePix;
-  for I := 0 to BytePix - 1 do
-    FITSdata[Addr + I] := Char(FITSValue.A[BytePix - 1 - I]);
-end;
 
 function StackModeToString(Mode: TStackMode): string;
 begin
@@ -172,13 +41,58 @@ end;
 
 procedure ShowProgress(const Info: string; N, Nmax: Integer);
 var
-  S, S2: string;
+  S, S2, SBuf: string;
 begin
   S := PadCh('', Round(N / Nmax * 60), '#');
   S := PadCh(S, 60, ' ');
-  S2 := PadCh(Copy(Info, 1, 9), 9, ' ');
-  Write(#13, S2, Round(N / Nmax * 100):3, '% ', S);
+  S2 := PadCh(Copy(Info, 1, 13), 13, ' ');
+  SBuf := #13 + S2 + LeftPadCh(IntToStr(Round(N / Nmax * 100)), 3, ' ') + '% ' + S;
+  Write(SBuf);
 end;
+
+var
+  CmdLineNumberOfThreads: Integer = 0;
+  ProgressProcCriticalSection: TRTLCriticalSection;
+
+type
+
+  { TProgressProcWrapper }
+
+  TProgressProcWrapper = class(TObject)
+    private
+      FPixels: Integer;
+      FThreadCounters: array of Integer;
+      FInfo: string;
+    public
+      function ThreadProgressProc(ThreadNo, Counter, FStartIndex, FNumberOfPixels: Integer): Boolean;
+      constructor Create(NumberOfThreads: Integer; Pixels: Integer; const Info: string);
+  end;
+
+  constructor TProgressProcWrapper.Create(NumberOfThreads: Integer; Pixels: Integer; const Info: string);
+  begin
+    inherited Create;
+    SetLength(FThreadCounters, NumberOfThreads);
+    FPixels := Pixels;
+    FInfo := Info;
+  end;
+
+  function TProgressProcWrapper.ThreadProgressProc(ThreadNo, Counter, FStartIndex, FNumberOfPixels: Integer): Boolean;
+  var
+    N, I: Integer;
+  begin
+    Result := True;
+    EnterCriticalSection(ProgressProcCriticalSection);
+    try
+      N := 0;
+      if (ThreadNo >= 0) and (ThreadNo < Length(FThreadCounters)) then
+        FThreadCounters[ThreadNo] := Counter;
+      for I := 0 to Length(FThreadCounters) - 1 do
+        N := N + FThreadCounters[I];
+      ShowProgress(FInfo, N, FPixels);
+    finally
+      LeaveCriticalSection(ProgressProcCriticalSection);
+    end;
+  end;
 
 procedure DoStackProc(StackMode: TStackMode; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; StackNumber: Integer; const StackList: TStringList);
 var
@@ -195,8 +109,6 @@ var
   DestNaxis: TIntArray;
   DestHeader: TFITSRecordArray;
   DestPixelArray: TDoubleArray;
-  StackPixels: TExtendedArray;
-  StackedResult, StackedResultMax, StackedResultMin: Extended;
   ScaledOrShifted: Boolean;
   TotalExposure: Double;
   DestDateObs: TDateTime;
@@ -207,6 +119,17 @@ var
   Pixels: Integer;
   I, II: Integer;
   Comments: TStringArray;
+  StackThreads: array of TCalcThread;
+  StackedResultMax, StackedResultMin: Extended;
+  MaxNumberOfThreads: Integer;
+  NumberOfThreads: Integer;
+  StartIndex: Integer;
+  PixelsToStackInThread: Integer;
+  PixelRemained: Integer;
+  InitialValuesSet: Boolean;
+  ProgressProcWrapper: TProgressProcWrapper;
+  InfoStr: string;
+  TimeStart: TDateTime;
 begin
   if StackList.Count < 1 then Exit;
   OutFileName := IncludeTrailingPathDelimiter(OutputDir) + GenericName;
@@ -278,43 +201,98 @@ begin
     end;
     ShowProgress('Reading', StackList.Count, StackList.Count);
 
+    TimeStart := Now();
+
     Pixels := 1;
     for I := 0 to Length(DestNaxis) - 1 do
       Pixels := Pixels * DestNaxis[I];
-    SetLength(DestPixelArray, Pixels);
-    SetLength(StackPixels, StackList.Count);
-    ShowProgress('Stacking', 0, Pixels);
+    if Pixels < 1 then
+      FileError('Invalid number of pixels');
 
-    for II := 0 to Pixels - 1 do begin
-      for I := 0 to StackList.Count - 1 do
-        StackPixels[I] := GetFITSpixelAsExtended(Images[I], II, TFITSFileInfo(StackList.Objects[I]).BitPix, TFITSFileInfo(StackList.Objects[I]).BScale, TFITSFileInfo(StackList.Objects[I]).BZero);
-      case StackMode of
-        smAdd: StackedResult := sum(StackPixels);
-        smAvg: StackedResult := average(StackPixels);
-        smMed: StackedResult := median(StackPixels);
-        else FileError('Internal error: invalid Stack Mode');
-      end;
-      if II = 0 then begin
-        StackedResultMax := StackedResult;
-        StackedResultMin := StackedResult;
+    SetLength(DestPixelArray, Pixels);
+
+    InitCriticalSection(ProgressProcCriticalSection);
+    try
+      GlobalTerminateAllThreads := False;
+      if CmdLineNumberOfThreads <= 0 then begin
+        MaxNumberOfThreads := Min(GetLogicalCpuCount, MAX_THREADS);
+        PixelsToStackInThread := Max(MIN_PIXELS_PER_THREAD, Pixels div MaxNumberOfThreads);
+        NumberOfThreads := Round(Pixels / PixelsToStackInThread);
       end
       else begin
-        if StackedResult > StackedResultMax then StackedResultMax := StackedResult;
-        if StackedResult < StackedResultMin then StackedResultMin := StackedResult;
+        NumberOfThreads := CmdLineNumberOfThreads;
+        PixelsToStackInThread := Pixels div NumberOfThreads;
       end;
+      if NumberOfThreads < 1 then NumberOfThreads := 1;
+      SetLength(StackThreads, NumberOfThreads);
+      for I := 0 to Length(StackThreads) - 1 do StackThreads[I] := nil; // not nesessare, already initialized
       try
-        DestPixelArray[II] := StackedResult;
-      except
-        on E: Exception do
-          FileError('Stack error: ' + E.Message);
+        InfoStr := LeftPadCh(IntToStr(NumberOfThreads), 2, ' ') + ' thread(s)';
+        ShowProgress(InfoStr, 0, Pixels);
+        ProgressProcWrapper := TProgressProcWrapper.Create(NumberOfThreads, Pixels, InfoStr);
+        try
+          StartIndex := 0;
+          PixelRemained := Pixels;
+          for I := 0 to NumberOfThreads - 1 do begin
+            if I = NumberOfThreads - 1 then
+            PixelsToStackInThread := PixelRemained;
+            StackThreads[I] := TCalcThread.Create(I,
+                                                  StartIndex,
+                                                  PixelsToStackInThread,
+                                                  StackMode,
+                                                  StackList,
+                                                  Images,
+                                                  @DestPixelArray,
+                                                  ProgressProcWrapper.ThreadProgressProc);
+            // check for exception while creation (see FPC docs)
+            if Assigned(StackThreads[I].FatalException) then
+              raise StackThreads[I].FatalException;
+
+            PixelRemained := PixelRemained - PixelsToStackInThread;
+            StartIndex := StartIndex + PixelsToStackInThread;
+          end;
+
+          for I := 0 to NumberOfThreads - 1 do
+            StackThreads[I].Start;
+
+          for I := 0 to NumberOfThreads - 1 do
+            StackThreads[I].WaitFor;
+
+          for I := 0 to NumberOfThreads - 1 do begin
+            if Assigned(StackThreads[I].FatalException) then
+              raise StackThreads[I].FatalException;
+          end;
+        finally
+          FreeAndNil(ProgressProcWrapper);
+        end;
+      finally
+        DoneCriticalSection(ProgressProcCriticalSection);
       end;
-      if ((II + 1) mod (Pixels div 100) = 0) then
-        ShowProgress('Stacking', II + 1, Pixels);
+
+      StackedResultMin := 0;
+      StackedResultMax := 0;
+      InitialValuesSet := False;
+      for I := 0 to NumberOfThreads - 1 do begin
+        if StackThreads[I].ExecuteProcessed then begin
+          if not InitialValuesSet then begin
+            StackedResultMin := StackThreads[I].StackedResultMin;
+            StackedResultMax := StackThreads[I].StackedResultMax;
+            InitialValuesSet := True;
+          end
+          else begin
+            if StackThreads[I].StackedResultMin < StackedResultMin then StackedResultMin := StackThreads[I].StackedResultMin;
+            if StackThreads[I].StackedResultMax > StackedResultMax then StackedResultMax := StackThreads[I].StackedResultMax;
+          end;
+        end;
+      end;
+    finally
+      for I := NumberOfThreads - 1 downto 0 do
+        FreeAndNil(StackThreads[I]);
     end;
 
-    ShowProgress('Stacking', Pixels, Pixels);
+    ShowProgress(InfoStr, Pixels, Pixels);
     WriteLn;
-    WriteLn('Done.');
+    WriteLn('Done. Calculation time: ', (Now() - TimeStart)*24*60*60:0:1, 's');
 
     for I := Length(Images) - 1 downto 0 do begin
       if Images[I] <> nil then begin
@@ -540,6 +518,7 @@ begin
   end;
 
   // Other options
+  CmdLineNumberOfThreads := 0;
   InputFileMasks := nil;
   OutputDir := '';
   GenericName := '';
@@ -614,8 +593,16 @@ begin
       else
       if CmdObj.CmdLine.ExtractParamValue(S, 'N=', S2) then begin
         Val(S2, StackSize, ErrorPos);
-        if StackSize < 0 then begin
+        if (ErrorPos <> 0) or (StackSize < 0) then begin
           WriteLn('**** Stack size must be integer number >= 0 (0 stands for "all files")');
+          Halt(1);
+        end;
+      end
+      else
+      if CmdObj.CmdLine.ExtractParamValue(S, 'T=', S2) then begin
+        Val(S2, CmdLineNumberOfThreads, ErrorPos);
+        if (ErrorPos <> 0) or (CmdLineNumberOfThreads <= 0) or (CmdLineNumberOfThreads > MAX_THREADS) then begin
+          WriteLn('**** Number of threads must be in a range [1..' + IntToStr(MAX_THREADS) + ']');
           Halt(1);
         end;
       end
