@@ -100,7 +100,7 @@ var
   OutFileName: string;
   FileInfo: TFITSFileInfo;
   FITSfile: FITSRecordFile;
-  Images: array of PChar;
+  Images: TPCharArray;
   DestImage: PChar;
   DestImageMemSize: Integer;
   MinBitPix, MaxBitPix: Integer;
@@ -211,7 +211,7 @@ begin
 
     SetLength(DestPixelArray, Pixels);
 
-    InitCriticalSection(ProgressProcCriticalSection);
+    {$IFDEF FPC}InitCriticalSection{$ELSE}InitializeCriticalSection{$ENDIF}(ProgressProcCriticalSection); // To compile with Delphi
     try
       GlobalTerminateAllThreads := False;
       if CmdLineNumberOfThreads <= 0 then begin
@@ -253,7 +253,7 @@ begin
           end;
 
           for I := 0 to NumberOfThreads - 1 do
-            StackThreads[I].Start;
+            StackThreads[I].{$IFDEF FPC}Start{$ELSE}Resume{$ENDIF}; // To compile with Delphi
 
           for I := 0 to NumberOfThreads - 1 do
             StackThreads[I].WaitFor;
@@ -266,7 +266,7 @@ begin
           FreeAndNil(ProgressProcWrapper);
         end;
       finally
-        DoneCriticalSection(ProgressProcCriticalSection);
+        {$IFDEF FPC}DoneCriticalSection{$ELSE}DeleteCriticalSection{$ENDIF}(ProgressProcCriticalSection); // To compile with Delphi
       end;
 
       StackedResultMin := 0;
@@ -286,7 +286,7 @@ begin
         end;
       end;
     finally
-      for I := NumberOfThreads - 1 downto 0 do
+      for I := Length(StackThreads) - 1 downto 0 do
         FreeAndNil(StackThreads[I]);
     end;
 

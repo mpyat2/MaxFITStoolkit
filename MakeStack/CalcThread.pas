@@ -1,3 +1,5 @@
+{$IFDEF FPC} {$MODE DELPHI} {$ENDIF}
+
 {.$DEFINE DEBUG_OUTPUT}
 
 unit CalcThread;
@@ -85,11 +87,11 @@ implementation
 // http://wiki.freepascal.org/Example_of_multi-threaded_application:_array_of_threads
 function GetLogicalCpuCount: integer;
 // returns a good default for the number of threads on this system
-{$IF defined(windows)}
+// Windows only!
 //returns total number of processors available to system including logical hyperthreaded processors
 var
   i: Integer;
-  ProcessAffinityMask, SystemAffinityMask: DWORD_PTR;
+  ProcessAffinityMask, SystemAffinityMask: {$IFDEF FPC}DWORD_PTR{$ELSE}DWord{$ENDIF}; // 32-bit Delphi only!
   Mask: DWORD;
   SystemInfo: SYSTEM_INFO;
 begin
@@ -107,11 +109,6 @@ begin
     Result := SystemInfo.dwNumberOfProcessors;
   end;
 end;
-{$ELSE}
-begin
-   FileError('not implemented yet.');
-end;
-{$ENDIF}
 
 ////////////////////////////////////////////////////////////////////////////////
 // http://wiki.freepascal.org/Functions_for_descriptive_statistics
@@ -192,6 +189,7 @@ begin
      32: Result := FITSValue.L;
     -32: Result := FITSValue.S;
     -64: Result := FITSValue.D;
+    else raise Exception.Create('Internal error: Unsupported BITPIX');
   end;
   Result := BScale * Result + BZero;
 end;
@@ -209,6 +207,7 @@ begin
      32: FITSValue.L := Round(Value);
     -32: FITSValue.S := Value;
     -64: FITSValue.D := Value;
+    else raise Exception.Create('Internal error: Unsupported BITPIX');
   end;
   BytePix := Abs(BitPix) div 8;
   Addr := N * BytePix;
