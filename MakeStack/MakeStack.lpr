@@ -9,10 +9,6 @@ uses
 
 {$R *.res}
 
-const
-  MIN_PIXELS_PER_THREAD = 1024;
-  MAX_THREADS           = 32;
-
 procedure PrintVersion;
 begin
   WriteLn('FITS stack (multithreaded)  Maksym Pyatnytskyy  2018');
@@ -25,9 +21,9 @@ begin
   raise Exception.Create(S);
 end;
 
-var
-  FileList: TStringListNaturalSort;
-  FileListAllFiles: TStringList;
+const
+  MIN_PIXELS_PER_THREAD = 1024;
+  MAX_THREADS           = 32;
 
 function StackModeToString(Mode: TStackMode): string;
 begin
@@ -51,13 +47,11 @@ begin
 end;
 
 var
-  CmdLineNumberOfThreads: Integer = 0;
+  FileList: TStringListNaturalSort;
+  FileListAllFiles: TStringList;
   ProgressProcCriticalSection: TRTLCriticalSection;
 
 type
-
-  { TProgressProcWrapper }
-
   TProgressProcWrapper = class(TObject)
     private
       FPixels: Integer;
@@ -67,6 +61,8 @@ type
       function ThreadProgressProc(ThreadNo, Counter, FStartIndex, FNumberOfPixels: Integer): Boolean;
       constructor Create(NumberOfThreads: Integer; Pixels: Integer; const Info: string);
   end;
+
+  { TProgressProcWrapper }
 
   constructor TProgressProcWrapper.Create(NumberOfThreads: Integer; Pixels: Integer; const Info: string);
   begin
@@ -94,7 +90,7 @@ type
     end;
   end;
 
-procedure DoStackProc(StackMode: TStackMode; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; StackNumber: Integer; const StackList: TStringList);
+procedure DoStackProc(StackMode: TStackMode; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; StackNumber: Integer; const StackList: TStringList; CmdLineNumberOfThreads: Integer);
 var
   FileName: string;
   OutFileName: string;
@@ -235,7 +231,7 @@ begin
           PixelRemained := Pixels;
           for I := 0 to NumberOfThreads - 1 do begin
             if I = NumberOfThreads - 1 then
-            PixelsToStackInThread := PixelRemained;
+              PixelsToStackInThread := PixelRemained;
             StackThreads[I] := TCalcThread.Create(I,
                                                   StartIndex,
                                                   PixelsToStackInThread,
@@ -245,12 +241,20 @@ begin
                                                   @DestPixelArray,
                                                   ProgressProcWrapper.ThreadProgressProc);
             // check for exception while creation (see FPC docs)
-            if Assigned(StackThreads[I].FatalException) then
-              raise StackThreads[I].FatalException;
+            if Assigned(StackThreads[I].FatalException) then begin
+              if Assigned(StackThreads[I].FatalException) then begin
+                if StackThreads[I].FatalException is Exception then
+                  FileError(Exception(StackThreads[I].FatalException).Message)
+                else
+                  FileError('Unknown Exception');
+              end;
+            end;
 
             PixelRemained := PixelRemained - PixelsToStackInThread;
             StartIndex := StartIndex + PixelsToStackInThread;
           end;
+
+          if PixelRemained <> 0 then FileError('Internal error: not all or extra pixels were processed');
 
           for I := 0 to NumberOfThreads - 1 do
             StackThreads[I].{$IFDEF FPC}Start{$ELSE}Resume{$ENDIF}; // To compile with Delphi
@@ -259,8 +263,12 @@ begin
             StackThreads[I].WaitFor;
 
           for I := 0 to NumberOfThreads - 1 do begin
-            if Assigned(StackThreads[I].FatalException) then
-              raise StackThreads[I].FatalException;
+            if Assigned(StackThreads[I].FatalException) then begin
+              if StackThreads[I].FatalException is Exception then
+                FileError(Exception(StackThreads[I].FatalException).Message)
+              else
+                FileError('Unknown Exception');
+            end;
           end;
         finally
           FreeAndNil(ProgressProcWrapper);
@@ -273,7 +281,7 @@ begin
       StackedResultMax := 0;
       InitialValuesSet := False;
       for I := 0 to NumberOfThreads - 1 do begin
-        if StackThreads[I].ExecuteProcessed then begin
+        if StackThreads[I].ExecuteCompleted then begin // ExecuteCompleted is not set if PixelsToStackInThread was 0, however this should never occur
           if not InitialValuesSet then begin
             StackedResultMin := StackThreads[I].StackedResultMin;
             StackedResultMax := StackThreads[I].StackedResultMax;
@@ -358,25 +366,26 @@ begin
   WriteLn;
 end;
 
-procedure DoStacking(StackMode: TStackMode; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; BaseNumber: Integer; StackSize: Integer);
+procedure DoStacking(StackMode: TStackMode; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; BaseNumber: Integer; StackSize: Integer; CmdLineNumberOfThreads: Integer; DontAddNumberIfStackAll: Boolean);
 var
   StackList: TStringList;
   StackNumber: Integer;
   I: Integer;
 begin
   StackNumber := BaseNumber;
+  if (StackSize = 0) and DontAddNumberIfStackAll then StackNumber := -1;
   StackList := TStringList.Create;
   try
     for I := 0 to FileListAllFiles.Count - 1 do begin
       StackList.AddObject(FileListAllFiles[I], FileListAllFiles.Objects[I]);
       if (StackSize > 0) and (StackList.Count = StackSize) then begin
-        DoStackProc(StackMode, GenericName, OutputDir, OutputExt, Overwrite, StackNumber, StackList);
+        DoStackProc(StackMode, GenericName, OutputDir, OutputExt, Overwrite, StackNumber, StackList, CmdLineNumberOfThreads);
         StackList.Clear;
         Inc(StackNumber);
       end;
     end;
     if StackList.Count > 0 then begin
-      DoStackProc(StackMode, GenericName, OutputDir, OutputExt, Overwrite, StackNumber, StackList);
+      DoStackProc(StackMode, GenericName, OutputDir, OutputExt, Overwrite, StackNumber, StackList, CmdLineNumberOfThreads);
       StackList.Clear;
       Inc(StackNumber);
     end;
@@ -445,7 +454,7 @@ begin
   Result := True;
 end;
 
-procedure ProcessInput(const FileMasks: array of string; StackMode: TStackMode; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; BaseNumber: Integer; StackSize: Integer);
+procedure ProcessInput(const FileMasks: array of string; StackMode: TStackMode; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; BaseNumber: Integer; StackSize: Integer; CmdLineNumberOfThreads: Integer; DontAddNumberIfStackAll: Boolean);
 var
   I, N, Ntotal: Integer;
 begin
@@ -470,7 +479,7 @@ begin
     else begin
       WriteLn(Ntotal, ' files to process. Mode: ', StackModeToString(StackMode));
       WriteLn;
-      DoStacking(StackMode, GenericName, OutputDir, OutputExt, Overwrite, BaseNumber, StackSize);
+      DoStacking(StackMode, GenericName, OutputDir, OutputExt, Overwrite, BaseNumber, StackSize, CmdLineNumberOfThreads, DontAddNumberIfStackAll);
     end;
   except
     on E: Exception do begin
@@ -492,6 +501,8 @@ var
   BaseNumber: Integer;
   StackSize: Integer;
   StackMode: TStackMode;
+  CmdLineNumberOfThreads: Integer;
+  DontAddNumberIfStackAll: Boolean;
   S, S2: string;
   ErrorPos: Integer;
   ParamN: Integer;
@@ -518,7 +529,6 @@ begin
   end;
 
   // Other options
-  CmdLineNumberOfThreads := 0;
   InputFileMasks := nil;
   OutputDir := '';
   GenericName := '';
@@ -527,6 +537,8 @@ begin
   Overwrite := False;
   BaseNumber := 1;
   StackSize := 0; // default value: all files to stack
+  CmdLineNumberOfThreads := 0;
+  DontAddNumberIfStackAll := False;
 
   for ParamN := 1 to CmdObj.CmdLine.ParamCount do begin
     S := CmdObj.CmdLine.ParamStr(ParamN);
@@ -599,6 +611,9 @@ begin
         end;
       end
       else
+      if CmdObj.CmdLine.ParamIsKey(S, 'A') then
+        DontAddNumberIfStackAll := True
+      else
       if CmdObj.CmdLine.ExtractParamValue(S, 'T=', S2) then begin
         Val(S2, CmdLineNumberOfThreads, ErrorPos);
         if (ErrorPos <> 0) or (CmdLineNumberOfThreads <= 0) or (CmdLineNumberOfThreads > MAX_THREADS) then begin
@@ -634,7 +649,7 @@ begin
   try
     FileList := TStringListNaturalSort.Create;
     try
-      ProcessInput(InputFileMasks, StackMode, GenericName, OutputDir, OutputExt, Overwrite, BaseNumber, StackSize);
+      ProcessInput(InputFileMasks, StackMode, GenericName, OutputDir, OutputExt, Overwrite, BaseNumber, StackSize, CmdLineNumberOfThreads, DontAddNumberIfStackAll);
     finally
       FreeAndNil(FileList);
     end;

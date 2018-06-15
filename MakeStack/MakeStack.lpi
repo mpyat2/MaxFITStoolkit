@@ -23,7 +23,7 @@
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="2"/>
       <RevisionNr Value="1"/>
-      <BuildNr Value="21"/>
+      <BuildNr Value="22"/>
       <StringTable ProductVersion="0.0.0.0"/>
     </VersionInfo>
     <BuildModes Count="1">
@@ -35,7 +35,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="c:\personal\SKY2\*rgb-a* /g=out /f /t=16"/>
+        <CommandLineParams Value="c:\personal\SKY2\*rgb-a* /g=out /f /B=100 /A /n=5 /t=8"/>
       </local>
     </RunParams>
     <Units Count="1">

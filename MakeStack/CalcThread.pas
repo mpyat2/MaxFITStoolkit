@@ -22,12 +22,9 @@ type
   TPCharArray = array of PChar;
 
 type
-  TProgressProc = function (ThreadNo, Counter, FStartIndex, FNumberOfPixels: Integer): Boolean of Object;
+  TProgressProc = function (ThreadNo, Counter, FStartIndex, FNumberOfPixels: Integer): Boolean of object;
 
 type
-
-  { TCalcThread }
-
   TCalcThread = class(TThread)
     private
       FThreadNo: Integer;
@@ -39,7 +36,7 @@ type
       FDestPixelArrayPtr: PDoubleArray;
       FStackedResultMin: Extended;
       FStackedResultMax: Extended;
-      FExecuteProcessed: Boolean;
+      FExecuteCompleted: Boolean;
       FProgressProc: TProgressProc;
       procedure Progress(Counter, StartIndex, NumberOfPixels: Integer);
     protected
@@ -57,7 +54,7 @@ type
       property StackedResultMax: Extended read FStackedResultMax;
       property StartIndex: Integer read FStartIndex;
       property NumberOfPixels: Integer read FNumberOfPixels;
-      property ExecuteProcessed: Boolean read FExecuteProcessed;
+      property ExecuteCompleted: Boolean read FExecuteCompleted;
     end;
 
 type
@@ -73,7 +70,6 @@ type
     Telescope: string;
     Instrument: string;
     Exposure: Double;
-    destructor Destroy; override;
   end;
 
 function GetLogicalCpuCount: integer;
@@ -91,19 +87,19 @@ function GetLogicalCpuCount: integer;
 //returns total number of processors available to system including logical hyperthreaded processors
 var
   i: Integer;
-  ProcessAffinityMask, SystemAffinityMask: {$IFDEF FPC}DWORD_PTR{$ELSE}DWord{$ENDIF}; // 32-bit Delphi only!
+  ProcessAffinityMask, SystemAffinityMask: {$IFDEF FPC}DWORD_PTR{$ELSE}DWord{$ENDIF}; // DWord: 32-bit Delphi only!
   Mask: DWORD;
   SystemInfo: SYSTEM_INFO;
 begin
-  if GetProcessAffinityMask(GetCurrentProcess, ProcessAffinityMask, SystemAffinityMask)
-  then begin
+  if GetProcessAffinityMask(GetCurrentProcess, ProcessAffinityMask, SystemAffinityMask) then begin
     Result := 0;
     for i := 0 to 31 do begin
       Mask := DWord(1) shl i;
-      if (ProcessAffinityMask and Mask)<>0 then
+      if (ProcessAffinityMask and Mask) <> 0 then
         inc(Result);
     end;
-  end else begin
+  end
+  else begin
     //can't get the affinity mask so we just report the total number of processors
     GetSystemInfo(SystemInfo);
     Result := SystemInfo.dwNumberOfProcessors;
@@ -147,6 +143,8 @@ function median(var data: TExtendedArray): extended;
 var
   centralElement: integer;
 begin
+  result := 0;
+  if Length(data) = 0 then Exit;
   SortExtendedArray(data);
   centralElement := length(data) div 2;
   if odd(length(data)) then
@@ -237,7 +235,7 @@ begin
   FProgressProc := ProgressProc;
   FStackedResultMax := 0; // not nesessary
   FStackedResultMin := 0; // not nesessary
-  FExecuteProcessed := False;
+  FExecuteCompleted := False;
 end;
 
 procedure TCalcThread.Progress(Counter, StartIndex, NumberOfPixels: Integer);
@@ -260,12 +258,12 @@ begin
 {$ENDIF}
   try
     Counter := 0;
-    if FNumberOfPixels <= 0 then Exit;
+    if FNumberOfPixels <= 0 then Exit; // FExecuteComplete is not set!
     SetLength(StackPixels, FStackList.Count);
     for II := FStartIndex to FStartIndex + FNumberOfPixels - 1 do begin
       if Terminated or GlobalTerminateAllThreads then begin
 {$IFDEF DEBUG_OUTPUT}
-        if GlobalTerminateAllThreads then WriteLn('ThreadNo: ', FThreadNo, ' GlobalTerminateAllThreads is TRUE');
+        if GlobalTerminateAllThreads then begin WriteLn; WriteLn('ThreadNo: ', FThreadNo, ' GlobalTerminateAllThreads is TRUE'); end;
 {$ENDIF}
         Exit;
       end;
@@ -286,31 +284,27 @@ begin
         if StackedResult > FStackedResultMax then FStackedResultMax := StackedResult;
         if StackedResult < FStackedResultMin then FStackedResultMin := StackedResult;
       end;
+
       FDestPixelArrayPtr^[II] := StackedResult;
       Inc(Counter);
-      if ((Counter + 1) mod (FNumberOfPixels div 1024) = 0) then
+      if ((Counter + 1) mod (FNumberOfPixels div 8192) = 0) then
         Progress(Counter, FStartIndex, FNumberOfPixels);
     end;
-    FExecuteProcessed := True;
+    FExecuteCompleted := True;
 {$IFDEF DEBUG_OUTPUT}
-    WriteLn('ThreadNo: ', FThreadNo, ' finished');
+    WriteLn;
+    WriteLn('ThreadNo: ', FThreadNo, ' is about to finish.');
 {$ENDIF}
   except
     on E: Exception do begin
 {$IFDEF DEBUG_OUTPUT}
-          WriteLn('ThreadNo: ', FThreadNo, ' exception. Setting GlobalTerminateAllThreads.');
+      WriteLn;
+      WriteLn('ThreadNo: ', FThreadNo, ' exception. Setting GlobalTerminateAllThreads to TRUE.');
 {$ENDIF}
       GlobalTerminateAllThreads := True;
       raise;
     end;
   end;
-end;
-
-{ TFITSFileInfo }
-
-destructor TFITSFileInfo.Destroy;
-begin
-  inherited Destroy;
 end;
 
 end.
