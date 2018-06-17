@@ -12,7 +12,7 @@ uses
 procedure PrintVersion;
 begin
   WriteLn('FITS stack (multithreaded)  Maksym Pyatnytskyy  2018');
-  WriteLn(GetVersionString(ParamStr(0)));
+  WriteLn(GetVersionString(ParamStr(0)){$IFDEF WIN64}, ' WIN64'{$ENDIF});
   WriteLn;
 end;
 
@@ -336,7 +336,7 @@ begin
 
       DestHeader := MakeFITSHeader(DestBitPix, DestNaxis, 0, 1,
                                    DestDateObs, 'Stack Mid Time, fixed by Exposure Time',
-                                   LocalTimeToUniversal(Now()), 'FITS creation time (UTC)',
+                                   LocalTimeToUniversal(Now()), 'Stacked FITS creation time (by MakeStack)',
                                    0, '',
                                    DestObject,
                                    DestTelescope,

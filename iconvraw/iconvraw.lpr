@@ -15,7 +15,7 @@ var
 procedure PrintVersion;
 begin
   WriteLn('RAW -> CFA converter  Maksym Pyatnytskyy  2017');
-  WriteLn(GetVersionString(ParamStr(0)));
+  WriteLn(GetVersionString(ParamStr(0)){$IFDEF WIN64}, ' WIN64'{$ENDIF});
   if LibRawLoaded then begin
     WriteLn('Libraw Wrapper: ', LibRawWrapperName);
     WriteLn('Libraw Version: ', RawProcessorVersion);
@@ -429,7 +429,7 @@ begin
         Axes,
         Bzero, 1,
         DateTime, '',
-        LocalTimeToUniversal(Now()), 'FITS creation time (UTC)',
+        LocalTimeToUniversal(Now()), '(UTC): RAW->FITS conversion time',
         ExposureTimeFloat, '',
         '',
         '',
@@ -577,7 +577,7 @@ begin
 
   LibRawWrapperName := CmdObj.CmdLine.KeyValue('DLL=');
   if LibRawWrapperName = '' then begin
-    LibRawWrapperName := CommonIni.Ini.ReadString('SETTINGS', 'LIBRAWWRAPPER', '');
+    LibRawWrapperName := CommonIni.Ini.ReadString('SETTINGS', {$IFDEF WIN64}'LIBRAWWRAPPER64'{$ELSE}'LIBRAWWRAPPER'{$ENDIF}, '');
     if LibRawWrapperName = '' then LibRawWrapperName := LibRawWrapper;
   end;
   if ExtractFilePath(LibRawWrapperName) = '' then LibRawWrapperName := ExtractFilePath(ParamStr(0)) + LibRawWrapperName;

@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "FITS utils"
-#define MyAppVersion "1.1.(1/2)"
+#define MyAppVersion "1.1.2 beta"
 #define MyAppPublisher "mpyat2@gmail.com"
 #define MyAppURL "https://sites.google.com/site/theskyaboveusmp/home"
 #define MyAppExeName "HelloIRISFITS.exe"
@@ -49,14 +49,16 @@ Source: "..\bin-out\cfa2rgb.exe"; DestDir: "{app}"; Flags: ignoreversion
 ;Source: "..\bin-out\calcsub.exe"; DestDir: "{app}"; Flags: ignoreversion
 ;Source: "..\bin-out\findhot.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\makestack.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin-out\makestack32.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitsstat.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\iconvraw.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin-out\iconvraw32.exe"; DestDir: "{app}"; Flags: ignoreversion
 ;Source: "..\bin-out\FreeImage.dll"; DestDir: "{app}"; Flags: ignoreversion
 ;Source: "..\bin-out\libraw.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\LibRawMxWrapper*.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitsutils.ini"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitsutils.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\Scripts\CleanIRIS.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\Scripts\*"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Samples\*"; DestDir: "{app}\SAMPLES"; Flags: ignoreversion
 Source: "..\APDAT\TESTDATA\*"; DestDir: "{app}\TESTDATA\APDAT"; Flags: ignoreversion
 Source: "..\IPDAT\TESTDATA\*"; DestDir: "{app}\TESTDATA\IPDAT"; Flags: ignoreversion

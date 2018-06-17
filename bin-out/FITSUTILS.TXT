@@ -197,7 +197,8 @@ makestack file_mask1[.fit] [file_mask2[.fit] ...] /G=generic_name [/N=mm] [/M=<m
 Where:
   file_maskX       masks of input files to be processed
   /G=generic_name  prefix to be used to construct new file name
-  /N=mm            number of files in stacking group. If not specified, all files will be stacked 
+  /N=mm            number of files in stacking group. If not specified, all files will be stacked
+  /A               if ALL files are to be stacked, do not append number to single output file
   /M=<mode>        stacking mode: /M=S (sum, default value); /M=A (average); /M=M (median)
   /O=out_dir       directory for output files
                    (original directory will be used if not specified)

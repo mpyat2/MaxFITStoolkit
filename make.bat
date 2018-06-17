@@ -5,7 +5,8 @@ REM
 REM Should be compiled with NON-UNICODE 32bit Delphi Compiler!
 REM SET COMPILER="C:\PERSONAL\DC\DCC32" -UUnits\ -Ebin-out\
 REM
-SET COMPILER="c:\personal\lazarus\fpc\3.0.4\bin\i386-win32\fpc.exe" -MDELPHI -Xg -FuUnits\ -FEbin-out\
+SET COMPILER="c:\personal\lazarus\fpc\3.0.4\bin\i386-win32\fpc.exe"     -MDELPHI -Xg -FuUnits\ -FEbin-out\ -FUbin-out\unit32
+SET COMPIL64="C:\Personal\lazarus64\fpc\3.0.4\bin\x86_64-win64\fpc.exe" -MDELPHI -Xg -FuUnits\ -FEbin-out\ -FUbin-out\unit64
 REM
 REM To produce source-code ZIP, run this script with "A" command-line option: make.bat A
 SET A7z="c:\Program Files\7-zip\7z.exe"
@@ -54,12 +55,22 @@ ECHO .
 REM iconvraw.exe: RAW->FITS converter
 %COMPILER% iconvraw\iconvraw.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
+REN bin-out\iconvraw.exe iconvraw32.exe
+IF ERRORLEVEL 1 GOTO :ERROR
+%COMPIL64% iconvraw\iconvraw.lpr
+IF ERRORLEVEL 1 GOTO :ERROR
 copy iconvraw\LibRawMxWrapper_s_crt_0_19_0-beta1.dll bin-out\
 copy iconvraw\librawmxwrapper_s_crt.dll              bin-out\
+copy iconvraw\librawmxwrapper_s_crt_64.dll           bin-out\
+IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
 REM MakeStack
 %COMPILER% makestack\makestack.lpr
+IF ERRORLEVEL 1 GOTO :ERROR
+REN bin-out\makestack.exe makestack32.exe
+IF ERRORLEVEL 1 GOTO :ERROR
+%COMPIL64% makestack\makestack.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
