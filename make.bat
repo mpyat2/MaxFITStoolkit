@@ -50,18 +50,22 @@ ECHO .
 REM fitsrgb.exe: Splits RGB to color channels
 %COMPILER% FitsRGB\FitsRGB.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
+REM REN bin-out\FitsRGB.exe FitsRGB32.exe
+REM IF ERRORLEVEL 1 GOTO :ERROR
+REM %COMPIL64% FitsRGB\FitsRGB.lpr
+REM IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
 REM iconvraw.exe: RAW->FITS converter
 %COMPILER% iconvraw\iconvraw.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
-REN bin-out\iconvraw.exe iconvraw32.exe
-IF ERRORLEVEL 1 GOTO :ERROR
-%COMPIL64% iconvraw\iconvraw.lpr
-IF ERRORLEVEL 1 GOTO :ERROR
+REM REN bin-out\iconvraw.exe iconvraw32.exe
+REM IF ERRORLEVEL 1 GOTO :ERROR
+REM %COMPIL64% iconvraw\iconvraw.lpr
+REM IF ERRORLEVEL 1 GOTO :ERROR
 copy iconvraw\LibRawMxWrapper_s_crt_0_19_0-beta1.dll bin-out\
 copy iconvraw\librawmxwrapper_s_crt.dll              bin-out\
-copy iconvraw\librawmxwrapper_s_crt_64.dll           bin-out\
+REM copy iconvraw\librawmxwrapper_s_crt_64.dll           bin-out\
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
@@ -75,23 +79,12 @@ IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
 REM ...
-REM %COMPILER% CalcMed\CalcMed.lpr
-REM IF ERRORLEVEL 1 GOTO :ERROR
-REM ECHO .
-
-REM REM ...
-REM %COMPILER% CalcSub\CalcSub.lpr
-REM IF ERRORLEVEL 1 GOTO :ERROR
-REM ECHO .
-
-REM REM ...
-REM %COMPILER% FindHot\FindHot.lpr
-REM IF ERRORLEVEL 1 GOTO :ERROR
-REM ECHO .
-
-REM ...
 %COMPILER% CFA2RGB\cfa2rgb.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
+rem REN bin-out\cfa2rgb.exe cfa2rgb32.exe
+rem IF ERRORLEVEL 1 GOTO :ERROR
+rem %COMPIL64% CFA2RGB\cfa2rgb.lpr
+rem IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
 REM ...

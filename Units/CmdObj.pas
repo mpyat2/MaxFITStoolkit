@@ -11,7 +11,7 @@ unit CmdObj;
 
 interface
 
-uses Windows, SysUtils;
+uses SysUtils;
 
 type
 

@@ -22,7 +22,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="1"/>
-      <BuildNr Value="16"/>
+      <BuildNr Value="18"/>
       <StringTable ProductVersion="0.0.0.0"/>
     </VersionInfo>
     <BuildModes Count="1">
@@ -34,7 +34,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="TEST.fit //set /COMMENT=&quot;Comment 1&quot; /COMMENT=&quot;Comment 2&quot; /VALUE1=VAL1"/>
+        <CommandLineParams Value="TEST1.fit //set /P2=2"/>
       </local>
     </RunParams>
     <Units Count="1">

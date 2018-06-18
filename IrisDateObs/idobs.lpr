@@ -1,5 +1,7 @@
 {$APPTYPE CONSOLE}
 
+{$IFDEF FPC} {$MODE DELPHI} {$ENDIF}
+
 program IDOBS;
 
 uses Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles, StringListNaturalSort, FITSUtils, FitsUtilsHelp, CommonIni;

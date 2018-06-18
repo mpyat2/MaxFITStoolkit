@@ -17,7 +17,7 @@ unit FITSUtils;
 interface
 
 uses
-  Windows, SysUtils, Classes, FITSTimeUtils;
+  SysUtils, Classes, FITSTimeUtils;
 
 const recordEND     = 'END                                                                             ';    
 const KeywordEND    = 'END';
@@ -61,11 +61,11 @@ function FITSQuotedValue(const S: string): string;
 function StripQuotes(const S: string): string;
 
 function IsFITS(var FITSfile: FITSRecordFile): Boolean;
-function GetKeywordValue(var FITSfile: FITSRecordFile; const Keyword: string; out Value: string; RemoveComment: Boolean; TrimVal: Boolean): Integer;
+function GetKeywordValue(var FITSfile: FITSRecordFile; const Keyword: string; out Value: string; RemoveComment: Boolean; TrimVal: Boolean): Int64;
 function SetKeywordValue(var FITSfile: FITSRecordFile; const Keyword: string; const Value: string; AlignNumeric: Boolean; const Comment: string; CanResize: Boolean): Boolean;
 function AddCommentLikeKeyword(var FITSfile: FITSRecordFile; const Keyword: string; const Value: string; CanResize: Boolean): Boolean;
 procedure GetHeader(var FITSfile: FITSRecordFile; const Header: TStrings);
-function GetEndPosition(var FITSfile: FITSRecordFile): Integer;
+function GetEndPosition(var FITSfile: FITSRecordFile): Int64;
 procedure RevertBytes(var FITSvalue: TFITSValue; BitPix: Integer);
 procedure StrToFITSRecord(const S: string; out FITSRecord: FITSRecordType);
 function MakeFITSHeader(BitPix: Integer;
@@ -167,7 +167,7 @@ function IsFITS(var FITSfile: FITSRecordFile): Boolean;
 var
   Buf: FITSRecordType;
   Value: string;
-  EndPosition: Integer;
+  EndPosition: Int64;
 begin
   Result := False;
   if FileSize(FITSfile) < 2 then Exit;
@@ -183,11 +183,11 @@ begin
   Result := True;
 end;
 
-function GetEndPosition(var FITSfile: FITSRecordFile): Integer;
+function GetEndPosition(var FITSfile: FITSRecordFile): Int64;
 // Position is zero-based
 var
   Buf: FITSRecordType;
-  NRecord: Integer;
+  NRecord: Int64;
 begin
   Result := -1;
   NRecord := -1;
@@ -202,12 +202,12 @@ begin
   end;
 end;
 
-function GetHeaderRecordPosition(var FITSfile: FITSRecordFile; const Keyword: string): Integer;
+function GetHeaderRecordPosition(var FITSfile: FITSRecordFile; const Keyword: string): Int64;
 // For keywords, which may occupy several nines, returns first occurence.
 // Position is zero-based
 var
   Buf: FITSRecordType;
-  NRecord: Integer;
+  NRecord: Int64;
   S: string;
 begin
   Result := -1;
@@ -227,26 +227,26 @@ begin
   end;
 end;
 
-function GetKeywordValue(var FITSfile: FITSRecordFile; const Keyword: string; out Value: string; RemoveComment: Boolean; TrimVal: Boolean): Integer;
+function GetKeywordValue(var FITSfile: FITSRecordFile; const Keyword: string; out Value: string; RemoveComment: Boolean; TrimVal: Boolean): Int64;
 // Only for keywords with '='
 var
   Buf: FITSRecordType;
+  FilePosition: Int64;
   P: Integer;
-  N: Integer;
   I: Integer;
   Q: Boolean;
 begin
   Value := '';
   Result := -1;
   Seek(FITSfile, 0);
-  N := GetHeaderRecordPosition(FITSfile, Keyword);
-  if N < 0 then Exit;
-  Seek(FITSfile, N);
+  FilePosition := GetHeaderRecordPosition(FITSfile, Keyword);
+  if FilePosition < 0 then Exit;
+  Seek(FITSfile, FilePosition);
   BlockRead(FITSfile, Buf, 1);
   P := Pos('=', Buf);
   if P <> FITSKeywordLen + 1 then Exit;
   if Buf[P + 1] <> ' ' then Exit;
-  Result := N;
+  Result := FilePosition;
   Value := Copy(Buf, P + 2, FITSRecordLen);
   if RemoveComment then begin
     Q := False;
@@ -277,38 +277,38 @@ begin
   end;  
 end;
 
-procedure InsertHeaderBlock(var InF: FITSRecordFile);
+procedure InsertHeaderBlock(var FITSfile: FITSRecordFile);
 var
-  HeaderBlockCount: Integer;
   FileImage: array of FITSRecordType;
-  ENDPosition: Integer;
-  N: Integer;
+  HeaderBlockCount: Int64;
+  ENDPosition: Int64;
+  OldFileSize: Int64;
 begin
-  ENDPosition := GetEndPosition(InF);
+  ENDPosition := GetEndPosition(FITSfile);
   if ENDPosition < 0 then
-    FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(InF), '"'));
-  N := FileSize(InF);
-  SetLength(FileImage, N + RecordsInBlock);
-  FillChar(FileImage[0], (N + RecordsInBlock) * FITSRecordLen, 0);
+    FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+  OldFileSize := FileSize(FITSfile);
+  SetLength(FileImage, OldFileSize + RecordsInBlock);
+  FillChar(FileImage[0], (OldFileSize + RecordsInBlock) * FITSRecordLen, 0);
   HeaderBlockCount := (ENDPosition div RecordsInBlock) + 1;
   FillChar(FileImage[0], (HeaderBlockCount + 1) * RecordsInBlock * FITSRecordLen, ' ');
-  Seek(InF, 0);
-  BlockRead(InF, FileImage[0], HeaderBlockCount * RecordsInBlock);
-  if (N - HeaderBlockCount * RecordsInBlock > 0) then
-    BlockRead(InF, FileImage[(HeaderBlockCount + 1) * RecordsInBlock], N - HeaderBlockCount * RecordsInBlock);
+  Seek(FITSfile, 0);
+  BlockRead(FITSfile, FileImage[0], HeaderBlockCount * RecordsInBlock);
+  if (OldFileSize - HeaderBlockCount * RecordsInBlock > 0) then
+    BlockRead(FITSfile, FileImage[(HeaderBlockCount + 1) * RecordsInBlock], OldFileSize - HeaderBlockCount * RecordsInBlock);
   FillChar(FileImage[ENDPosition], FITSRecordLen, ' ');
   FileImage[HeaderBlockCount * RecordsInBlock] := recordEND;
-  Seek(InF, 0);
-  Truncate(InF);
-  BlockWrite(InF, FileImage[0], N + RecordsInBlock);
+  Seek(FITSfile, 0);
+  Truncate(FITSfile);
+  BlockWrite(FITSfile, FileImage[0], OldFileSize + RecordsInBlock);
 end;
 
 function SetKeywordValue(var FITSfile: FITSRecordFile; const Keyword: string; const Value: string; AlignNumeric: Boolean; const Comment: string; CanResize: Boolean): Boolean;
 // Only for keywords with '='
 var
   Buf: FITSRecordType;
+  PosInFile: Int64;
   P: Integer;
-  N: Integer;
   I: Integer;
   PC: Integer;
   AValue: string;
@@ -356,8 +356,8 @@ begin
     AComment := '';
   end;
   Seek(FITSfile, 0);  
-  N := GetHeaderRecordPosition(FITSfile, AKeyword);
-  if N < 0 then begin
+  PosInFile := GetHeaderRecordPosition(FITSfile, AKeyword);
+  if PosInFile < 0 then begin
     // Do not create entry if value is empty.
     if AValue = '' then begin
       Result := True;
@@ -365,10 +365,10 @@ begin
     end;  
     AKeyword := AKeyword + '= ';
     // Creating new entry.
-    N := GetEndPosition(FITSfile);
-    if N < 0 then FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
-    if (N mod RecordsInBlock) < (RecordsInBlock - 1) then begin
-      Seek(FITSfile, N);
+    PosInFile := GetEndPosition(FITSfile);
+    if PosInFile < 0 then FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+    if (PosInFile mod RecordsInBlock) < (RecordsInBlock - 1) then begin
+      Seek(FITSfile, PosInFile);
       FillChar(Buf, SizeOf(Buf), ' ');
       BlockWrite(FITSfile, Buf, 1);
       Buf := recordEND;
@@ -379,12 +379,12 @@ begin
         FileError('Cannot create new entry: another header block is needed (CanResize flag is not set). File ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
       InsertHeaderBlock(FITSfile);
     end;  
-    Seek(FITSfile, N);
+    Seek(FITSfile, PosInFile);
     FillChar(Buf, SizeOf(Buf), ' ');
     for I := 1 to Length(AKeyword) do Buf[I] := AKeyword[I];
     BlockWrite(FITSfile, Buf, 1);
   end;
-  Seek(FITSfile, N);
+  Seek(FITSfile, PosInFile);
   BlockRead(FITSfile, Buf, 1);
   P := Pos('=', Buf);
   if P <> FITSKeywordLen + 1 then Exit;
@@ -402,7 +402,7 @@ begin
         Buf[I] := ' ';
     end;
   end;
-  Seek(FITSfile, N);
+  Seek(FITSfile, PosInFile);
   BlockWrite(FITSfile, Buf, 1);
   Result := True;
 end;
@@ -411,19 +411,19 @@ function AddCommentLikeKeyword(var FITSfile: FITSRecordFile; const Keyword: stri
 // Only for keywords with '='
 var
   Buf: FITSRecordType;
+  PosInFile: Int64;
   AKeyword: string;
   S: string;
-  N: Integer;
   I: Integer;
 begin
   Result := False;
   AKeyword := PadCh(AnsiUpperCase(Keyword), FITSKeywordLen, ' ');
   if Length(AKeyword) > FITSKeywordLen then FileError('Keyword ' + AKeyword + ' too long');
   Seek(FITSfile, 0);
-  N := GetEndPosition(FITSfile);
-  if N < 0 then FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
-  if (N mod RecordsInBlock) < (RecordsInBlock - 1) then begin
-    Seek(FITSfile, N);
+  PosInFile := GetEndPosition(FITSfile);
+  if PosInFile < 0 then FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+  if (PosInFile mod RecordsInBlock) < (RecordsInBlock - 1) then begin
+    Seek(FITSfile, PosInFile);
     FillChar(Buf, SizeOf(Buf), ' ');
     BlockWrite(FITSfile, Buf, 1);
     Buf := recordEND;
@@ -434,7 +434,7 @@ begin
       FileError('Cannot create new entry: another header block is needed (CanResize flag is not set). File ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
     InsertHeaderBlock(FITSfile);
   end;  
-  Seek(FITSfile, N);
+  Seek(FITSfile, PosInFile);
   FillChar(Buf, SizeOf(Buf), ' ');
   S := AKeyword + Value;  
   for I := 1 to Length(S) do begin
@@ -446,6 +446,7 @@ begin
 end;
 
 procedure GetHeader(var FITSfile: FITSRecordFile; const Header: TStrings);
+// It is practically impossible that number of keywords in a header could be > MaxInt.
 var
   Buf: FITSRecordType;
 begin
@@ -625,16 +626,16 @@ begin
   if GetKeywordValue(FITSfile, 'NAXIS', Value, True, True) < 0 then
     FileError('Cannot get value of NAXIS. File ' + AnsiQuotedStr(FITSfileName, '"'));
   Val(Value, Naxis, ErrorPos);
-  if (ErrorPos <> 0) or (Naxis < 0) or (Naxis > 999) then
-    FileError('NAXIS has invalid value. File ' + AnsiQuotedStr(FITSfileName, '"'));
+  if (ErrorPos <> 0) or (Naxis < 1) or (Naxis > 999) then
+    FileError('NAXIS has invalid or unsupported value. File ' + AnsiQuotedStr(FITSfileName, '"'));
   if Naxis = 0 then Exit;
   SetLength(NaxisN, Naxis);
   for I := 0 to Naxis - 1 do begin
     if GetKeywordValue(FITSfile, 'NAXIS' + IntToStr(I + 1), Value, True, True) < 0 then
       FileError('Cannot get value of NAXIS' + IntToStr(I + 1) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
     Val(Value, N, ErrorPos);
-    if (ErrorPos <> 0) or (N < 0) then
-      FileError('NAXIS' + IntToStr(I + 1) + ' has invalid value. File ' + AnsiQuotedStr(FITSfileName, '"'));
+    if (ErrorPos <> 0) or (N < 1) then
+      FileError('NAXIS' + IntToStr(I + 1) + ' has invalid or unsupported value. File ' + AnsiQuotedStr(FITSfileName, '"'));
     NaxisN[I] := N;
   end;
 end;
@@ -714,14 +715,21 @@ end;
 
 function GetFITSimage2D(var FITSfile: FITSRecordFile; out Width, Height, BitPix: Integer; out Bscale, Bzero: Double): PChar;
 var
-  I, N, NblocksInHeader, StartOfImage, BytePix, NImagePoints, NrecordsToRead, ImageMemSize: Integer;
+  EndPosition: Int64;
+  NblocksInHeader: Int64;
+  StartOfImage: Int64;
+  NImagePoints: Int64;
+  NrecordsToRead: Int64;
+  ImageMemSize: PtrUInt;
+  BytePix: Integer;
+  I: Integer;
   NaxisN: TIntArray;
 begin
-  N := GetEndPosition(FITSfile);
-  if N < 0 then
+  EndPosition := GetEndPosition(FITSfile);
+  if EndPosition < 0 then
     FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
   GetBscaleBzero(FITSfile, Bscale, Bzero);
-  NblocksInHeader := N div RecordsInBlock + 1;
+  NblocksInHeader := EndPosition div RecordsInBlock + 1;
   StartOfImage := NblocksInHeader * RecordsInBlock;
   GetBitPixAndNaxis(FITSfile, BitPix, NaxisN);
   if Length(NAxisN) <> 2 then
@@ -732,6 +740,8 @@ begin
   NImagePoints := 1;
   for I := 0 to Length(NaxisN) - 1 do
     NImagePoints := NImagePoints * NaxisN[I];
+  if NImagePoints < 1 then
+    FileError('Invalid number of pixels'); // also at overflow
   NrecordsToRead := (NImagePoints * BytePix - 1) div FITSRecordLen + 1;
   ImageMemSize := NrecordsToRead * FITSRecordLen;
   GetMem(Result, ImageMemSize);

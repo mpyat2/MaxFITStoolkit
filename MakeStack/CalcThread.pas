@@ -64,8 +64,8 @@ type
     Naxis: TIntArray;
     BScale: Double;
     BZero: Double;
-    StartOfImage: Integer;
-    ImageMemSize: Integer; // Padded!
+    StartOfImage: Int64;
+    ImageMemSize: PtrUInt; // Padded!
     ObjectName: string;
     Telescope: string;
     Instrument: string;

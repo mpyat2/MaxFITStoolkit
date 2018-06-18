@@ -1,5 +1,7 @@
 {$APPTYPE CONSOLE}
 
+{$IFDEF FPC} {$MODE DELPHI} {$ENDIF}
+
 program IPDAT;
 
 uses

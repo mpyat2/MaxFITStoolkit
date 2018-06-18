@@ -4,25 +4,27 @@
     <PathDelim Value="\"/>
     <Version Value="10"/>
     <BuildModes Active="Default"/>
-    <Units Count="15">
+    <Units Count="22">
       <Unit0>
         <Filename Value="MakeStack.lpr"/>
         <IsPartOfProject Value="True"/>
-        <IsVisibleTab Value="True"/>
-        <CursorPos X="63" Y="15"/>
-        <UsageCount Value="52"/>
-        <Bookmarks Count="1">
-          <Item0 X="56" Y="335" ID="1"/>
-        </Bookmarks>
+        <TopLine Value="178"/>
+        <CursorPos X="43" Y="208"/>
+        <UsageCount Value="56"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
       <Unit1>
         <Filename Value="..\Units\FITSUtils.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="24"/>
-        <CursorPos X="16" Y="52"/>
-        <UsageCount Value="13"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="722"/>
+        <CursorPos X="63" Y="744"/>
+        <UsageCount Value="14"/>
+        <Bookmarks Count="1">
+          <Item0 X="43" Y="744" ID="1"/>
+        </Bookmarks>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit1>
       <Unit2>
@@ -88,12 +90,10 @@
       </Unit9>
       <Unit10>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\classes\classesh.inc"/>
-        <EditorIndex Value="2"/>
-        <TopLine Value="1702"/>
-        <CursorPos X="14" Y="1718"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="745"/>
+        <CursorPos X="15" Y="765"/>
         <UsageCount Value="14"/>
-        <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit10>
       <Unit11>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\classes\classes.inc"/>
@@ -104,18 +104,15 @@
       </Unit11>
       <Unit12>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\win\tthread.inc"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="-1"/>
         <CursorPos X="13" Y="21"/>
         <UsageCount Value="12"/>
-        <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit12>
       <Unit13>
         <Filename Value="CalcThread.pas"/>
-        <EditorIndex Value="1"/>
-        <TopLine Value="195"/>
-        <CursorPos X="3" Y="202"/>
-        <UsageCount Value="15"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="41"/>
+        <UsageCount Value="16"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit13>
@@ -126,123 +123,166 @@
         <CursorPos X="7" Y="84"/>
         <UsageCount Value="10"/>
       </Unit14>
+      <Unit15>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\packages\rtl-objpas\src\inc\dateutils.pp"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="10"/>
+      </Unit15>
+      <Unit16>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\filerec.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="3"/>
+        <CursorPos X="5" Y="38"/>
+        <UsageCount Value="10"/>
+      </Unit16>
+      <Unit17>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\classes\stringl.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="1072"/>
+        <CursorPos X="3" Y="1079"/>
+        <UsageCount Value="10"/>
+      </Unit17>
+      <Unit18>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\heaph.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="65"/>
+        <CursorPos X="29" Y="92"/>
+        <UsageCount Value="10"/>
+      </Unit18>
+      <Unit19>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\systemh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="307"/>
+        <CursorPos X="9" Y="338"/>
+        <UsageCount Value="10"/>
+      </Unit19>
+      <Unit20>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\varianth.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="492"/>
+        <CursorPos X="10" Y="510"/>
+        <UsageCount Value="10"/>
+      </Unit20>
+      <Unit21>
+        <Filename Value="test.pas"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit21>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\classes\classesh.inc"/>
-        <Caret Line="1718" Column="58" TopLine="1689"/>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="5" Column="39"/>
       </Position1>
       <Position2>
-        <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\classes\classesh.inc"/>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="210" Column="4" TopLine="180"/>
       </Position2>
       <Position3>
-        <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\win\tthread.inc"/>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="5" Column="39"/>
       </Position3>
       <Position4>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="176" TopLine="154"/>
+        <Caret Line="210" Column="27" TopLine="180"/>
       </Position4>
       <Position5>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="244" Column="55" TopLine="214"/>
       </Position5>
       <Position6>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="245" Column="55" TopLine="230"/>
+        <Caret Line="5"/>
       </Position6>
       <Position7>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="265" Column="88" TopLine="247"/>
+        <Caret Line="208" Column="14" TopLine="178"/>
       </Position7>
       <Position8>
-        <Filename Value="CalcThread.pas"/>
-        <Caret Line="248" TopLine="224"/>
+        <Filename Value="MakeStack.lpr"/>
       </Position8>
       <Position9>
-        <Filename Value="CalcThread.pas"/>
-        <Caret Line="277" Column="19" TopLine="246"/>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="64" Column="58" TopLine="33"/>
       </Position9>
       <Position10>
-        <Filename Value="CalcThread.pas"/>
-        <Caret Line="287" TopLine="257"/>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="69" Column="75" TopLine="38"/>
       </Position10>
       <Position11>
-        <Filename Value="CalcThread.pas"/>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="73" Column="22" TopLine="42"/>
       </Position11>
       <Position12>
-        <Filename Value="CalcThread.pas"/>
-        <Caret Line="190" Column="32" TopLine="159"/>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="117" Column="9" TopLine="86"/>
       </Position12>
       <Position13>
-        <Filename Value="CalcThread.pas"/>
-        <Caret Line="208" Column="32" TopLine="177"/>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="204" TopLine="174"/>
       </Position13>
       <Position14>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="312" Column="80" TopLine="287"/>
       </Position14>
       <Position15>
         <Filename Value="MakeStack.lpr"/>
+        <Caret Line="64" Column="58" TopLine="33"/>
       </Position15>
       <Position16>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="108" Column="18" TopLine="77"/>
+        <Caret Line="69" Column="75" TopLine="38"/>
       </Position16>
       <Position17>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="166" Column="20" TopLine="136"/>
+        <Caret Line="73" Column="22" TopLine="42"/>
       </Position17>
       <Position18>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="181" Column="78" TopLine="151"/>
+        <Caret Line="117" Column="11" TopLine="86"/>
       </Position18>
       <Position19>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="319" Column="7" TopLine="294"/>
+        <Caret Line="195" Column="43" TopLine="182"/>
       </Position19>
       <Position20>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="335" Column="56" TopLine="314"/>
       </Position20>
       <Position21>
-        <Filename Value="MakeStack.lpr"/>
-        <Caret Line="107" Column="17" TopLine="88"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
       </Position21>
       <Position22>
-        <Filename Value="MakeStack.lpr"/>
-        <Caret Line="208" Column="29" TopLine="178"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="757" Column="5" TopLine="720"/>
       </Position22>
       <Position23>
-        <Filename Value="MakeStack.lpr"/>
-        <Caret Line="241" Column="66" TopLine="211"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="609" Column="11" TopLine="614"/>
       </Position23>
       <Position24>
-        <Filename Value="CalcThread.pas"/>
-        <Caret Line="223" Column="49" TopLine="207"/>
+        <Filename Value="MakeStack.lpr"/>
+        <Caret Line="210" Column="50" TopLine="182"/>
       </Position24>
       <Position25>
-        <Filename Value="CalcThread.pas"/>
-        <Caret Line="234" Column="42" TopLine="207"/>
+        <Filename Value="MakeStack.lpr"/>
       </Position25>
       <Position26>
-        <Filename Value="CalcThread.pas"/>
-        <Caret Line="288" Column="25" TopLine="258"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="744" Column="43" TopLine="720"/>
       </Position26>
       <Position27>
-        <Filename Value="CalcThread.pas"/>
-        <Caret Line="251" Column="3" TopLine="232"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
       </Position27>
       <Position28>
-        <Filename Value="MakeStack.lpr"/>
-        <Caret Line="334" Column="42" TopLine="316"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="90" Column="20" TopLine="59"/>
       </Position28>
       <Position29>
-        <Filename Value="CalcThread.pas"/>
-        <Caret Line="76" Column="11" TopLine="58"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="289" Column="14" TopLine="258"/>
       </Position29>
       <Position30>
-        <Filename Value="MakeStack.lpr"/>
-        <Caret Line="223" Column="40" TopLine="209"/>
+        <Filename Value="..\Units\FITSUtils.pas"/>
+        <Caret Line="324" Column="54" TopLine="293"/>
       </Position30>
     </JumpHistory>
   </ProjectSession>

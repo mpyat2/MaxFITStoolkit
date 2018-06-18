@@ -1,5 +1,8 @@
 {$APPTYPE CONSOLE}
 {$ASSERTIONS ON}
+
+{$IFDEF FPC} {$MODE DELPHI} {$ENDIF}
+
 {.DEFINE ROUND_C}
 
 program cfa2rgb;

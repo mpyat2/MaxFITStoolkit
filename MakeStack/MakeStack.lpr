@@ -1,11 +1,13 @@
 {$APPTYPE CONSOLE}
 
+{$IFDEF FPC} {$MODE DELPHI} {$ENDIF}
+
 program MakeStack;
 
 uses
-  Windows, SysUtils, Classes, Math, DateUtils, CmdObj{, CmdObjStdSwitches}, Version,
-  EnumFiles, FITSUtils, FITSTimeUtils, StringListNaturalSort, FitsUtilsHelp,
-  CalcThread, CommonIni;
+  Windows, SysUtils, Classes, Math, DateUtils, CmdObj{, CmdObjStdSwitches},
+  Version, EnumFiles, FITSUtils, FITSTimeUtils, StringListNaturalSort,
+  FitsUtilsHelp, CalcThread, CommonIni;
 
 {$R *.res}
 
@@ -98,7 +100,7 @@ var
   FITSfile: FITSRecordFile;
   Images: TPCharArray;
   DestImage: PChar;
-  DestImageMemSize: Integer;
+  DestImageMemSize: PtrUInt;
   MinBitPix, MaxBitPix: Integer;
   DestBitPix: Integer;
   DestBytePix: Integer;
@@ -200,11 +202,11 @@ begin
     TimeStart := Now();
 
     Pixels := 1;
+
     for I := 0 to Length(DestNaxis) - 1 do
       Pixels := Pixels * DestNaxis[I];
-    if Pixels < 1 then
+    if Pixels < 1 then // also at overflow
       FileError('Invalid number of pixels');
-
     SetLength(DestPixelArray, Pixels);
 
     {$IFDEF FPC}InitCriticalSection{$ELSE}InitializeCriticalSection{$ENDIF}(ProgressProcCriticalSection); // To compile with Delphi
@@ -403,21 +405,22 @@ end;
 procedure ProcessFile(const FileName: string);
 var
   FITSfile: FITSRecordFile;
-  NblocksInHeader: Integer;
-  ImageMemSizeTemp: Integer;
+  NblocksInHeader: Int64;
+  EndPosition: Int64;
+  ImageMemSizeTemp: PtrUInt;
   FitsInfo: TFITSFileInfo;
   BytePix: Integer;
-  N, I: Integer;
+  I: Integer;
 begin
   AssignFile(FITSfile, FileName);
   Reset(FITSfile);
   try
     if not IsFits(FITSfile) then
       FileError('Not a valid FITS file: ' + AnsiQuotedStr(FileName, '"'));
-    N := GetEndPosition(FITSfile);
-    if N < 0 then
+    EndPosition := GetEndPosition(FITSfile);
+    if EndPosition < 0 then
       FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FileName, '"'));
-    NblocksInHeader := N div RecordsInBlock + 1;
+    NblocksInHeader := EndPosition div RecordsInBlock + 1;
 
     FitsInfo := TFITSFileInfo.Create;
     FileListAllFiles.AddObject(FileName, FitsInfo);

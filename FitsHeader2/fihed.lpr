@@ -1,11 +1,14 @@
 {$APPTYPE CONSOLE}
 
+{$IFDEF FPC} {$MODE DELPHI} {$ENDIF}
+
 program FIHED;
 
 // https://fits.gsfc.nasa.gov/fits_primer.html
 
 uses
-  Windows, SysUtils, Classes, CmdObj, Version, FITSUtils, EnumFiles, StringListNaturalSort, FitsUtilsHelp, CommonIni;
+  SysUtils, Classes, CmdObj, Version, FITSUtils, EnumFiles,
+  StringListNaturalSort, FitsUtilsHelp, CommonIni;
 // do not include CmdObjStdSwitches!
 
 {$R *.res}

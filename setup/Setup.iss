@@ -41,21 +41,26 @@ Source: "..\bin-out\idobs.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\ipdat.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\apdat.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\iren.exe"; DestDir: "{app}"; Flags: ignoreversion
+
 Source: "..\bin-out\fitscfa.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitscfa.ini"; DestDir: "{app}"; Flags: ignoreversion
+
 Source: "..\bin-out\fitsrgb.exe"; DestDir: "{app}"; Flags: ignoreversion
+;Source: "..\bin-out\fitsrgb32.exe"; DestDir: "{app}"; Flags: ignoreversion
+
 Source: "..\bin-out\cfa2rgb.exe"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "..\bin-out\calcmed.exe"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "..\bin-out\calcsub.exe"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "..\bin-out\findhot.exe"; DestDir: "{app}"; Flags: ignoreversion
+;Source: "..\bin-out\cfa2rgb32.exe"; DestDir: "{app}"; Flags: ignoreversion
+
 Source: "..\bin-out\makestack.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\makestack32.exe"; DestDir: "{app}"; Flags: ignoreversion
+
 Source: "..\bin-out\fitsstat.exe"; DestDir: "{app}"; Flags: ignoreversion
+
 Source: "..\bin-out\iconvraw.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\bin-out\iconvraw32.exe"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "..\bin-out\FreeImage.dll"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "..\bin-out\libraw.dll"; DestDir: "{app}"; Flags: ignoreversion
+;Source: "..\bin-out\iconvraw32.exe"; DestDir: "{app}"; Flags: ignoreversion
+
 Source: "..\bin-out\LibRawMxWrapper*.dll"; DestDir: "{app}"; Flags: ignoreversion
+
 Source: "..\bin-out\fitsutils.ini"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitsutils.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Scripts\*"; DestDir: "{app}"; Flags: ignoreversion
