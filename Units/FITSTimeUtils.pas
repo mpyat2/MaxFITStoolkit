@@ -11,7 +11,7 @@ unit FITSTimeUtils;
 
 interface 
 
-uses Windows, SysUtils;
+uses SysUtils;
 
 {$IFNDEF FPC}
 function LocalTimeToUniversal(LT: TDateTime): TDateTime; overload;

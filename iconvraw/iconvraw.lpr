@@ -4,7 +4,7 @@
 
 program iconvraw;
 
-uses Windows, SysUtils, Variants, DateUtils, Classes, CmdObj, Version, EnumFiles,
+uses SysUtils, Variants, DateUtils, Classes, CmdObj, Version, EnumFiles,
      StringListNaturalSort, LibRawMxWrapper, FITSUtils, FITSTimeUtils,
      FitsUtilsHelp, CommonIni;
 

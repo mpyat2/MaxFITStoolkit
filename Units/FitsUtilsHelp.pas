@@ -5,7 +5,7 @@ unit FITSUtilsHelp;
 interface
 
 uses
-  Windows, Classes, SysUtils;
+  Classes, SysUtils;
 
 const
   FITSUtilsHelpFile = 'FITSUTILS.TXT';

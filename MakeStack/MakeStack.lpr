@@ -5,7 +5,7 @@
 program MakeStack;
 
 uses
-  Windows, SysUtils, Classes, Math, DateUtils, CmdObj{, CmdObjStdSwitches},
+  SysUtils, Classes, Math, DateUtils, CmdObj{, CmdObjStdSwitches},
   Version, EnumFiles, FITSUtils, FITSTimeUtils, StringListNaturalSort,
   FitsUtilsHelp, CalcThread, CommonIni;
 

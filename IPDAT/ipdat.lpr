@@ -5,7 +5,7 @@
 program IPDAT;
 
 uses
-  Windows, SysUtils, CmdObj{, CmdObjStdSwitches}, Version, FitsUtilsHelp, CommonIni;
+  SysUtils, CmdObj{, CmdObjStdSwitches}, Version, FitsUtilsHelp, CommonIni;
 
 {$R *.res}
 

@@ -5,7 +5,7 @@
 program APDAT;
 
 uses
-  Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, Version, Math, FitsUtilsHelp, CommonIni;
+  SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, Version, Math, FitsUtilsHelp, CommonIni;
 
 {$R *.res}
 

@@ -4,7 +4,7 @@
 
 program IDOBS;
 
-uses Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles, StringListNaturalSort, FITSUtils, FitsUtilsHelp, CommonIni;
+uses SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles, StringListNaturalSort, FITSUtils, FitsUtilsHelp, CommonIni;
 
 {$R *.res}
 
