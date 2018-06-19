@@ -1,16 +1,29 @@
+{*****************************************************************************}
+{                                                                             }
+{ IDOBS                                                                       }
+{ (c) 2017 Maksym Pyatnytskyy                                                 }
+{                                                                             }
+{ This program is distributed                                                 }
+{ WITHOUT ANY WARRANTY; without even the implied warranty of                  }
+{ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                        }
+{                                                                             }
+{*****************************************************************************}
+
 {$APPTYPE CONSOLE}
 {$MODE DELPHI}
 
 program IDOBS;
 
-uses SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles, StringListNaturalSort, FITSUtils, FitsUtilsHelp, CommonIni;
+uses
+  SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles,
+  StringListNaturalSort, FITSUtils, FitsUtilsHelp, CommonIni;
 
 {$R *.res}
 
 procedure PrintVersion;
 begin
   WriteLn('Calculate mean DATE-OBS  Maksym Pyatnytskyy  2017');
-  WriteLn(GetVersionString(ParamStr(0)));
+  WriteLn(GetVersionString(AnsiUpperCase(ParamStr(0))){$IFDEF WIN64}, ' WIN64'{$ENDIF}, ' ', {$I %DATE%}, ' ', {$I %TIME%});
   WriteLn;
 end;
 
@@ -33,7 +46,7 @@ begin
   Result := True;
 end;
   
-procedure ProcessInput(const FileMasks: array of string; CorrectByExposure: Boolean);
+procedure ProcessInput(const FileMasks: array of string; CorrectByExposure: Boolean; IgnoreTimeError: Boolean);
 var
   I, II: Integer;
   FileName: string;
@@ -43,6 +56,7 @@ var
   N: Integer;
   SumDate: Double;
   SumExp: Double;
+  TimeError: Boolean;
 begin
   try
     SumExp := 0;
@@ -63,23 +77,36 @@ begin
         try
           if not IsFits(FITSfile) then
             FileError('Not a FITS file: ' + AnsiQuotedStr(FileList[I], '"'));
-
-          DateTimeObs := GetDateObs(FITSfile);
-          DateTimeObs0 := DateTimeObs;
-          ExpTime := GetExposureTime(FITSFile);
-          SumExp := SumExp + ExpTime;
-          if CorrectByExposure and (ExpTime > 0) then begin
-            DateTimeObs := DateTimeObs + ExpTime / (24.0*60.0*60.0) / 2.0;
+          TimeError := False;
+          try
+            DateTimeObs := GetDateObs(FITSfile);
+          except
+            on E: EFITSerror do begin
+              if not IgnoreTimeError then
+                raise
+              else
+                TimeError := True;
+            end;
           end;
-          Write(^I, FormatDateTime('"Date:'^I'"YYYY-MM-DD" "hh:nn:ss', DateTimeObs));
-          Write(^I'Exposure: '^I, ExpTime:10:2);
-          if (ExpTime <> 0) and CorrectByExposure then begin
-            Write(^I'[Fixed by EXPTIME. Original Time: ', FormatDateTime('hh:nn:ss', DateTimeObs0), ']');
+          if not TimeError then begin
+            DateTimeObs0 := DateTimeObs;
+            ExpTime := GetExposureTime(FITSFile);
+            SumExp := SumExp + ExpTime;
+              if CorrectByExposure and (ExpTime > 0) then begin
+              DateTimeObs := DateTimeObs + ExpTime / (24.0*60.0*60.0) / 2.0;
+            end;
+            Write(^I, FormatDateTime('"Date:'^I'"YYYY-MM-DD" "hh:nn:ss', DateTimeObs));
+            Write(^I'Exposure: '^I, ExpTime:10:2);
+            if (ExpTime <> 0) and CorrectByExposure then begin
+              Write(^I'[Fixed by EXPTIME. Original Time: ', FormatDateTime('hh:nn:ss', DateTimeObs0), ']');
+            end;
+            WriteLn;
+            SumDate := SumDate + DateTimeObs;
+            Inc(N);
+          end
+          else begin
+            WriteLn(^I'Cannot get DATE-OBS. File is ignored.');
           end;
-          WriteLn;
-        
-          SumDate := SumDate + DateTimeObs;
-          Inc(N);
         finally
           CloseFile(FITSFile);
         end;
@@ -108,6 +135,7 @@ end;
 var
   InputFileMasks: array of string;
   CorrectByExposure: Boolean;
+  IgnoreTimeError: Boolean;
   PrintVer: Boolean;
   S: string;
   ParamN: Integer;
@@ -135,6 +163,7 @@ begin
   // Other options
   InputFileMasks := nil;
   CorrectByExposure := False;
+  IgnoreTimeError := False;
 
   for ParamN := 1 to CmdObj.CmdLine.ParamCount do begin
     S := CmdObj.CmdLine.ParamStr(ParamN);
@@ -146,6 +175,9 @@ begin
       if CmdObj.CmdLine.ParamIsKey(S, 'V') or CmdObj.CmdLine.ParamIsKey(S, 'version') then begin
         // nothing: already processed.
       end
+      else
+      if CmdObj.CmdLine.ParamIsKey(S, 'NoTimeError') then
+        IgnoreTimeError := True
       else
       if CmdObj.CmdLine.ParamIsKey(S, 'E') then
         CorrectByExposure := True
@@ -166,7 +198,7 @@ begin
 
   FileList := TStringListNaturalSort.Create;
   try
-    ProcessInput(InputFileMasks, CorrectByExposure);
+    ProcessInput(InputFileMasks, CorrectByExposure, IgnoreTimeError);
   finally
     FreeAndNil(FileList);
   end;

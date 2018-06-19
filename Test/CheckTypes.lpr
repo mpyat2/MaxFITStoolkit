@@ -1,10 +1,15 @@
 {$MODE DELPHI}
 program CheckTypes;
 
-uses SysUtils;
+uses SysUtils, StrUtils, FitsUtils;
 
 var
   A, B, R, I: Integer;
+  A64: Int64;
+  F: Double;
+  S: string;
+  ErrorPos: Integer;
+  E: Extended;
 
 begin
   Writeln('SizeOf(Integer):', SizeOf(Integer));
@@ -38,6 +43,26 @@ begin
   Writeln('SizeOf(Pointer):', SizeOf(Pointer));
   WriteLn;
 {$Q+}{$R+}
+  E := 1e+4930;
+  WriteLn('E=', E);
+  F := E;
+  WriteLn('F=', F);
+  WRITELN('All Is OK...');
+
+  A64 := MaxInt+1;
+  Str(A64, S);
+  WriteLn('A64 as string =', S);
+  Val(S, A, ErrorPos);
+  WriteLn('ErrorPos = ', ErrorPos);
+  WriteLn('A = ', A);
+
+  S := '1e+4932';
+  Val(S, F, ErrorPos);
+  WriteLn('ErrorPos = ', ErrorPos);
+  WriteLn('F = ', F);
+
+(*
+{$Q+}{$R+}
   WriteLn;
   A := MaxInt - 100;
   for I := 0 to 10 do begin
@@ -47,6 +72,18 @@ begin
     WriteLn('R=A*B:', R);
   end;
   WriteLn;
+*)
+(*
+  while True do begin
+    Write('Enter string: ');
+    ReadLn(S);
+    WriteLn('AnsiDequotedStr: ', '[', AnsiDequotedStr(S, ''''), ']');
+    WriteLn('StripQuotes    : ', '[', StripQuotes(S), ']');
+    //WriteLn('FITSQuotedValue: ', '[', FITSQuotedValue(S), ']');
+    //WriteLn('Length FITSQuotedValue: ', Length(FITSQuotedValue(S)));
+    WriteLn;
+  end;
+*)
   Write('Press ENTER: ');
   ReadLn;
 end.

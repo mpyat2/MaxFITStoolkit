@@ -34,7 +34,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="test.fit /E"/>
+        <CommandLineParams Value="c:\personal\sky2\* /E /NOTIMEERROR"/>
       </local>
     </RunParams>
     <Units Count="1">

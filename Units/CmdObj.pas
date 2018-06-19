@@ -3,6 +3,10 @@
 { CmdObj                                                                      }
 { (c) 2000 Maksym Pyatnytskyy                                                 }
 {                                                                             }
+{ This program is distributed                                                 }
+{ WITHOUT ANY WARRANTY; without even the implied warranty of                  }
+{ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                        }
+{                                                                             }
 {*****************************************************************************}
 
 {$MODE DELPHI}
@@ -26,10 +30,10 @@ type
     function FirstCharIsSwitch(const S: String): Boolean;
     function IsCmdOption(const Key: String): Boolean;
     function KeyValue(const Key: String): String;
-    function ParamFile(No: Integer): String;
-    function FileCount: Integer;
-    function ParamCount: Integer;
-    function ParamStr(No: Integer): String;
+    function ParamFile(No: LongInt): String;
+    function FileCount: LongInt;
+    function ParamCount: LongInt;
+    function ParamStr(No: LongInt): String;
     function ParamIsKey(const Param: string; const Key: string): Boolean;
     function ExtractParamValue(const Param: string; const Key: string; var Value: string): Boolean;
     property Switches: TSysCharSet read FSwitches write SetSwitches;
@@ -69,7 +73,7 @@ end;
 
 function TCmdObj.IsCmdOption(const Key: String): Boolean;
 var
-  I: Integer;
+  I: LongInt;
   S: String;
 begin
   Result := False;
@@ -85,7 +89,7 @@ end;
 
 function TCmdObj.KeyValue(const Key: String): String;
 var
-  I: Integer;
+  I: LongInt;
   S: String;
 begin
   Result := '';
@@ -102,9 +106,9 @@ begin
   end;
 end;
 
-function TCmdObj.ParamFile(No: Integer): String;
+function TCmdObj.ParamFile(No: LongInt): String;
 var
-  I, N: Integer;
+  I, N: LongInt;
   S: String;
 begin
   Result := '';
@@ -120,9 +124,9 @@ begin
   end;
 end;
 
-function TCmdObj.FileCount: Integer;
+function TCmdObj.FileCount: LongInt;
 var
-  I: Integer;
+  I: LongInt;
   S: String;
 begin
   Result := 0;
@@ -132,12 +136,12 @@ begin
   end;
 end;
 
-function TCmdObj.ParamCount: Integer;
+function TCmdObj.ParamCount: LongInt;
 begin
   Result := System.ParamCount;
 end;
 
-function TCmdObj.ParamStr(No: Integer): String;
+function TCmdObj.ParamStr(No: LongInt): String;
 begin
   Result := System.ParamStr(No);
 end;

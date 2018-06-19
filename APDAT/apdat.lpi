@@ -35,7 +35,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="test.dat"/>
+        <CommandLineParams Value="testdata\Measurements1.dat"/>
       </local>
     </RunParams>
     <Units Count="1">

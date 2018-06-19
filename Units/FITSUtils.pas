@@ -1,15 +1,23 @@
 {*****************************************************************************}
 {                                                                             }
 { FITSUtils                                                                   }
-{ (c) 2017 Maksym Pyatnytskyy                                                 }
+{ (c) 2017-2018 Maksym Pyatnytskyy                                            }
+{                                                                             }
+{ This program is distributed                                                 }
+{ WITHOUT ANY WARRANTY; without even the implied warranty of                  }
+{ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                        }
 {                                                                             }
 {*****************************************************************************}
 
 {$MODE DELPHI}
 
 {$R+} // can be commented out in release mode
+{$Q+} // can be commented out in release mode
 
 unit FITSUtils;
+
+{$IFOPT R+}{$DEFINE range_check}{$ENDIF}
+{$IFOPT Q+}{$DEFINE overflow_check}{$ENDIF}
 
 // https://fits.gsfc.nasa.gov/fits_primer.html
 // https://heasarc.gsfc.nasa.gov/docs/fcg/standard_dict.html
@@ -17,7 +25,7 @@ unit FITSUtils;
 interface
 
 uses
-  SysUtils, Classes, FITSTimeUtils;
+  SysUtils, Classes, StrUtils, Math, FITSTimeUtils;
 
 const recordEND     = 'END                                                                             ';    
 const KeywordEND    = 'END';
@@ -55,10 +63,14 @@ type
 type
   EFITSerror = class(Exception);
 
-function PadCh(const S: string; L: Integer; Ch: Char): string;
-function LeftPadCh(const S: string; L: Integer; Ch: Char): string;
+function PadCh(const S: string; L: Integer; Ch: Char): string; inline;
+function LeftPadCh(const S: string; L: Integer; Ch: Char): string; inline;
 function FITSQuotedValue(const S: string): string;
 function StripQuotes(const S: string): string;
+
+// FPC 64 handles VAL errors incorrectly. Replacement routines:
+function GetDouble(const S: string; out V: Double): Boolean; inline;
+function GetInt(const S: string; out V: Integer): Boolean; inline;
 
 function IsFITS(var FITSfile: FITSRecordFile): Boolean;
 function GetKeywordValue(var FITSfile: FITSRecordFile; const Keyword: string; out Value: string; RemoveComment: Boolean; TrimVal: Boolean): Int64;
@@ -87,31 +99,29 @@ function GetFITSimage2D(var FITSfile: FITSRecordFile; out Width, Height, BitPix:
 
 implementation
 
-procedure FileError(const S: string);
+procedure FITSError(const S: string);
 begin
   raise EFITSerror.Create(S);
 end;
 
-function FITSRecordTypeFileName(var FITSfile: FITSRecordFile): string;
+function FITSRecordTypeFileName(var FITSfile: FITSRecordFile): string; inline;
 begin
   Result := TFileRec(FITSfile).name;
 end;
 
-function PadCh(const S: string; L: Integer; Ch: Char): string;
+function PadCh(const S: string; L: Integer; Ch: Char): string; inline;
 begin
-  Result := S;
-  while Length(Result) < L do Result := Result + Ch;
+  Result := AddCharR(Ch, S, L);
 end;
 
-function LeftPadCh(const S: string; L: Integer; Ch: Char): string;
+function LeftPadCh(const S: string; L: Integer; Ch: Char): string; inline;
 begin
-  Result := S;
-  while Length(Result) < L do Result := Ch + Result;
+  Result := AddChar(Ch, S, L);
 end;
 
-function GetQuotedLen(const S: string; MaxLen: Integer): Integer;
+function GetQuotedLen(const S: string; MaxLen: Integer): SizeInt;
 var
-  I, L: Integer;
+  I, L: SizeInt;
 begin
   Result := 0;
   L := Length(S);
@@ -126,18 +136,19 @@ end;
 function FITSQuotedValue(const S: string): string;
 var
   TempS: string;
-  L: Integer;
+  L: SizeInt;
 begin
   TempS := PadCh(S, MinStringConstLen, ' ');
   L := Length(TempS);
-  while GetQuotedLen(TempS, L) > SizeOf(FITSRecordType) - 10 do
+  while GetQuotedLen(TempS, L) > SizeOf(FITSRecordType) - FITSKeywordLen - 2 do // length of keywors + position for equals sign + space after equals sign.
     Dec(L);
   Result := QuotedStr(Copy(TempS, 1, L));
 end;
 
+// Do not use AnsiDequotedStr: it remains quotes if length of a string <=2
 function StripQuotes(const S: string): string;
 var
-  I: Integer;
+  I: SizeInt;
 begin
   Result := S;
   if (Result = '') or (Result[1] <> '''') then Exit;
@@ -151,7 +162,7 @@ begin
       end
       else begin
         if Result[I + 1] <> '''' then begin
-          Delete(Result, I + 1, MaxInt);
+          Delete(Result, I, MaxInt);
           Exit;
         end
         else begin
@@ -160,6 +171,34 @@ begin
       end;
     end;
     Inc(I);
+  end;
+end;
+
+function GetDouble(const S: string; out V: Double): Boolean; inline;
+var
+  Code: Integer;
+  tempV: Extended;
+begin
+  Result := False;
+  V := 0;
+  Val(S, tempV, Code);
+  if (Code = 0) and (tempV < MaxDouble) and (tempV > -MaxDouble) then begin
+    V := tempV;
+    Result := True;
+  end;
+end;
+
+function GetInt(const S: string; out V: Integer): Boolean; inline;
+var
+  Code: Integer;
+  tempV: Int64;
+begin
+  Result := False;
+  V := 0;
+  Val(S, tempV, Code);
+  if (Code = 0) and (tempV <= High(Integer)) and (tempV >= Low(Integer)) then begin
+    V := tempV;
+    Result := True;
   end;
 end;
 
@@ -286,7 +325,7 @@ var
 begin
   ENDPosition := GetEndPosition(FITSfile);
   if ENDPosition < 0 then
-    FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+    FITSError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
   OldFileSize := FileSize(FITSfile);
   SetLength(FileImage, OldFileSize + RecordsInBlock);
   FillChar(FileImage[0], (OldFileSize + RecordsInBlock) * FITSRecordLen, 0);
@@ -314,26 +353,22 @@ var
   AValue: string;
   AComment: string;
   AKeyword: string;
-  ErrorPos: Integer;
   TempF: Double;
-  TempN: LongInt;
+  TempN: Integer;
   IsNumeric: Boolean;
 begin
   Result := False;
   AKeyword := PadCh(AnsiUpperCase(Keyword), FITSKeywordLen, ' ');
-  if Length(AKeyword) > FITSKeywordLen then FileError('Keyword ' + AKeyword + ' too long');
+  if Length(AKeyword) > FITSKeywordLen then FITSError('Keyword ' + AKeyword + ' too long');
   AValue := Value;
   IsNumeric := False;
   
-  if (Trim(AValue) <> '') and (AValue <> 'T') and (AValue <> 'F') then begin
-    Val(Trim(AValue), TempF, ErrorPos);
-    IsNumeric := ErrorPos = 0;
-  end  
+  if (Trim(AValue) <> '') and (AValue <> 'T') and (AValue <> 'F') then
+    IsNumeric := GetDouble(Trim(AValue), TempF)
   else
     TempF := 0;  
   if IsNumeric and AlignNumeric then begin
-    Val(Trim(AValue), TempN, ErrorPos);
-    if (ErrorPos = 0) then begin
+    if GetInt(Trim(AValue), TempN) then begin
       Str(TempN : FITSNumericAlign - FITSKeywordLen - 2, AValue);
     end
     else begin
@@ -366,7 +401,7 @@ begin
     AKeyword := AKeyword + '= ';
     // Creating new entry.
     PosInFile := GetEndPosition(FITSfile);
-    if PosInFile < 0 then FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+    if PosInFile < 0 then FITSError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
     if (PosInFile mod RecordsInBlock) < (RecordsInBlock - 1) then begin
       Seek(FITSfile, PosInFile);
       FillChar(Buf, SizeOf(Buf), ' ');
@@ -376,7 +411,7 @@ begin
     end
     else begin
       if not CanResize then
-        FileError('Cannot create new entry: another header block is needed (CanResize flag is not set). File ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+        FITSError('Cannot create new entry: another header block is needed (CanResize flag is not set). File ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
       InsertHeaderBlock(FITSfile);
     end;  
     Seek(FITSfile, PosInFile);
@@ -418,10 +453,10 @@ var
 begin
   Result := False;
   AKeyword := PadCh(AnsiUpperCase(Keyword), FITSKeywordLen, ' ');
-  if Length(AKeyword) > FITSKeywordLen then FileError('Keyword ' + AKeyword + ' too long');
+  if Length(AKeyword) > FITSKeywordLen then FITSError('Keyword ' + AKeyword + ' too long');
   Seek(FITSfile, 0);
   PosInFile := GetEndPosition(FITSfile);
-  if PosInFile < 0 then FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+  if PosInFile < 0 then FITSError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
   if (PosInFile mod RecordsInBlock) < (RecordsInBlock - 1) then begin
     Seek(FITSfile, PosInFile);
     FillChar(Buf, SizeOf(Buf), ' ');
@@ -431,12 +466,12 @@ begin
   end
   else begin
     if not CanResize then
-      FileError('Cannot create new entry: another header block is needed (CanResize flag is not set). File ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+      FITSError('Cannot create new entry: another header block is needed (CanResize flag is not set). File ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
     InsertHeaderBlock(FITSfile);
   end;  
   Seek(FITSfile, PosInFile);
   FillChar(Buf, SizeOf(Buf), ' ');
-  S := AKeyword + Value;  
+  S := Copy(AKeyword + Value, 1, SizeOf(Buf));
   for I := 1 to Length(S) do begin
     if I > SizeOf(Buf) then Break;
     Buf[I] := S[I];
@@ -452,7 +487,7 @@ var
 begin
   Header.Clear;
   if GetEndPosition(FITSfile) < 0 then
-    FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+    FITSError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
   Seek(FITSfile, 0);
   while not EOF(FITSfile) do begin
     BlockRead(FITSfile, Buf, 1);
@@ -475,7 +510,7 @@ end;
 
 procedure StrToFITSRecord(const S: string; out FITSRecord: FITSRecordType);
 var
-  L: Integer;
+  L: SizeInt;
 begin
   FillChar(FITSRecord, SizeOf(FITSRecord), ' ');
   L := Length(S);
@@ -612,30 +647,32 @@ var
   Naxis: Integer;
   N: Integer;
   I: Integer;
-  ErrorPos: Integer;
+  ValidNumber: Boolean;
   FITSfileName: string;
 begin
   BitPix := 0;
   NaxisN := nil;
   FITSfileName := FITSRecordTypeFileName(FITSfile);
+
   if GetKeywordValue(FITSfile, 'BITPIX', Value, True, True) < 0 then
-    FileError('Cannot get value of BITPIX. File ' + AnsiQuotedStr(FITSfileName, '"'));
-  Val(Value, BitPix, ErrorPos);
-  if (ErrorPos <> 0) or (BitPix = 0) or (Abs(BitPix) mod 8 <> 0) then
-    FileError('BITPIX has invalid value. File ' + AnsiQuotedStr(FITSfileName, '"'));
+    FITSError('Cannot get value of BITPIX. File ' + AnsiQuotedStr(FITSfileName, '"'));
+  ValidNumber := GetInt(Value, BitPix);
+  if (not ValidNumber) or (BitPix = 0) or (Abs(BitPix) mod 8 <> 0) then
+    FITSError('BITPIX has invalid value. File ' + AnsiQuotedStr(FITSfileName, '"'));
+
   if GetKeywordValue(FITSfile, 'NAXIS', Value, True, True) < 0 then
-    FileError('Cannot get value of NAXIS. File ' + AnsiQuotedStr(FITSfileName, '"'));
-  Val(Value, Naxis, ErrorPos);
-  if (ErrorPos <> 0) or (Naxis < 1) or (Naxis > 999) then
-    FileError('NAXIS has invalid or unsupported value. File ' + AnsiQuotedStr(FITSfileName, '"'));
-  if Naxis = 0 then Exit;
+    FITSError('Cannot get value of NAXIS. File ' + AnsiQuotedStr(FITSfileName, '"'));
+  ValidNumber := GetInt(Value, Naxis);
+  if (not ValidNumber) or (Naxis < 1) or (Naxis > 999) then
+    FITSError('NAXIS has invalid or unsupported value. File ' + AnsiQuotedStr(FITSfileName, '"'));
+
   SetLength(NaxisN, Naxis);
   for I := 0 to Naxis - 1 do begin
     if GetKeywordValue(FITSfile, 'NAXIS' + IntToStr(I + 1), Value, True, True) < 0 then
-      FileError('Cannot get value of NAXIS' + IntToStr(I + 1) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
-    Val(Value, N, ErrorPos);
-    if (ErrorPos <> 0) or (N < 1) then
-      FileError('NAXIS' + IntToStr(I + 1) + ' has invalid or unsupported value. File ' + AnsiQuotedStr(FITSfileName, '"'));
+      FITSError('Cannot get value of NAXIS' + IntToStr(I + 1) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
+    ValidNumber := GetInt(Value, N);
+    if (not ValidNumber) or (N < 1) then
+      FITSError('NAXIS' + IntToStr(I + 1) + ' has invalid or unsupported value. File ' + AnsiQuotedStr(FITSfileName, '"'));
     NaxisN[I] := N;
   end;
 end;
@@ -643,19 +680,19 @@ end;
 procedure GetBscaleBzero(var FITSfile: FITSRecordFile; out Bscale, Bzero: Double);
 var
   S: string;
-  ErrorPos: Integer;
+  ValidNumber: Boolean;
 begin
   Bscale := 1;
   Bzero := 0;
   if (GetKeywordValue(FITSfile, 'BSCALE', S, True, True) >= 0) and (S <> '') then begin
-    Val(S, Bscale, ErrorPos);
-    if ErrorPos <> 0 then
-      FileError('Invalid BSCALE value in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+    ValidNumber := GetDouble(S, Bscale);
+    if not ValidNumber then
+      FITSError('Invalid BSCALE value in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
   end;
   if (GetKeywordValue(FITSfile, 'BZERO', S, True, True) >= 0) and (S <> '') then begin
-    Val(S, Bzero, ErrorPos);
-    if ErrorPos <> 0 then
-      FileError('Invalid BZERO value in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+    ValidNumber := GetDouble(S, Bzero);
+    if not ValidNumber then
+      FITSError('Invalid BZERO value in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
   end;
 end;
 
@@ -673,7 +710,7 @@ begin
   TimeObsKeyUsed := False;
   UtStartKeyUsed := False;
   if (GetKeywordValue(FITSFile, 'DATE-OBS', DateObsStr, True, True) < 0) or (DateObsStr = '') then
-    FileError('DATE-OBS keyword is not found or is empty. File: ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+    FITSError('DATE-OBS keyword is not found or is empty. File: ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
   DateObsStr := StripQuotes(DateObsStr);
   P := Pos('T', DateObsStr);
   if P <> 0 then begin
@@ -689,28 +726,47 @@ begin
       // Try to get time from UT-START (IRIS-specific)
       UtStartKeyUsed := (GetKeywordValue(FITSFile, 'UT-START', TimeObsStr, True, True) >= 0) and (TimeObsStr <> '');
       if not UtStartKeyUsed then
-        FileError('DATE-OBS value does not contain time part and there is no TIME-OBS nor UT-START keywords. File: ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+        FITSError('DATE-OBS value does not contain time part and there is no TIME-OBS nor UT-START keywords. File: ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
     end;
     TimeObsStr := StripQuotes(TimeObsStr);
   end;
 
   if not MakeDateObsFromStrings(Result, DateObsStr, TimeObsStr) then
-    FileError('Cannot determine date/time of observation. Date part = ' + DateObsStr + '; Time part = ' + TimeObsStr + '. File: ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+    FITSError('Cannot determine date/time of observation. Date part = ' + DateObsStr + '; Time part = ' + TimeObsStr + '. File: ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
 end;
 
 function GetExposureTime(var FITSfile: FITSRecordFile): Double;
+// Returns 0 if exposure is not defined
 var
   ExpTimeStr: string;
-  ErrorPos: Integer;
+  FilePos1, FilePos2: Int64;
+  Exp1, Exp2: Double;
+  ValidNumber: Boolean;
 begin
   Result := 0;
-  if (GetKeywordValue(FITSFile, 'EXPTIME', ExpTimeStr, True, True) < 0) or (ExpTimeStr = '') then
-    GetKeywordValue(FITSFile, 'EXPOSURE', ExpTimeStr, True, True);
-  if (ExpTimeStr <> '') then begin
-    Val(ExpTimeStr, Result, ErrorPos);
-    if (ErrorPos <> 0) or (Result < 0) then
-      FileError('EXPTIME/EXPOSURE keyword does exist however it contains invalid value: ' + ExpTimeStr + '. File: ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+
+  FilePos1 := GetKeywordValue(FITSFile, 'EXPTIME', ExpTimeStr, True, True);
+  if (FilePos1 >= 0) and (ExpTimeStr <> '') then begin
+    ValidNumber := GetDouble(ExpTimeStr, Exp1);
+    if (not ValidNumber) or (Exp1 < 0) then
+      FITSError('EXPTIME contains invalid value: ' + ExpTimeStr + '. File: ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
   end;
+
+  FilePos2 := GetKeywordValue(FITSFile, 'EXPOSURE', ExpTimeStr, True, True);
+  if (FilePos2 >= 0) and (ExpTimeStr <> '') then begin
+    ValidNumber := GetDouble(ExpTimeStr, Exp2);
+    if (not ValidNumber) or (Exp2 < 0) then
+      FITSError('EXPOSURE contains invalid value: ' + ExpTimeStr + '. File: ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+  end;
+
+  if (FilePos1 >= 0) and (FilePos2 >= 0) and (Exp1 <> Exp2) then
+     FITSError('EXPTIME and EXPOSURE have inconsistent values. File: ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+
+  if FilePos1 >= 0 then
+     Result := Exp1
+  else
+  if FilePos2 >= 0 then
+     Result := Exp2;
 end;
 
 function GetFITSimage2D(var FITSfile: FITSRecordFile; out Width, Height, BitPix: Integer; out Bscale, Bzero: Double): PChar;
@@ -727,23 +783,30 @@ var
 begin
   EndPosition := GetEndPosition(FITSfile);
   if EndPosition < 0 then
-    FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+    FITSError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
   GetBscaleBzero(FITSfile, Bscale, Bzero);
   NblocksInHeader := EndPosition div RecordsInBlock + 1;
   StartOfImage := NblocksInHeader * RecordsInBlock;
   GetBitPixAndNaxis(FITSfile, BitPix, NaxisN);
   if Length(NAxisN) <> 2 then
-    FileError('2D FITS expected; NAXIS = ' + IntToStr(Length(NAxisN)) + ' in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+    FITSError('2D FITS expected; NAXIS = ' + IntToStr(Length(NAxisN)) + ' in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
   Width := NAxisN[0];
   Height := NAxisN[1];
   BytePix := Abs(BitPix) div 8;
   NImagePoints := 1;
+
+{$IFNDEF range_check}{$R+}{$ENDIF}
+{$IFNDEF overflow_check}{$Q+}{$ENDIF}
   for I := 0 to Length(NaxisN) - 1 do
     NImagePoints := NImagePoints * NaxisN[I];
   if NImagePoints < 1 then
-    FileError('Invalid number of pixels'); // also at overflow
+    FITSError('Invalid number of pixels');
   NrecordsToRead := (NImagePoints * BytePix - 1) div FITSRecordLen + 1;
   ImageMemSize := NrecordsToRead * FITSRecordLen;
+{$IFNDEF range_check}{$R-}{$ENDIF}
+{$IFNDEF overflow_check}{$Q-}{$ENDIF}
+  // to-do: check here for too large image...
+
   GetMem(Result, ImageMemSize);
   try
     FillChar(Result^, ImageMemSize, 0);

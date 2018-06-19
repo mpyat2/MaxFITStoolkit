@@ -4,15 +4,14 @@
     <PathDelim Value="\"/>
     <Version Value="10"/>
     <BuildModes Active="Default"/>
-    <Units Count="3">
+    <Units Count="10">
       <Unit0>
         <Filename Value="apdat.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="APDAT"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="124"/>
-        <CursorPos X="15" Y="148"/>
-        <UsageCount Value="22"/>
+        <CursorPos Y="11"/>
+        <UsageCount Value="23"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
@@ -32,128 +31,120 @@
         <UsageCount Value="10"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit2>
+      <Unit3>
+        <Filename Value="..\..\..\..\lazarus\examples\androidlcl\sqlitejniandroid.pas"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos Y="3"/>
+        <UsageCount Value="10"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="..\Units\CommonIni.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="4"/>
+        <CursorPos Y="4"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="..\Units\CmdObj.pas"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos Y="11"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="..\Units\Version.pas"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="80" Y="9"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="..\Units\FitsUtilsHelp.pas"/>
+        <UnitName Value="FITSUtilsHelp"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos Y="11"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\classes\classesh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="688"/>
+        <CursorPos X="14" Y="705"/>
+        <UsageCount Value="10"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\classes\stringl.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="688"/>
+        <CursorPos X="3" Y="691"/>
+        <UsageCount Value="10"/>
+      </Unit9>
     </Units>
-    <JumpHistory Count="30" HistoryIndex="29">
+    <JumpHistory Count="16" HistoryIndex="15">
       <Position1>
         <Filename Value="apdat.lpr"/>
-        <Caret Line="134" TopLine="105"/>
+        <Caret Line="105" Column="27" TopLine="77"/>
       </Position1>
       <Position2>
         <Filename Value="apdat.lpr"/>
-        <Caret Line="133" TopLine="105"/>
+        <Caret Line="105" Column="27" TopLine="77"/>
       </Position2>
       <Position3>
         <Filename Value="apdat.lpr"/>
-        <Caret Line="134" TopLine="105"/>
+        <Caret Line="105" Column="27" TopLine="77"/>
       </Position3>
       <Position4>
         <Filename Value="apdat.lpr"/>
-        <Caret Line="133" TopLine="105"/>
+        <Caret Line="197" Column="9" TopLine="185"/>
       </Position4>
       <Position5>
         <Filename Value="apdat.lpr"/>
-        <Caret Line="134" TopLine="105"/>
+        <Caret Line="215" Column="13" TopLine="185"/>
       </Position5>
       <Position6>
         <Filename Value="apdat.lpr"/>
-        <Caret Line="133" TopLine="105"/>
+        <Caret Line="196" Column="17" TopLine="185"/>
       </Position6>
       <Position7>
         <Filename Value="apdat.lpr"/>
-        <Caret Line="134" TopLine="105"/>
       </Position7>
       <Position8>
         <Filename Value="apdat.lpr"/>
-        <Caret Line="133" TopLine="105"/>
+        <Caret Line="36" Column="34" TopLine="5"/>
       </Position8>
       <Position9>
         <Filename Value="apdat.lpr"/>
-        <Caret Line="134" TopLine="105"/>
+        <Caret Line="38" Column="13" TopLine="7"/>
       </Position9>
       <Position10>
         <Filename Value="apdat.lpr"/>
-        <Caret Line="136" TopLine="107"/>
+        <Caret Line="52" Column="77" TopLine="21"/>
       </Position10>
       <Position11>
         <Filename Value="apdat.lpr"/>
-        <Caret Line="137" TopLine="108"/>
+        <Caret Line="54" Column="13" TopLine="23"/>
       </Position11>
       <Position12>
         <Filename Value="apdat.lpr"/>
-        <Caret Line="138" TopLine="109"/>
+        <Caret Line="63" Column="33" TopLine="32"/>
       </Position12>
       <Position13>
         <Filename Value="apdat.lpr"/>
-        <Caret Line="139" Column="15" TopLine="110"/>
+        <Caret Line="65" Column="17" TopLine="46"/>
       </Position13>
       <Position14>
         <Filename Value="apdat.lpr"/>
-        <Caret Line="140" TopLine="111"/>
+        <Caret Line="197" Column="9" TopLine="185"/>
       </Position14>
       <Position15>
         <Filename Value="apdat.lpr"/>
-        <Caret Line="141" TopLine="116"/>
+        <Caret Line="206" Column="41" TopLine="193"/>
       </Position15>
       <Position16>
         <Filename Value="apdat.lpr"/>
-        <Caret Line="142" TopLine="116"/>
       </Position16>
-      <Position17>
-        <Filename Value="apdat.lpr"/>
-        <Caret Line="143" TopLine="116"/>
-      </Position17>
-      <Position18>
-        <Filename Value="apdat.lpr"/>
-        <Caret Line="144" TopLine="116"/>
-      </Position18>
-      <Position19>
-        <Filename Value="apdat.lpr"/>
-        <Caret Line="145" TopLine="116"/>
-      </Position19>
-      <Position20>
-        <Filename Value="apdat.lpr"/>
-        <Caret Line="146" TopLine="117"/>
-      </Position20>
-      <Position21>
-        <Filename Value="apdat.lpr"/>
-        <Caret Line="145" TopLine="117"/>
-      </Position21>
-      <Position22>
-        <Filename Value="apdat.lpr"/>
-        <Caret Line="146" TopLine="117"/>
-      </Position22>
-      <Position23>
-        <Filename Value="apdat.lpr"/>
-        <Caret Line="145" TopLine="117"/>
-      </Position23>
-      <Position24>
-        <Filename Value="apdat.lpr"/>
-        <Caret Line="146" TopLine="117"/>
-      </Position24>
-      <Position25>
-        <Filename Value="apdat.lpr"/>
-        <Caret Line="145" TopLine="117"/>
-      </Position25>
-      <Position26>
-        <Filename Value="apdat.lpr"/>
-        <Caret Line="146" Column="53" TopLine="117"/>
-      </Position26>
-      <Position27>
-        <Filename Value="apdat.lpr"/>
-        <Caret Line="134" Column="33" TopLine="129"/>
-      </Position27>
-      <Position28>
-        <Filename Value="apdat.lpr"/>
-        <Caret Line="23" Column="16"/>
-      </Position28>
-      <Position29>
-        <Filename Value="apdat.lpr"/>
-        <Caret Line="90" Column="3" TopLine="69"/>
-      </Position29>
-      <Position30>
-        <Filename Value="apdat.lpr"/>
-        <Caret Line="96" Column="15" TopLine="73"/>
-      </Position30>
     </JumpHistory>
   </ProjectSession>
   <Debugging>

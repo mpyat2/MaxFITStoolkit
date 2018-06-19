@@ -1,17 +1,29 @@
+{*****************************************************************************}
+{                                                                             }
+{ APDAT                                                                       }
+{ (c) 2017 Maksym Pyatnytskyy                                                 }
+{                                                                             }
+{ This program is distributed                                                 }
+{ WITHOUT ANY WARRANTY; without even the implied warranty of                  }
+{ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                        }
+{                                                                             }
+{*****************************************************************************}
+
 {$APPTYPE CONSOLE}
 {$MODE DELPHI}
 
 program APDAT;
 
 uses
-  SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, Version, Math, FitsUtilsHelp, CommonIni;
+  SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, Version, Math, FitsUtilsHelp,
+  CommonIni;
 
 {$R *.res}
 
 procedure PrintVersion;
 begin
   WriteLn('AIJ photometry log parser  Maksym Pyatnytskyy  2017');
-  WriteLn(GetVersionString(ParamStr(0)));
+  WriteLn(GetVersionString(AnsiUpperCase(ParamStr(0))){$IFDEF WIN64}, ' WIN64'{$ENDIF}, ' ', {$I %DATE%}, ' ', {$I %TIME%});
 end;
 
 procedure InvalidFloatingPointValueError(const Value: string);
@@ -193,7 +205,7 @@ var
   PrintHlp: Boolean;
   InputFileName: string;
   OutputFileName: string;
-  ParamN: Integer;
+  ParamN: LongInt;
   S: string;
 
 begin

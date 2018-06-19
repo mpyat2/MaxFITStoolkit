@@ -3,6 +3,10 @@
 { EnumFiles                                                                   }
 { (c) 2000 Maksym Pyatnytskyy                                                 }
 {                                                                             }
+{ This program is distributed                                                 }
+{ WITHOUT ANY WARRANTY; without even the implied warranty of                  }
+{ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                        }
+{                                                                             }
 {*****************************************************************************}
 
 {$MODE DELPHI}
@@ -20,18 +24,18 @@ type
 type
   EFileEnumError = class(Exception)
   public
-    ErrorCode: Integer;
+    ErrorCode: LongInt;
   end;
 
-function FileEnum(const Mask: string; Attr: Integer; SubDirs: Boolean; FileEnumProc: TFileEnumProc): Boolean;
+function FileEnum(const Mask: string; Attr: LongInt; SubDirs: Boolean; FileEnumProc: TFileEnumProc): Boolean;
 
 implementation
 
-resourcestring
+const
   sErrFindFailed = 'FindFirst/FindNext failed. Error code: %d';
 
 
-procedure CheckFoundResult(R: Integer);
+procedure CheckFoundResult(R: LongInt);
 var
   E: EFileEnumError;
 begin
@@ -43,7 +47,7 @@ begin
 end;
 
 
-function FileEnum(const Mask: string; Attr: Integer; SubDirs: Boolean; FileEnumProc: TFileEnumProc): Boolean;
+function FileEnum(const Mask: string; Attr: LongInt; SubDirs: Boolean; FileEnumProc: TFileEnumProc): Boolean;
 
   function DoFileEnumProc(const Directory: string; const F: TSearchRec): Boolean;
   begin
@@ -57,7 +61,7 @@ var
   TempRootDir: string;
   TempMask: string;
   F: TSearchRec;
-  FoundResult: Integer;
+  FoundResult: LongInt;
 
 begin
   Result := True;
