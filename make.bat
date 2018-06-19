@@ -1,15 +1,14 @@
 @ECHO OFF
 REM
-REM Use non-unicode Delphi or FPC [www.freepascal.org] in $DELPHI mode.
+REM Use FPC [www.freepascal.org] in $DELPHI mode.
 REM 
-REM Should be compiled with NON-UNICODE 32bit Delphi Compiler!
-REM SET COMPILER="C:\PERSONAL\DC\DCC32" -UUnits\ -Ebin-out\
-REM
 SET COMPILER="c:\personal\lazarus\fpc\3.0.4\bin\i386-win32\fpc.exe"     -MDELPHI -Xg -FuUnits\ -FEbin-out\ -FUbin-out\unit32
 SET COMPIL64="C:\Personal\lazarus64\fpc\3.0.4\bin\x86_64-win64\fpc.exe" -MDELPHI -Xg -FuUnits\ -FEbin-out\ -FUbin-out\unit64
 REM
 REM To produce source-code ZIP, run this script with "A" command-line option: make.bat A
+REM To skip compilation, run this script with "AA" command-line option: make.bat AA
 SET A7z="c:\Program Files\7-zip\7z.exe"
+IF "%1"=="AA" GOTO :ARCHIVE
 
 REM fihed.exe: Print/edit FITS header, multifile mode
 %COMPILER% FitsHeader2\fihed.lpr
@@ -130,6 +129,8 @@ echo make.bat                       >> ziplist.txt
 
 del FITSutils_src.zip
 %A7z% a FITSutils_src.zip @ziplist.txt
+REM LibrawWrapper sources
+%A7z% a LibRawWrapper_src.zip -r LibRawWrapper\* LibRawWrapper64\*
 
 GOTO :END
 

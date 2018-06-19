@@ -5,7 +5,7 @@
 {                                                                             }
 {*****************************************************************************}
 
-{$IFDEF FPC} {$MODE DELPHI} {$ENDIF}
+{$MODE DELPHI}
 
 {$R+} // can be commented out in release mode
 

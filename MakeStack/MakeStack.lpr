@@ -1,6 +1,5 @@
 {$APPTYPE CONSOLE}
-
-{$IFDEF FPC} {$MODE DELPHI} {$ENDIF}
+{$MODE DELPHI}
 
 program MakeStack;
 
@@ -209,7 +208,7 @@ begin
       FileError('Invalid number of pixels');
     SetLength(DestPixelArray, Pixels);
 
-    {$IFDEF FPC}InitCriticalSection{$ELSE}InitializeCriticalSection{$ENDIF}(ProgressProcCriticalSection); // To compile with Delphi
+    InitCriticalSection(ProgressProcCriticalSection);
     try
       GlobalTerminateAllThreads := False;
       if CmdLineNumberOfThreads <= 0 then begin
@@ -259,7 +258,7 @@ begin
           if PixelRemained <> 0 then FileError('Internal error: not all or extra pixels were processed');
 
           for I := 0 to NumberOfThreads - 1 do
-            StackThreads[I].{$IFDEF FPC}Start{$ELSE}Resume{$ENDIF}; // To compile with Delphi
+            StackThreads[I].Start;
 
           for I := 0 to NumberOfThreads - 1 do
             StackThreads[I].WaitFor;
@@ -276,7 +275,7 @@ begin
           FreeAndNil(ProgressProcWrapper);
         end;
       finally
-        {$IFDEF FPC}DoneCriticalSection{$ELSE}DeleteCriticalSection{$ENDIF}(ProgressProcCriticalSection); // To compile with Delphi
+        DoneCriticalSection(ProgressProcCriticalSection);
       end;
 
       StackedResultMin := 0;

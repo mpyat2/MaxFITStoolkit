@@ -1,4 +1,4 @@
-{$IFDEF FPC} {$MODE DELPHI} {$ENDIF}
+{$MODE DELPHI}
 
 {.$DEFINE DEBUG_OUTPUT}
 
@@ -87,7 +87,7 @@ function GetLogicalCpuCount: integer;
 //returns total number of processors available to system including logical hyperthreaded processors
 var
   i: Integer;
-  ProcessAffinityMask, SystemAffinityMask: {$IFDEF FPC}DWORD_PTR{$ELSE}DWord{$ENDIF}; // DWord: 32-bit Delphi only!
+  ProcessAffinityMask, SystemAffinityMask: DWORD_PTR;
   Mask: DWORD;
   SystemInfo: SYSTEM_INFO;
 begin

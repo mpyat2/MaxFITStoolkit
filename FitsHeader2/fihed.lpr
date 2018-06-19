@@ -1,6 +1,5 @@
 {$APPTYPE CONSOLE}
-
-{$IFDEF FPC} {$MODE DELPHI} {$ENDIF}
+{$MODE DELPHI}
 
 program FIHED;
 

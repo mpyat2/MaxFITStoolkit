@@ -1,4 +1,4 @@
-{$IFDEF FPC} {$MODE DELPHI} {$ENDIF}
+{$MODE DELPHI}
 
 unit CmdObjStdSwitches;
 
