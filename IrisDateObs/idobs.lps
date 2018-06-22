@@ -31,7 +31,6 @@
       </Unit2>
       <Unit3>
         <Filename Value="..\Units\FITSUtils.pas"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
         <TopLine Value="157"/>
         <CursorPos X="28" Y="185"/>
@@ -58,8 +57,12 @@
       </Unit5>
       <Unit6>
         <Filename Value="..\Units\StringListNaturalSort.pas"/>
-        <EditorIndex Value="-1"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="13"/>
+        <CursorPos X="30" Y="38"/>
         <UsageCount Value="10"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit6>
       <Unit7>
