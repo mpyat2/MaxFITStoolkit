@@ -1,7 +1,25 @@
+{*****************************************************************************}
+{                                                                             }
+{ MakeStack                                                                   }
+{ (c) 2017 Maksym Pyatnytskyy                                                 }
+{                                                                             }
+{ This program is distributed                                                 }
+{ WITHOUT ANY WARRANTY; without even the implied warranty of                  }
+{ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                        }
+{                                                                             }
+{*****************************************************************************}
+
+// to-do:
+// 1) BaseNumber: overflow checking
+// 2) Val->GetInt
+
 {$APPTYPE CONSOLE}
 {$MODE DELPHI}
 
 program MakeStack;
+
+{$IFOPT R+}{$DEFINE range_check}{$ENDIF}
+{$IFOPT Q+}{$DEFINE overflow_check}{$ENDIF}
 
 uses
   SysUtils, Classes, Math, DateUtils, CmdObj{, CmdObjStdSwitches},
@@ -136,7 +154,7 @@ begin
   FileInfo := TFITSFileInfo(StackList.Objects[0]);
   MinBitPix := FileInfo.BitPix;
   MaxBitPix := FileInfo.BitPix;
-  DestNaxis := Copy(FileInfo.Naxis , 0, MaxInt);
+  DestNaxis := Copy(FileInfo.Naxis, 0, MaxInt);
   Comments := nil;
   SetLength(Images, StackList.Count);
   for I := 0 to Length(Images) - 1 do
@@ -202,10 +220,14 @@ begin
 
     Pixels := 1;
 
+{$IFNDEF range_check}{$R+}{$ENDIF}
+{$IFNDEF overflow_check}{$Q+}{$ENDIF}
     for I := 0 to Length(DestNaxis) - 1 do
       Pixels := Pixels * DestNaxis[I];
-    if Pixels < 1 then // also at overflow
-      FileError('Invalid number of pixels');
+{$IFNDEF range_check}{$R-}{$ENDIF}
+{$IFNDEF overflow_check}{$Q-}{$ENDIF}
+
+    // DestNaxis[*] cannot be zero, see FITSUtils.GetBitPixAndNaxis
     SetLength(DestPixelArray, Pixels);
 
     InitCriticalSection(ProgressProcCriticalSection);
@@ -564,9 +586,11 @@ begin
              (Pos('/', GenericName) <> 0) or
              (Pos(':', GenericName) <> 0) or
              (Pos('*', GenericName) <> 0) or
-             (Pos('?', GenericName) <> 0)
+             (Pos('?', GenericName) <> 0) or
+             (Pos('<', GenericName) <> 0) or
+             (Pos('>', GenericName) <> 0)
           then begin
-            WriteLn('**** Generic name must not contain \/:*?');
+            WriteLn('**** Generic name must not contain \/:*?<>');
             Halt(1);
           end;
         end;

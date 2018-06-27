@@ -670,9 +670,11 @@ begin
                (Pos('/', GenericName) <> 0) or
                (Pos(':', GenericName) <> 0) or
                (Pos('*', GenericName) <> 0) or
-               (Pos('?', GenericName) <> 0)
+               (Pos('?', GenericName) <> 0) or
+               (Pos('<', GenericName) <> 0) or
+               (Pos('>', GenericName) <> 0)
             then begin
-              WriteLn('**** Generic name must not contain \/:*?');
+              WriteLn('**** Generic name must not contain \/:*?<>');
               Halt(1);
             end;
           end;

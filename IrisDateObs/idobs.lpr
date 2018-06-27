@@ -80,6 +80,7 @@ begin
           TimeError := False;
           try
             DateTimeObs := GetDateObs(FITSfile);
+            ExpTime := GetExposureTime(FITSFile);
           except
             on E: EFITSerror do begin
               if not IgnoreTimeError then
@@ -90,9 +91,8 @@ begin
           end;
           if not TimeError then begin
             DateTimeObs0 := DateTimeObs;
-            ExpTime := GetExposureTime(FITSFile);
             SumExp := SumExp + ExpTime;
-              if CorrectByExposure and (ExpTime > 0) then begin
+            if CorrectByExposure and (ExpTime > 0) then begin
               DateTimeObs := DateTimeObs + ExpTime / (24.0*60.0*60.0) / 2.0;
             end;
             Write(^I, FormatDateTime('"Date:'^I'"YYYY-MM-DD" "hh:nn:ss', DateTimeObs));
@@ -105,7 +105,7 @@ begin
             Inc(N);
           end
           else begin
-            WriteLn(^I'Cannot get DATE-OBS. File is ignored.');
+            WriteLn(^I'Cannot get DATE-OBS and/or EXPTIME. File is ignored.');
           end;
         finally
           CloseFile(FITSFile);
@@ -120,7 +120,7 @@ begin
     else begin
       WriteLn;
       SumDate := SumDate / N;
-      Write(^I'Middle  ', ^I, FormatDateTime('"Date:'^I'"YYYY-MM-DD" "hh:nn:ss', SumDate), ^I'Sum Exp :'^I, SumExp:10:2);
+      WriteLn(^I'Middle  ', ^I, FormatDateTime('"Date:'^I'"YYYY-MM-DD" "hh:nn:ss', SumDate), ^I'Sum Exp :'^I, SumExp:10:2);
     end;
   except
     on E: Exception do begin

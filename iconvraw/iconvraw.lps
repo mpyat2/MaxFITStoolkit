@@ -9,15 +9,15 @@
         <Filename Value="iconvraw.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="547"/>
-        <CursorPos X="93" Y="580"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="663"/>
+        <CursorPos X="66" Y="677"/>
         <UsageCount Value="82"/>
         <Bookmarks Count="3">
           <Item0 X="6" Y="265" ID="2"/>
           <Item1 Y="356"/>
           <Item2 X="8" Y="353" ID="1"/>
         </Bookmarks>
-        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
       <Unit1>
@@ -247,94 +247,10 @@
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit32>
     </Units>
-    <JumpHistory Count="22" HistoryIndex="21">
-      <Position1>
-        <Filename Value="iconvraw.lpr"/>
-        <Caret Line="182" TopLine="151"/>
-      </Position1>
-      <Position2>
-        <Filename Value="iconvraw.lpr"/>
-        <Caret Line="370" Column="36" TopLine="323"/>
-      </Position2>
-      <Position3>
-        <Filename Value="iconvraw.lpr"/>
-        <Caret Line="374" Column="59" TopLine="327"/>
-      </Position3>
-      <Position4>
-        <Filename Value="iconvraw.lpr"/>
-      </Position4>
-      <Position5>
-        <Filename Value="iconvraw.lpr"/>
-        <Caret Line="141" Column="10" TopLine="93"/>
-      </Position5>
-      <Position6>
-        <Filename Value="iconvraw.lpr"/>
-        <Caret Line="202" Column="59" TopLine="155"/>
-      </Position6>
-      <Position7>
-        <Filename Value="iconvraw.lpr"/>
-        <Caret Line="213" Column="52" TopLine="166"/>
-      </Position7>
-      <Position8>
-        <Filename Value="iconvraw.lpr"/>
-        <Caret Line="246" Column="22" TopLine="199"/>
-      </Position8>
-      <Position9>
-        <Filename Value="iconvraw.lpr"/>
-        <Caret Line="249" Column="39" TopLine="202"/>
-      </Position9>
-      <Position10>
-        <Filename Value="iconvraw.lpr"/>
-        <Caret Line="250" Column="42" TopLine="203"/>
-      </Position10>
-      <Position11>
-        <Filename Value="iconvraw.lpr"/>
-        <Caret Line="251" Column="38" TopLine="204"/>
-      </Position11>
-      <Position12>
-        <Filename Value="iconvraw.lpr"/>
-        <Caret Line="252" Column="39" TopLine="205"/>
-      </Position12>
-      <Position13>
-        <Filename Value="iconvraw.lpr"/>
-        <Caret Line="253" Column="38" TopLine="206"/>
-      </Position13>
-      <Position14>
-        <Filename Value="iconvraw.lpr"/>
-        <Caret Line="254" Column="38" TopLine="207"/>
-      </Position14>
-      <Position15>
-        <Filename Value="iconvraw.lpr"/>
-        <Caret Line="345" Column="24" TopLine="327"/>
-      </Position15>
-      <Position16>
-        <Filename Value="iconvraw.lpr"/>
-        <Caret Line="357" TopLine="343"/>
-      </Position16>
-      <Position17>
-        <Filename Value="iconvraw.lpr"/>
-        <Caret Line="18" Column="58"/>
-      </Position17>
-      <Position18>
-        <Filename Value="iconvraw.lpr"/>
-        <Caret Line="18" Column="71"/>
-      </Position18>
-      <Position19>
-        <Filename Value="iconvraw.lpr"/>
-        <Caret Line="18" Column="71"/>
-      </Position19>
-      <Position20>
-        <Filename Value="iconvraw.lpr"/>
-      </Position20>
-      <Position21>
-        <Filename Value="iconvraw.lpr"/>
-        <Caret Line="13" Column="16"/>
-      </Position21>
-      <Position22>
-        <Filename Value="iconvraw.lpr"/>
-        <Caret Line="20" Column="46"/>
-      </Position22>
-    </JumpHistory>
+    <General>
+      <ActiveWindowIndexAtStart Value="-1"/>
+    </General>
+    <JumpHistory HistoryIndex="-1"/>
   </ProjectSession>
   <Debugging>
     <Watches Count="3">

@@ -1,3 +1,14 @@
+{*****************************************************************************}
+{                                                                             }
+{ IPDAT                                                                       }
+{ (c) 2017 Maksym Pyatnytskyy                                                 }
+{                                                                             }
+{ This program is distributed                                                 }
+{ WITHOUT ANY WARRANTY; without even the implied warranty of                  }
+{ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                        }
+{                                                                             }
+{*****************************************************************************}
+
 {$APPTYPE CONSOLE}
 {$MODE DELPHI}
 
@@ -11,7 +22,7 @@ uses
 procedure PrintVersion;
 begin
   WriteLn('IRIS photometry log parser  Maksym Pyatnytskyy  2017');
-  WriteLn(GetVersionString(ParamStr(0)));
+  WriteLn(GetVersionString(AnsiUpperCase(ParamStr(0))){$IFDEF WIN64}, ' WIN64'{$ENDIF}, ' ', {$I %DATE%}, ' ', {$I %TIME%});
 end;
 
 procedure FileFormatError;

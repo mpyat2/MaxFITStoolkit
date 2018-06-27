@@ -1,8 +1,19 @@
+{*****************************************************************************}
+{                                                                             }
+{ This program is distributed                                                 }
+{ WITHOUT ANY WARRANTY; without even the implied warranty of                  }
+{ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                        }
+{                                                                             }
+{*****************************************************************************}
+
 {$MODE DELPHI}
 
 {.$DEFINE DEBUG_OUTPUT}
 
 unit CalcThread;
+
+{$IFOPT R+}{$DEFINE range_check}{$ENDIF}
+{$IFOPT Q+}{$DEFINE overflow_check}{$ENDIF}
 
 interface
 
@@ -141,10 +152,10 @@ end;
 // modifies data!
 function median(var data: TExtendedArray): extended;
 var
-  centralElement: integer;
+  centralElement: longint;
 begin
   result := 0;
-  if Length(data) = 0 then Exit;
+  if length(data) = 0 then exit;
   SortExtendedArray(data);
   centralElement := length(data) div 2;
   if odd(length(data)) then
@@ -157,18 +168,20 @@ end;
 
 function sum(const data: TExtendedArray): extended;
 var
-  I: Integer;
+  i: longint;
 begin
-  Result := 0;
-  if Length(data) = 0 then Exit;
-  for I := 0 to Length(data) - 1 do
-    Result := Result + data[I];
+  result := 0;
+  if length(data) = 0 then exit;
+  for i := 0 to length(data) - 1 do
+    result := result + data[I];
 end;
 
 function average(const data: TExtendedArray): extended;
 begin
-  Result := sum(data) / Length(data);
+  result := sum(data) / Length(data);
 end;
+
+////////////////////////////////////////////////////////////////////////////////
 
 function GetFITSpixelAsExtended(FITSdata: PChar; N, BitPix: Integer; BScale: Double; BZero: Double): Extended;
 var
@@ -285,7 +298,12 @@ begin
         if StackedResult < FStackedResultMin then FStackedResultMin := StackedResult;
       end;
 
+{$IFNDEF range_check}{$R+}{$ENDIF}
+{$IFNDEF overflow_check}{$Q+}{$ENDIF}
       FDestPixelArrayPtr^[II] := StackedResult;
+{$IFNDEF range_check}{$R-}{$ENDIF}
+{$IFNDEF overflow_check}{$Q-}{$ENDIF}
+
       Inc(Counter);
       if ((Counter + 1) mod (FNumberOfPixels div 8192) = 0) then
         Progress(Counter, FStartIndex, FNumberOfPixels);

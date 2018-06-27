@@ -42,6 +42,7 @@ begin
   WriteLn;
   Writeln('SizeOf(Pointer):', SizeOf(Pointer));
   WriteLn;
+(*
 {$Q+}{$R+}
   E := 1e+4930;
   WriteLn('E=', E);
@@ -60,7 +61,7 @@ begin
   Val(S, F, ErrorPos);
   WriteLn('ErrorPos = ', ErrorPos);
   WriteLn('F = ', F);
-
+*)
 (*
 {$Q+}{$R+}
   WriteLn;
@@ -84,6 +85,10 @@ begin
     WriteLn;
   end;
 *)
+  for I := 0 to ParamCount do
+    WriteLn(ParamStr(I));
+
+
   Write('Press ENTER: ');
   ReadLn;
 end.

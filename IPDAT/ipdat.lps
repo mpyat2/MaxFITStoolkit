@@ -10,7 +10,8 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="IPDAT"/>
         <IsVisibleTab Value="True"/>
-        <CursorPos Y="11"/>
+        <TopLine Value="13"/>
+        <CursorPos Y="25"/>
         <UsageCount Value="21"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -26,11 +27,11 @@
       </Unit1>
       <Unit2>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\rtl\win\wininc\redef.inc"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="894"/>
         <CursorPos X="10" Y="906"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit2>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">

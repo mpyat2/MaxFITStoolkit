@@ -1,17 +1,38 @@
+{*****************************************************************************}
+{                                                                             }
+{ IREN                                                                        }
+{ (c) 2017 Maksym Pyatnytskyy                                                 }
+{                                                                             }
+{ This program is distributed                                                 }
+{ WITHOUT ANY WARRANTY; without even the implied warranty of                  }
+{ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                        }
+{                                                                             }
+{*****************************************************************************}
+
 {$APPTYPE CONSOLE}
 {$MODE DELPHI}
 
 program IREN;
 
-uses Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles, StringListNaturalSort, FitsUtilsHelp, CommonIni;
+{$IFOPT R+}{$DEFINE range_check}{$ENDIF}
+{$IFOPT Q+}{$DEFINE overflow_check}{$ENDIF}
+
+uses
+  Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles,
+  StringListNaturalSort, FITSUtils, FitsUtilsHelp, CommonIni;
 
 {$R *.res}
 
 procedure PrintVersion;
 begin
   WriteLn('Rename files accorting to IRIS standard  Maksym Pyatnytskyy  2017');
-  WriteLn(GetVersionString(ParamStr(0)));
+  WriteLn(GetVersionString(AnsiUpperCase(ParamStr(0))){$IFDEF WIN64}, ' WIN64'{$ENDIF}, ' ', {$I %DATE%}, ' ', {$I %TIME%});
   WriteLn;
+end;
+
+procedure FileError(const S: string);
+begin
+  raise Exception.Create(S);
 end;
 
 type
@@ -37,7 +58,7 @@ var
   NewFileName: string;
 begin
   try
-    FileNumber := 0;
+    FileNumber := BaseNumber - 1;
     for N := 0 to Length(FileMasks) - 1 do begin
       WriteLn;    
       WriteLn('[', FileMasks[N], ']');
@@ -45,17 +66,25 @@ begin
       FileEnum(FileMasks[N], faArchive, False, TFileEnumClass.FileEnumProc);
       FileList.NaturalSort;
       for I := 0 to FileList.Count - 1 do begin
+{$IFNDEF range_check}{$R+}{$ENDIF}
+{$IFNDEF overflow_check}{$Q+}{$ENDIF}
+        try
+          Inc(FileNumber);
+        except
+          on E: Exception do
+            FileError('Cannot increment FileNumber: ' + E.Message);
+        end;
+{$IFNDEF range_check}{$R-}{$ENDIF}
+{$IFNDEF overflow_check}{$Q-}{$ENDIF}
         FileName := ExtractFileName(FileList[I]);
         FileExt := ExtractFileExt(FileList[I]);
-        NewFileName := OutputDir + GenericName + IntToStr(FileNumber + BaseNumber) + FileExt;
+        NewFileName := OutputDir + GenericName + IntToStr(FileNumber) + FileExt;
         WriteLn(FileName, ^I'->'^I, NewFileName);
-        if not CopyFile(PChar(FileList[I]), PChar(NewFileName), not Overwrite) then begin
+        if not CopyFile(PChar(FileList[I]), PChar(NewFileName), not Overwrite) then
           RaiseLastOSError;
-        end;
-        Inc(FileNumber);
       end;
     end;  
-    if FileNumber < 1 then begin
+    if FileNumber < BaseNumber then begin
       WriteLn;
       WriteLn('**** No files found');
     end;  
@@ -75,7 +104,6 @@ var
   OutputDir: string;
   Overwrite: Boolean;
   BaseNumber: Integer;
-  ErrorPos: Integer;
   PrintVer: Boolean;
   S, S2: string;
   ParamN: Integer;
@@ -130,9 +158,11 @@ begin
              (Pos('/', GenericName) <> 0) or
              (Pos(':', GenericName) <> 0) or
              (Pos('*', GenericName) <> 0) or
-             (Pos('?', GenericName) <> 0)
+             (Pos('?', GenericName) <> 0) or
+             (Pos('<', GenericName) <> 0) or
+             (Pos('>', GenericName) <> 0)
           then begin
-            WriteLn('**** Generic name must not contain \/:*?');
+            WriteLn('**** Generic name must not contain \/:*?<>');
             Halt(1);
           end;
         end;
@@ -140,8 +170,7 @@ begin
       else
       if CmdObj.CmdLine.ExtractParamValue(S, 'B=', S2) then begin
         if S2 <> '' then begin
-          Val(S2, BaseNumber, ErrorPos);
-          if (ErrorPos <> 0) or (BaseNumber < 0) then begin
+          if not GetInt(S2, BaseNumber) or (BaseNumber < 0) then begin
             WriteLn('**** Base filenumber must be an integer >= 0');
             Halt(1);
           end;

@@ -8,21 +8,22 @@
       <Unit0>
         <Filename Value="CheckTypes.lpr"/>
         <IsPartOfProject Value="True"/>
-        <CursorPos X="6" Y="7"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="69"/>
+        <CursorPos X="23" Y="89"/>
         <UsageCount Value="25"/>
-        <Loaded Value="True"/>
       </Unit0>
       <Unit1>
         <Filename Value="..\Units\FITSUtils.pas"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="1"/>
-        <TopLine Value="352"/>
+        <EditorIndex Value="-1"/>
+        <WindowIndex Value="-1"/>
+        <TopLine Value="427"/>
         <CursorPos X="16" Y="367"/>
         <UsageCount Value="12"/>
         <Bookmarks Count="1">
           <Item0 X="47" Y="367" ID="1"/>
         </Bookmarks>
-        <Loaded Value="True"/>
       </Unit1>
       <Unit2>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\sysutils\sysstrh.inc"/>
@@ -33,157 +34,32 @@
       </Unit2>
       <Unit3>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\systemh.inc"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="559"/>
         <CursorPos X="3" Y="576"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
       </Unit3>
       <Unit4>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\math.pp"/>
-        <EditorIndex Value="4"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="80"/>
         <CursorPos X="7" Y="89"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
       </Unit4>
       <Unit5>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\objpas.pp"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="16"/>
         <CursorPos X="8" Y="33"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
       </Unit5>
     </Units>
-    <JumpHistory Count="30" HistoryIndex="29">
-      <Position1>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="177" Column="19" TopLine="170"/>
-      </Position1>
-      <Position2>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="367" Column="26" TopLine="339"/>
-      </Position2>
-      <Position3>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-      </Position3>
-      <Position4>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="72" Column="19" TopLine="44"/>
-      </Position4>
-      <Position5>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="177" Column="19" TopLine="149"/>
-      </Position5>
-      <Position6>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="369" Column="26" TopLine="348"/>
-      </Position6>
-      <Position7>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="371" TopLine="348"/>
-      </Position7>
-      <Position8>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-      </Position8>
-      <Position9>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="71" Column="22" TopLine="43"/>
-      </Position9>
-      <Position10>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="184" Column="6" TopLine="156"/>
-      </Position10>
-      <Position11>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="198" Column="6" TopLine="170"/>
-      </Position11>
-      <Position12>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="371" Column="8" TopLine="356"/>
-      </Position12>
-      <Position13>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="357" Column="8" TopLine="339"/>
-      </Position13>
-      <Position14>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="377" Column="5" TopLine="356"/>
-      </Position14>
-      <Position15>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-      </Position15>
-      <Position16>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="71" Column="22" TopLine="43"/>
-      </Position16>
-      <Position17>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="184" Column="6" TopLine="156"/>
-      </Position17>
-      <Position18>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="198" Column="6" TopLine="170"/>
-      </Position18>
-      <Position19>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="651" TopLine="630"/>
-      </Position19>
-      <Position20>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="650" TopLine="642"/>
-      </Position20>
-      <Position21>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="675" Column="4" TopLine="659"/>
-      </Position21>
-      <Position22>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="697" Column="5" TopLine="672"/>
-      </Position22>
-      <Position23>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="764" Column="25" TopLine="743"/>
-      </Position23>
-      <Position24>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-      </Position24>
-      <Position25>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="71" Column="22" TopLine="43"/>
-      </Position25>
-      <Position26>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-      </Position26>
-      <Position27>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="71" Column="22" TopLine="43"/>
-      </Position27>
-      <Position28>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="184" Column="6" TopLine="156"/>
-      </Position28>
-      <Position29>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="185" Column="12" TopLine="170"/>
-      </Position29>
-      <Position30>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="367" Column="16" TopLine="352"/>
-      </Position30>
-    </JumpHistory>
+    <General>
+      <ActiveWindowIndexAtStart Value="-1"/>
+    </General>
+    <JumpHistory HistoryIndex="-1"/>
   </ProjectSession>
   <Debugging>
-    <BreakPoints Count="1">
-      <Item1>
-        <Kind Value="bpkSource"/>
-        <WatchScope Value="wpsLocal"/>
-        <WatchKind Value="wpkWrite"/>
-        <Source Value="CheckTypes.lpr"/>
-        <Line Value="44"/>
-      </Item1>
-    </BreakPoints>
     <Watches Count="4">
       <Item1>
         <Expression Value="Result"/>

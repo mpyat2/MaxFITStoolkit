@@ -33,8 +33,8 @@ initialization
   Pause := Ini.ReadBool('SETTINGS', 'PAUSE', False);
 finalization
   if Pause then begin
-    WriteLn;
-    Write('Press ENTER to exit: ');
+    WriteLn(StdErr);
+    Write(StdErr, 'Press ENTER to exit: ');
     ReadLn;
   end;
   FreeAndNil(Ini);  
