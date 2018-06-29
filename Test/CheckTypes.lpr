@@ -4,7 +4,7 @@ program CheckTypes;
 uses SysUtils, StrUtils, FitsUtils;
 
 var
-  A, B, R, I: Integer;
+  A, B, C, R, I: Integer;
   A64: Int64;
   F: Double;
   S: string;
@@ -85,9 +85,20 @@ begin
     WriteLn;
   end;
 *)
+(*
   for I := 0 to ParamCount do
     WriteLn(ParamStr(I));
+*)
 
+  A := MaxInt div 2;
+  B := MaxInt div 2;
+  C := 2;
+
+{$Q+}{$R+}
+  WriteLn('A*B*C : ', Int64(A)*B*C);
+  WriteLn('MaxInt: ', MaxInt);
+  if Int64(A)*B*C > MaxInt then
+    WriteLn('Too large');
 
   Write('Press ENTER: ');
   ReadLn;

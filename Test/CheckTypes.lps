@@ -9,10 +9,10 @@
         <Filename Value="CheckTypes.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="69"/>
-        <CursorPos X="23" Y="89"/>
+        <TopLine Value="64"/>
+        <CursorPos X="4" Y="85"/>
         <UsageCount Value="25"/>
+        <Loaded Value="True"/>
       </Unit0>
       <Unit1>
         <Filename Value="..\Units\FITSUtils.pas"/>
@@ -48,16 +48,31 @@
       </Unit4>
       <Unit5>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\objpas.pp"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="16"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="14"/>
         <CursorPos X="8" Y="33"/>
         <UsageCount Value="10"/>
+        <Loaded Value="True"/>
       </Unit5>
     </Units>
-    <General>
-      <ActiveWindowIndexAtStart Value="-1"/>
-    </General>
-    <JumpHistory HistoryIndex="-1"/>
+    <JumpHistory Count="4" HistoryIndex="2">
+      <Position1>
+        <Filename Value="CheckTypes.lpr"/>
+        <Caret Line="93" TopLine="57"/>
+      </Position1>
+      <Position2>
+        <Filename Value="CheckTypes.lpr"/>
+        <Caret Line="7"/>
+      </Position2>
+      <Position3>
+        <Filename Value="CheckTypes.lpr"/>
+        <Caret Line="93" Column="15" TopLine="60"/>
+      </Position3>
+      <Position4>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\objpas.pp"/>
+        <Caret Line="33" Column="8" TopLine="14"/>
+      </Position4>
+    </JumpHistory>
   </ProjectSession>
   <Debugging>
     <Watches Count="4">

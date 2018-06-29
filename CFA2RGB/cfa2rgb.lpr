@@ -236,7 +236,7 @@ begin
   end;
 
   // Paranoidal: check size of image in bytes.
-  if Naxis1 * Naxis2 * BytePix > MaxInt then
+  if Int64(Naxis1) * Int64(Naxis2) * Int64(BytePix) > MaxInt then
     FileError('Image too large');
 
 {$IFNDEF range_check}{$R-}{$ENDIF}
