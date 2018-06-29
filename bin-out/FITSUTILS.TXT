@@ -18,7 +18,7 @@ Where:
                    It is possible to specify /TSa value to attemt to auto-calculate time shift to UT.
   /F               overwrite existing files in output directory
   /L               do not truncate image (show full RAW image)
-  /R               generate floating-point FITS
+  /R               generate floating-point FITS (could be incompatible with CFA2RGB)
   /S               generate fits with BZERO = 32768
   /Y               flip image by Y-axis
   /I               print image info only
@@ -34,6 +34,13 @@ src1.fits, src2.fits, and so on.
 Output files will be placed in C:\SKY\ directory.
 Existing ones (if any) will be overwritten (due to /F switch).
 DATE-OBS will be shifted backwards by 2 hours (due to /TS-7200 option).
+
+Note: additional parameters are allowed in a form /$KEYWORD=VALUE
+Those parameters could be used to write additional keywords into FITS header,
+for example, one can specify TELESCOP and OBJECT this way:
+
+iconvraw *.CR2 [additional options] /$TELESCOP="MY SUPER SCDOPE" /$OBJECT="ALIEN's SHIP"
+
 
 @fflip
 
@@ -201,7 +208,7 @@ Where:
   /A               if ALL files are to be stacked, do not append number to single output file
   /M=<mode>        stacking mode: /M=S (sum, default value); /M=A (average); /M=M (median)
   /O=out_dir       directory for output files
-                   (original directory will be used if not specified)
+                   (current directory will be used if not specified)
   /B=nn            base file number (default = 1); must be >= 0
   /X=<ext>         extension for output files (.fit by default)
   /F               overwrite existing files in output directory

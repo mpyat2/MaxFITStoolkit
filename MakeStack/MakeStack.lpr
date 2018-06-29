@@ -31,7 +31,7 @@ uses
 procedure PrintVersion;
 begin
   WriteLn('FITS stack (multithreaded)  Maksym Pyatnytskyy  2018');
-  WriteLn(GetVersionString(ParamStr(0)){$IFDEF WIN64}, ' WIN64'{$ENDIF});
+  WriteLn(GetVersionString(AnsiUpperCase(ParamStr(0))){$IFDEF WIN64}, ' WIN64'{$ENDIF}, ' ', {$I %DATE%}, ' ', {$I %TIME%});
   WriteLn;
 end;
 

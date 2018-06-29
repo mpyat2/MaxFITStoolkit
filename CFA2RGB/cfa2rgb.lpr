@@ -1,20 +1,36 @@
+{*****************************************************************************}
+{                                                                             }
+{ cfa2rgb                                                                   }
+{ (c) 2017 Maksym Pyatnytskyy                                                 }
+{                                                                             }
+{ This program is distributed                                                 }
+{ WITHOUT ANY WARRANTY; without even the implied warranty of                  }
+{ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                        }
+{                                                                             }
+{*****************************************************************************}
+
 {$APPTYPE CONSOLE}
-{$ASSERTIONS ON}
 {$MODE DELPHI}
 
-{.DEFINE ROUND_C}
+{$ASSERTIONS ON}   // can be disabled in release mode
+{.DEFINE ROUND_C}  // if enabled, rounding occurs like in C programs
+                   // if disabled, FPC uses "banker's" rounding (could be better)
 
 program cfa2rgb;
 
+{$IFOPT R+}{$DEFINE range_check}{$ENDIF}
+{$IFOPT Q+}{$DEFINE overflow_check}{$ENDIF}
+
 uses
-  SysUtils, CmdObj{, CmdObjStdSwitches}, Version, FITSUtils, EnumFiles, StringListNaturalSort, FitsUtilsHelp, CommonIni;
+  SysUtils, CmdObj{, CmdObjStdSwitches}, Version, FITSUtils, EnumFiles,
+  StringListNaturalSort, FitsUtilsHelp, CommonIni;
 
 {$R *.res}
 
 procedure PrintVersion;
 begin
   WriteLn('CFA(16-bit) -> RGB converter  Maksym Pyatnytskyy  2018');
-  WriteLn(GetVersionString(ParamStr(0)));
+  WriteLn(GetVersionString(AnsiUpperCase(ParamStr(0))){$IFDEF WIN64}, ' WIN64'{$ENDIF}, ' ', {$I %DATE%}, ' ', {$I %TIME%});
   WriteLn;
 end;
 
@@ -206,6 +222,12 @@ begin
 
   BlackLevel := 0;
   GetBscaleBzero(FITSfile, Bscale, Bzero); // Bzero -- for border pixels
+
+{$IFNDEF range_check}{$R+}{$ENDIF}
+{$IFNDEF overflow_check}{$Q+}{$ENDIF}
+
+  // BlackLevel is used for setting zero-pixel border only in case of Linear interpolation.
+  // So we can almost safely set it to zero if its value is out of supported range.
   if Bzero <> 0 then begin
     if ({$IFDEF ROUND_C}Round_C{$ELSE}Round{$ENDIF}(-Bzero) <= High(SmallInt)) and
        ({$IFDEF ROUND_C}Round_C{$ELSE}Round{$ENDIF}(-Bzero) >= Low(SmallInt))
@@ -213,6 +235,12 @@ begin
       BlackLevel := {$IFDEF ROUND_C}Round_C{$ELSE}Round{$ENDIF}(-Bzero);
   end;
 
+  // Paranoidal: check size of image in bytes.
+  if Naxis1 * Naxis2 * BytePix > MaxInt then
+    FileError('Image too large');
+
+{$IFNDEF range_check}{$R-}{$ENDIF}
+{$IFNDEF overflow_check}{$Q-}{$ENDIF}
 
   if not Linear then begin
     // Superpixel debayering
@@ -626,9 +654,11 @@ begin
      (Pos('/', Prefix) <> 0) or
      (Pos(':', Prefix) <> 0) or
      (Pos('*', Prefix) <> 0) or
-     (Pos('?', Prefix) <> 0)
+     (Pos('?', Prefix) <> 0) or
+     (Pos('<', Prefix) <> 0) or
+     (Pos('>', Prefix) <> 0)
   then begin
-    WriteLn('**** Output file prefix must not contain \/:*?');
+    WriteLn('**** Output file prefix must not contain \/:*?<>');
     Halt(1);
   end;
 

@@ -9,7 +9,6 @@
         <Filename Value="MakeStack.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="387"/>
         <CursorPos Y="398"/>
         <UsageCount Value="57"/>
         <Loaded Value="True"/>
@@ -17,11 +16,10 @@
       </Unit0>
       <Unit1>
         <Filename Value="..\Units\FITSUtils.pas"/>
-        <EditorIndex Value="1"/>
-        <TopLine Value="644"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="632"/>
         <CursorPos X="11" Y="644"/>
         <UsageCount Value="14"/>
-        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit1>
       <Unit2>
@@ -108,14 +106,13 @@
       </Unit12>
       <Unit13>
         <Filename Value="CalcThread.pas"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="57"/>
         <CursorPos X="10" Y="75"/>
         <UsageCount Value="16"/>
         <Bookmarks Count="1">
           <Item0 X="10" Y="303" ID="1"/>
         </Bookmarks>
-        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit13>
       <Unit14>

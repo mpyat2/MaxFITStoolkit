@@ -46,18 +46,14 @@ Source: "..\bin-out\fitscfa.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fitscfa.ini"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "..\bin-out\fitsrgb.exe"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "..\bin-out\fitsrgb32.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "..\bin-out\cfa2rgb.exe"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "..\bin-out\cfa2rgb32.exe"; DestDir: "{app}"; Flags: ignoreversion
 
-Source: "..\bin-out\makestack.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\bin-out\makestack32.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin-out\makestack*.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "..\bin-out\fitsstat.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "..\bin-out\iconvraw.exe"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "..\bin-out\iconvraw32.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "..\bin-out\LibRawMxWrapper*.dll"; DestDir: "{app}"; Flags: ignoreversion
 

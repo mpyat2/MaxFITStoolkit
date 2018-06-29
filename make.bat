@@ -5,10 +5,17 @@ REM
 SET COMPILER="c:\personal\lazarus\fpc\3.0.4\bin\i386-win32\fpc.exe"     -MDELPHI -Xg -FuUnits\ -FEbin-out\ -FUbin-out\unit32
 SET COMPIL64="C:\Personal\lazarus64\fpc\3.0.4\bin\x86_64-win64\fpc.exe" -MDELPHI -Xg -FuUnits\ -FEbin-out\ -FUbin-out\unit64
 REM
-REM To produce source-code ZIP, run this script with "A" command-line option: make.bat A
-REM To skip compilation, run this script with "AA" command-line option: make.bat AA
+REM To make source-code ZIP, run this script with "AA" command-line option: make.bat AA
+REM WARNING: run clean.bat or clean2.bat first
 SET A7z="c:\Program Files\7-zip\7z.exe"
 IF "%1"=="AA" GOTO :ARCHIVE
+IF "%1"=="64" GOTO :X64
+GOTO :COMPILE
+
+:X64
+SET COMPILER=%COMPIL64%
+
+:COMPILE
 
 REM fihed.exe: Print/edit FITS header, multifile mode
 %COMPILER% FitsHeader2\fihed.lpr
@@ -49,41 +56,33 @@ ECHO .
 REM fitsrgb.exe: Splits RGB to color channels
 %COMPILER% FitsRGB\FitsRGB.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
-REM REN bin-out\FitsRGB.exe FitsRGB32.exe
-REM IF ERRORLEVEL 1 GOTO :ERROR
-REM %COMPIL64% FitsRGB\FitsRGB.lpr
-REM IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
 REM iconvraw.exe: RAW->FITS converter
 %COMPILER% iconvraw\iconvraw.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
-REM REN bin-out\iconvraw.exe iconvraw32.exe
-REM IF ERRORLEVEL 1 GOTO :ERROR
-REM %COMPIL64% iconvraw\iconvraw.lpr
-REM IF ERRORLEVEL 1 GOTO :ERROR
+IF "%COMPIL64%"=="%COMPILER%" GOTO :LIBRAW64
 copy iconvraw\LibRawMxWrapper_s_crt_0_19_0-beta1.dll bin-out\
 copy iconvraw\librawmxwrapper_s_crt.dll              bin-out\
-REM copy iconvraw\librawmxwrapper_s_crt_64.dll           bin-out\
+:LIBRAW64
+IF "%COMPIL64%"=="%COMPILER%" copy iconvraw\librawmxwrapper_s_crt_64.dll bin-out\
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
 REM MakeStack
 %COMPILER% makestack\makestack.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
+IF "%COMPIL64%"=="%COMPILER%" GOTO :SKIP3264
 REN bin-out\makestack.exe makestack32.exe
 IF ERRORLEVEL 1 GOTO :ERROR
 %COMPIL64% makestack\makestack.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
+:SKIP3264
 ECHO .
 
 REM CFA2RGB
 %COMPILER% CFA2RGB\cfa2rgb.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
-rem REN bin-out\cfa2rgb.exe cfa2rgb32.exe
-rem IF ERRORLEVEL 1 GOTO :ERROR
-rem %COMPIL64% CFA2RGB\cfa2rgb.lpr
-rem IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
 REM FitsStat
@@ -96,7 +95,6 @@ REM ...
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
-IF "%1"=="A" GOTO :ARCHIVE
 GOTO :END
 :ARCHIVE
 echo FitsHeader2\fihed.*            >  ziplist.txt

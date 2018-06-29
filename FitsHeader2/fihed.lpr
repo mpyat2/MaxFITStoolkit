@@ -1,21 +1,31 @@
+{*****************************************************************************}
+{                                                                             }
+{ FIHED                                                                       }
+{ (c) 2017 Maksym Pyatnytskyy                                                 }
+{                                                                             }
+{ This program is distributed                                                 }
+{ WITHOUT ANY WARRANTY; without even the implied warranty of                  }
+{ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                        }
+{                                                                             }
+{*****************************************************************************}
+
 {$APPTYPE CONSOLE}
 {$MODE DELPHI}
 
 program FIHED;
 
-// https://fits.gsfc.nasa.gov/fits_primer.html
-
 uses
-  SysUtils, Classes, CmdObj, Version, FITSUtils, EnumFiles,
+  SysUtils, Classes, CmdObj, Version, FihedSwitchChars, FITSUtils, EnumFiles,
   StringListNaturalSort, FitsUtilsHelp, CommonIni;
-// do not include CmdObjStdSwitches!
+// Do not include CmdObjStdSwitches in the current version, instead, use FihedSwitchChars.
+// Currently slash '/' is used to distinguish options (double slash) and FITS keywords (single slash)
 
 {$R *.res}
 
 procedure PrintVersion;
 begin
   WriteLn('FITS Header Viewer/Editor  Maksym Pyatnytskyy  2018');
-  WriteLn(GetVersionString(ParamStr(0)));
+  WriteLn(GetVersionString(AnsiUpperCase(ParamStr(0))){$IFDEF WIN64}, ' WIN64'{$ENDIF}, ' ', {$I %DATE%}, ' ', {$I %TIME%});
   WriteLn;
 end;  
   
@@ -24,14 +34,13 @@ begin
   raise Exception.Create(S);
 end;
 
-var
-  CSVmode: Boolean;
-  TABmode: Boolean;
-  SETmode: Boolean;
-  Keywords: TStringList;
-  FileList: TStringListNaturalSort;  
-  
-procedure ProcessFile(const FileName: string); 
+const
+  Delimiter: array[Boolean] of char = (';', ^I);
+
+type
+  TFihedMode = (fihedNONE, fihedTAB, fihedCSV, fihedSET);
+
+procedure ProcessFile(const FileName: string; Keywords: TStrings; FihedMode: TFihedMode);
 var
   Header: TStringList;
   I: Integer;
@@ -44,21 +53,21 @@ var
   Success: Boolean;
   FileModeSaved: Integer;
 begin
-  if not (CSVmode or TABmode) then
-    WriteLn('File    = ', QuotedStr(ExtractFilename(FileName)))
+  if not (FihedMode in [fihedTAB, fihedCSV]) then
+    WriteLn(PadCh('File', FITSKeywordLen, ' ') + '= ', QuotedStr(ExtractFilename(FileName)))
   else
     Write(QuotedStr(ExtractFilename(FileName)));
 
   FileModeSaved := FileMode;
-  if SETmode then FileMode := fmOpenReadWrite; // Edit mode
+  if FihedMode = fihedSET then FileMode := fmOpenReadWrite; // Edit mode
   try
     AssignFile(FITSFile, FileName);
     Reset(FITSFile);
     try
       if IsFITS(FITSFile) then begin
-        if not SETmode then begin
+        if FihedMode <> fihedSET then begin
           // Print header and exit
-          if not (CSVmode or TABmode) then begin
+          if not (FihedMode in [fihedTAB, fihedCSV]) then begin
             Header := TStringList.Create;
             try
               GetHeader(FITSFile, Header);
@@ -75,7 +84,7 @@ begin
             // Table-like output
             for I := 0 to Keywords.Count - 1 do begin
               GetKeywordValue(FITSFile, Keywords[I], Value, True, True);
-              if CSVmode then Write(';') else Write(^I);
+              Write(Delimiter[FihedMode = fihedTAB]);
               Write(Value);
             end;
             WriteLn;
@@ -120,7 +129,7 @@ begin
         end;
       end
       else begin
-        if not (CSVmode or TABmode) then begin
+        if not (FihedMode in [fihedTAB, fihedCSV]) then begin
           WriteLn('**** Not a FITS file');
           WriteLn;
         end;
@@ -138,24 +147,23 @@ type
     class function FileEnumProc(const Directory: string; const F: TSearchRec): Boolean; 
   end;  
 
+var
+  FileList: TStringListNaturalSort;
+
 class function TFileEnumClass.FileEnumProc(const Directory: string; const F: TSearchRec): Boolean;
 begin
   FileList.Add(Directory + F.Name);
   Result := True;
 end;
 
-procedure ProcessInput(const FileMasks: array of string);
+procedure ProcessInput(const FileMasks: array of string; Keywords: TStrings; FihedMode: TFihedMode);
 var
   I, N: Integer;
 begin
-  if (CSVmode or TABmode) and SETmode then begin
-    WriteLn('**** //CSV (or //TAB) and //SET are mutually exclusive');
-  Halt(1);
-  end;
-  if (CSVmode or TABmode) then begin
+  if FihedMode in [fihedTAB, fihedCSV] then begin
     Write('File');
     for I := 0 to Keywords.Count - 1 do begin
-      if CSVmode then Write(';') else Write(^I);
+      Write(Delimiter[FihedMode = fihedTAB]);
       Write(Keywords[I]);
     end;
     WriteLn;
@@ -165,9 +173,8 @@ begin
       FileList.Clear;
       FileEnum(FileMasks[N], faArchive, False, TFileEnumClass.FileEnumProc);
       FileList.NaturalSort;
-      for I := 0 to FileList.Count - 1 do begin
-        ProcessFile(FileList[I]);
-      end;
+      for I := 0 to FileList.Count - 1 do
+        ProcessFile(FileList[I], Keywords, FihedMode);
     end;
   except
     on E: Exception do begin
@@ -178,61 +185,86 @@ begin
     end;
   end;
 end;
-  
+
+procedure ParameterConflict;
+begin
+  WriteLn('**** Error: ' + defFihedfSwitchChar + defFihedfSwitchChar + 'CSV, ' +
+                           defFihedfSwitchChar + defFihedfSwitchChar + 'TAB, and ' +
+                           defFihedfSwitchChar + defFihedfSwitchChar + 'SET are mutually exclusive');
+  Halt(1);
+end;
+
 var
   InputFileMasks: array of string;
+  Keywords: TStringList;
   PrintVer: Boolean;
-  SwitchChar: Char;
-  S: string;  
+  S: string;
   ParamN: Integer;
+  FihedMode: TFihedMode;
 
 begin
-  FileMode := fmOpenRead;
-  
-  PrintVer := (CmdObj.CmdLine.IsCmdOption('/V') or CmdObj.CmdLine.IsCmdOption('/version'));
+  FileMode := fmOpenRead + fmShareDenyNone;
+
+  // Command-line options in this program are distinguished by DOUBLE slashes: i.e //V or //TAB
+  // SINGLE slash is used to distinguish FITS keyword
+
+  PrintVer := (CmdObj.CmdLine.IsCmdOption(defFihedfSwitchChar + 'V') or CmdObj.CmdLine.IsCmdOption(defFihedfSwitchChar + 'version'));
   if PrintVer then PrintVersion;
    
-  if (CmdObj.CmdLine.IsCmdOption('/?') or CmdObj.CmdLine.IsCmdOption('/H') or CmdObj.CmdLine.IsCmdOption('/help')) then begin
+  if (CmdObj.CmdLine.IsCmdOption(defFihedfSwitchChar + '?') or
+      CmdObj.CmdLine.IsCmdOption(defFihedfSwitchChar + 'H') or
+      CmdObj.CmdLine.IsCmdOption(defFihedfSwitchChar + 'help')) then
+  begin
     PrintHelp;
     Halt(1);
   end;
 
   if (CmdObj.CmdLine.FileCount < 1) then begin
     if not PrintVer then begin
-      WriteLn('**** At least one filemask must be specified');
       WriteLn;
-      PrintHelp;
+      WriteLn('Use');
+      WriteLn(AnsiUpperCase(ExtractFileName(ParamStr(0))) + ' ' + defFihedfSwitchChar + defFihedfSwitchChar + 'V to print version');
+      WriteLn(AnsiUpperCase(ExtractFileName(ParamStr(0))) + ' ' + defFihedfSwitchChar + defFihedfSwitchChar + '? to print help');
     end;
     Halt(1);
   end;
 
   InputFileMasks := nil;
-  CSVmode := False;
-  TABmode := False;
-  SETmode := False;
+  FihedMode := fihedNONE;
 
   Keywords := TStringList.Create;
   try
     for ParamN := 1 to CmdObj.CmdLine.ParamCount do begin
       S := CmdObj.CmdLine.ParamStr(ParamN);
       if CmdObj.CmdLine.FirstCharIsSwitch(S) then begin
-        SwitchChar := S[1];
         Delete(S, 1, 1);
         if CmdObj.CmdLine.FirstCharIsSwitch(S) then begin
           if CmdObj.CmdLine.ParamIsKey(S, 'V') or CmdObj.CmdLine.ParamIsKey(S, 'version') then begin
             // nothing: already processed.
           end
           else
-          if CmdObj.CmdLine.ParamIsKey(S, 'CSV') then
-            CSVmode := True
+          if CmdObj.CmdLine.ParamIsKey(S, 'CSV') then begin
+            if FihedMode = fihedNONE then
+              FihedMode := fihedCSV
+            else
+              ParameterConflict;
+          end
           else
-          if CmdObj.CmdLine.ParamIsKey(S, 'TAB') then
-            TABmode := True
+          if CmdObj.CmdLine.ParamIsKey(S, 'TAB') then begin
+            if FihedMode = fihedNONE then
+              FihedMode := fihedTAB
+            else
+              ParameterConflict;
+          end
           else
-          if CmdObj.CmdLine.ParamIsKey(S, 'SET') then
-            SETmode := True
+          if CmdObj.CmdLine.ParamIsKey(S, 'SET') then begin
+            if FihedMode = fihedNONE then
+              FihedMode := fihedSET
+            else
+              ParameterConflict;
+          end
           else begin
-            WriteLn('**** Invalid command-line parameter: ' + SwitchChar + S);
+            WriteLn('**** Invalid command-line parameter: ' + defFihedfSwitchChar + S);
             Halt(1);
           end;
         end
@@ -251,9 +283,10 @@ begin
         end;
       end;
     end;
+
     FileList := TStringListNaturalSort.Create;
     try
-      ProcessInput(InputFileMasks);
+      ProcessInput(InputFileMasks, Keywords, FihedMode);
     finally
       FreeAndNil(FileList);
     end;

@@ -4,15 +4,18 @@
     <PathDelim Value="\"/>
     <Version Value="10"/>
     <BuildModes Active="Default"/>
-    <Units Count="11">
+    <Units Count="19">
       <Unit0>
         <Filename Value="fihed.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="FIHED"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="96"/>
-        <CursorPos Y="103"/>
-        <UsageCount Value="31"/>
+        <TopLine Value="87"/>
+        <CursorPos X="5" Y="287"/>
+        <UsageCount Value="36"/>
+        <Bookmarks Count="1">
+          <Item0 X="39" Y="163" ID="1"/>
+        </Bookmarks>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
@@ -26,9 +29,9 @@
       <Unit2>
         <Filename Value="..\Units\FITSUtils.pas"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="378"/>
-        <CursorPos Y="408"/>
-        <UsageCount Value="14"/>
+        <TopLine Value="483"/>
+        <CursorPos X="3" Y="488"/>
+        <UsageCount Value="16"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit2>
@@ -44,6 +47,7 @@
         <TopLine Value="86"/>
         <CursorPos X="10" Y="102"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit4>
       <Unit5>
         <Filename Value="C:\lazarus\fpc\3.0.2\source\rtl\objpas\sysutils\sysstr.inc"/>
@@ -51,6 +55,7 @@
         <TopLine Value="560"/>
         <CursorPos Y="593"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit5>
       <Unit6>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\rtl\objpas\sysutils\filutilh.inc"/>
@@ -58,12 +63,13 @@
         <TopLine Value="82"/>
         <CursorPos X="10" Y="90"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit6>
       <Unit7>
         <Filename Value="..\Units\Version.pas"/>
         <EditorIndex Value="-1"/>
-        <WindowIndex Value="-1"/>
-        <CursorPos X="22" Y="10"/>
+        <TopLine Value="52"/>
+        <CursorPos X="3" Y="59"/>
         <UsageCount Value="10"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit7>
@@ -79,7 +85,8 @@
       <Unit9>
         <Filename Value="..\Units\CmdObj.pas"/>
         <EditorIndex Value="-1"/>
-        <CursorPos X="6" Y="14"/>
+        <TopLine Value="7"/>
+        <CursorPos X="5" Y="26"/>
         <UsageCount Value="10"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit9>
@@ -89,128 +96,171 @@
         <EditorIndex Value="-1"/>
         <UsageCount Value="10"/>
       </Unit10>
+      <Unit11>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\systemh.inc"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="11"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\text.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="194"/>
+        <CursorPos X="11" Y="189"/>
+        <UsageCount Value="11"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\classes\classesh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="60"/>
+        <CursorPos X="3" Y="78"/>
+        <UsageCount Value="11"/>
+      </Unit13>
+      <Unit14>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\textrec.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="20"/>
+        <CursorPos X="5" Y="45"/>
+        <UsageCount Value="11"/>
+      </Unit14>
+      <Unit15>
+        <Filename Value="FihedSwitchChars.pas"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="27" Y="16"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit15>
+      <Unit16>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\sysutils\sysutilh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="257"/>
+        <CursorPos X="8" Y="273"/>
+        <UsageCount Value="10"/>
+      </Unit16>
+      <Unit17>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\filerec.inc"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="10"/>
+      </Unit17>
+      <Unit18>
+        <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\sysutils\filutilh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="70"/>
+        <CursorPos X="3" Y="109"/>
+        <UsageCount Value="10"/>
+      </Unit18>
     </Units>
-    <JumpHistory Count="30" HistoryIndex="29">
+    <JumpHistory Count="29" HistoryIndex="28">
       <Position1>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="397" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="156" Column="23" TopLine="149"/>
       </Position1>
       <Position2>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="402" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="282" Column="19" TopLine="251"/>
       </Position2>
       <Position3>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="393" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="156" Column="11" TopLine="161"/>
       </Position3>
       <Position4>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="397" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="40" Column="11" TopLine="21"/>
       </Position4>
       <Position5>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="402" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="65" Column="9" TopLine="54"/>
       </Position5>
       <Position6>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="393" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
       </Position6>
       <Position7>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="397" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="73" Column="21" TopLine="54"/>
       </Position7>
       <Position8>
         <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="402" TopLine="372"/>
+        <Caret Line="79" Column="11" TopLine="61"/>
       </Position8>
       <Position9>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="393" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="132" Column="9" TopLine="114"/>
       </Position9>
       <Position10>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="397" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="43" Column="88" TopLine="36"/>
       </Position10>
       <Position11>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="402" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="159" Column="87" TopLine="152"/>
       </Position11>
       <Position12>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="393" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
       </Position12>
       <Position13>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="397" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="43" Column="88" TopLine="25"/>
       </Position13>
       <Position14>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="402" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="159" Column="23" TopLine="155"/>
       </Position14>
       <Position15>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="393" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="289" TopLine="268"/>
       </Position15>
       <Position16>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="397" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="44" Column="15" TopLine="36"/>
       </Position16>
       <Position17>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="402" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="166" Column="22" TopLine="153"/>
       </Position17>
       <Position18>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="393" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
       </Position18>
       <Position19>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="397" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="38" Column="12" TopLine="20"/>
       </Position19>
       <Position20>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="402" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
       </Position20>
       <Position21>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="393" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="38" Column="12" TopLine="20"/>
       </Position21>
       <Position22>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="397" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="87" Column="30" TopLine="70"/>
       </Position22>
       <Position23>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="402" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="250" Column="42" TopLine="228"/>
       </Position23>
       <Position24>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="393" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
       </Position24>
       <Position25>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="397" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="171" Column="39" TopLine="144"/>
       </Position25>
       <Position26>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="402" TopLine="372"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="300" Column="55" TopLine="270"/>
       </Position26>
       <Position27>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="405" TopLine="375"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="59" Column="49" TopLine="48"/>
       </Position27>
       <Position28>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="406" Column="8" TopLine="376"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="206" Column="3" TopLine="191"/>
       </Position28>
       <Position29>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="407" TopLine="377"/>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="287" Column="13" TopLine="256"/>
       </Position29>
-      <Position30>
-        <Filename Value="..\Units\FITSUtils.pas"/>
-        <Caret Line="408" TopLine="378"/>
-      </Position30>
     </JumpHistory>
   </ProjectSession>
   <Debugging>
