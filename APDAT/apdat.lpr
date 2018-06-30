@@ -205,7 +205,7 @@ var
   PrintHlp: Boolean;
   InputFileName: string;
   OutputFileName: string;
-  ParamN: LongInt;
+  ParamN: Integer;
   S: string;
 
 begin

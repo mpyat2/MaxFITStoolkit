@@ -11,8 +11,7 @@
 
 {$MODE DELPHI}
 
-{$R+} // can be commented out in release mode
-{$Q+} // can be commented out in release mode
+{$R+}{$Q+} // can be commented out in release mode
 
 unit FITSUtils;
 
@@ -784,9 +783,9 @@ begin
   EndPosition := GetEndPosition(FITSfile);
   if EndPosition < 0 then
     FITSError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
-  GetBscaleBzero(FITSfile, Bscale, Bzero);
   NblocksInHeader := EndPosition div RecordsInBlock + 1;
   StartOfImage := NblocksInHeader * RecordsInBlock;
+  GetBscaleBzero(FITSfile, Bscale, Bzero);
   GetBitPixAndNaxis(FITSfile, BitPix, NaxisN);
   if Length(NAxisN) <> 2 then
     FITSError('2D FITS expected; NAXIS = ' + IntToStr(Length(NAxisN)) + ' in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
