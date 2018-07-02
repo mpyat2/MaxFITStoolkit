@@ -52,8 +52,8 @@
       <Filename Value="cfa2rgb"/>
     </Target>
     <SearchPaths>
-      <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="..\Units"/>
+      <IncludeFiles Value="$(ProjOutDir);..\UnitsFits"/>
+      <OtherUnitFiles Value="..\UnitsCommon;..\UnitsFits"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

@@ -1,10 +1,13 @@
 {$APPTYPE CONSOLE}
 {$MODE DELPHI}
+{$INCLUDE FITSUtils.inc}
 
 program FITSCFA;
 
 uses
-  SysUtils, CmdObj{, CmdObjStdSwitches}, Version, FITSUtils, EnumFiles, StringListNaturalSort, IniFiles, FitsUtilsHelp, CommonIni;
+  SysUtils, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles,
+  FITScompatibility, FITSUtils, StringListNaturalSort, IniFiles, FitsUtilsHelp,
+  CommonIni;
 
 {$R *.res}
 

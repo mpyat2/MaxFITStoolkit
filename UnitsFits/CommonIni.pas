@@ -1,6 +1,6 @@
 {*****************************************************************************}
 {                                                                             }
-{ StringListNaturalSort                                                       }
+{ CommonIni                                                                   }
 { (c) 2017 Maksym Pyatnytskyy                                                 }
 {                                                                             }
 { This program is distributed                                                 }
@@ -10,38 +10,33 @@
 {*****************************************************************************}
 
 {$MODE DELPHI}
+{$INCLUDE FITSUtils.inc}
 
-unit StringListNaturalSort;
+unit CommonIni;
 
 interface
 
 uses
-  SysUtils, Classes;
+  SysUtils, IniFiles, FITScompatibility;
 
-function StrCmpLogicalW(P1, P2: PWideChar): Integer;  stdcall; external 'Shlwapi.dll';
-  
-type
-  TStringListNaturalSort = class(TStringList)
-  public
-    procedure NaturalSort;
- end;
+var
+  Ini: TMemIniFile;
 
 implementation
 
-{ TStringListNaturalSort }
-
-function ListSortFunc(List: TStringList; Index1, Index2: Integer): Integer;
 var
-  WS1, WS2: WideString;
-begin
-  WS1 := List.Strings[Index1];
-  WS2 := List.Strings[Index2];
-  Result:= StrCmpLogicalW(PWideChar(WS1), PWideChar(WS2));
-end;
-
-procedure TStringListNaturalSort.NaturalSort;
-begin
-  CustomSort(@ListSortFunc);
-end;
-
+  Pause: Boolean;
+  IniFileName: string;
+  
+initialization
+  IniFileName := ExtractFilePath(ParamStr(0)) + 'FITSUTILS.INI';
+  Ini := TMemIniFile.Create(IniFileName);
+  Pause := Ini.ReadBool('SETTINGS', 'PAUSE', False);
+finalization
+  if Pause then begin
+    WriteLn(StdErr);
+    Write(StdErr, 'Press ENTER to exit: ');
+    ReadLn;
+  end;
+  FreeAndNil(Ini);  
 end.

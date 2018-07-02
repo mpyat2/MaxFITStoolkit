@@ -1,6 +1,6 @@
 {*****************************************************************************}
 {                                                                             }
-{ cfa2rgb                                                                   }
+{ cfa2rgb                                                                     }
 { (c) 2017 Maksym Pyatnytskyy                                                 }
 {                                                                             }
 { This program is distributed                                                 }
@@ -12,18 +12,15 @@
 {$APPTYPE CONSOLE}
 {$MODE DELPHI}
 
-{$ASSERTIONS ON}   // can be disabled in release mode
-{.DEFINE ROUND_C}  // if enabled, rounding occurs like in C programs
-                   // if disabled, FPC uses "banker's" rounding (could be better)
+{$ASSERTIONS ON}          // can be disabled in release mode
+
+{$INCLUDE FITSUtils.inc}
 
 program cfa2rgb;
 
-{$IFOPT R+}{$DEFINE range_check}{$ENDIF}
-{$IFOPT Q+}{$DEFINE overflow_check}{$ENDIF}
-
 uses
-  SysUtils, CmdObj{, CmdObjStdSwitches}, Version, FITSUtils, EnumFiles,
-  StringListNaturalSort, FitsUtilsHelp, CommonIni;
+  SysUtils, CmdObj{, CmdObjStdSwitches}, Version, FITScompatibility,
+  FITSUtils, EnumFiles, StringListNaturalSort, FitsUtilsHelp, CommonIni;
 
 {$R *.res}
 
@@ -38,13 +35,6 @@ procedure FileError(const S: string);
 begin
   raise Exception.Create(S);
 end;
-
-{$IFDEF ROUND_C}
-function Round_C(R: Double): Int64; inline;
-begin
-  if R > 0.0 then Result := Trunc(R + 0.5) else Result := Trunc(R - 0.5);
-end;
-{$ENDIF}
 
 type
   TBayerPattern = array[0..3] of Char;
@@ -70,7 +60,7 @@ begin
     A1Bytes[0] := Layer1[Addr + 1];
     A2Bytes[1] := Layer2[Addr];
     A2Bytes[0] := Layer2[Addr + 1];
-    ASum := {$IFDEF ROUND_C}Round_C{$ELSE}Round{$ENDIF}((A1 + A2) / 2);
+    ASum := Round((LongInt(A1) + LongInt(A2)) / 2);
     Layer1[Addr]     := ASumBytes[1];
     Layer1[Addr + 1] := ASumBytes[0];
   end;
@@ -108,11 +98,11 @@ begin
     for R := Naxis2 - 2 downto 1 do begin // start from the end of Naxis2, for "correct" order of pixels
       for C := 1 to Naxis1 - 2 do begin
         if not (Odd(C) xor OddColumn) then begin
-          GetPixelValue16bit(Layer, C - 1, R, Naxis1, A1);
+          GetPixelValue16bit(Layer, C - 1, R,     Naxis1, A1);
           GetPixelValue16bit(Layer, C,     R - 1, Naxis1, A2);
-          GetPixelValue16bit(Layer, C + 1, R, Naxis1, A3);
+          GetPixelValue16bit(Layer, C + 1, R,     Naxis1, A3);
           GetPixelValue16bit(Layer, C,     R + 1, Naxis1, A4);
-          SetPixelValue16bit(Layer, C,     R, Naxis1, {$IFDEF ROUND_C}Round_C{$ELSE}Round{$ENDIF}((A1 + A2 + A3 + A4) / 4));
+          SetPixelValue16bit(Layer, C,     R,     Naxis1, Round((LongInt(A1) + LongInt(A2) + LongInt(A3) + LongInt(A4)) / 4));
         end;
       end;
       OddColumn := not OddColumn;
@@ -129,7 +119,7 @@ begin
           if not (Odd(C) xor OddColumn) then begin
             GetPixelValue16bit(Layer, C - 1, R, Naxis1, A1);
             GetPixelValue16bit(Layer, C + 1, R, Naxis1, A2);
-            SetPixelValue16bit(Layer, C,     R, Naxis1, {$IFDEF ROUND_C}Round_C{$ELSE}Round{$ENDIF}((A1 + A2) / 2));
+            SetPixelValue16bit(Layer, C,     R, Naxis1, Round((LongInt(A1) + LongInt(A2)) / 2));
           end;
         end;
       end;
@@ -145,12 +135,12 @@ begin
             GetPixelValue16bit(Layer, C + 1, R - 1, Naxis1, A2);
             GetPixelValue16bit(Layer, C - 1, R + 1, Naxis1, A3);
             GetPixelValue16bit(Layer, C + 1, R + 1, Naxis1, A4);
-            SetPixelValue16bit(Layer, C,     R, Naxis1, {$IFDEF ROUND_C}Round_C{$ELSE}Round{$ENDIF}((A1 + A2 + A3 + A4) / 4));
+            SetPixelValue16bit(Layer, C,     R,     Naxis1, Round((LongInt(A1) + LongInt(A2) + LongInt(A3) + LongInt(A4)) / 4));
           end
           else begin
             GetPixelValue16bit(Layer, C, R - 1, Naxis1, A1);
             GetPixelValue16bit(Layer, C, R + 1, Naxis1, A2);
-            SetPixelValue16bit(Layer, C, R, Naxis1, {$IFDEF ROUND_C}Round_C{$ELSE}Round{$ENDIF}((A1 + A2) / 2));
+            SetPixelValue16bit(Layer, C, R,     Naxis1, Round((LongInt(A1) + LongInt(A2)) / 2));
           end;
         end;
       end;
@@ -229,10 +219,8 @@ begin
   // BlackLevel is used for setting zero-pixel border only in case of Linear interpolation.
   // So we can almost safely set it to zero if its value is out of supported range.
   if Bzero <> 0 then begin
-    if ({$IFDEF ROUND_C}Round_C{$ELSE}Round{$ENDIF}(-Bzero) <= High(SmallInt)) and
-       ({$IFDEF ROUND_C}Round_C{$ELSE}Round{$ENDIF}(-Bzero) >= Low(SmallInt))
-    then
-      BlackLevel := {$IFDEF ROUND_C}Round_C{$ELSE}Round{$ENDIF}(-Bzero);
+    if (Round(-Bzero) <= High(SmallInt)) and (Round(-Bzero) >= Low(SmallInt)) then
+      BlackLevel := Round(-Bzero);
   end;
 
   // Paranoidal: check size of image in bytes.

@@ -1,11 +1,23 @@
+{*****************************************************************************}
+{                                                                             }
+{ LibRawMxWrapper                                                             }
+{ (c) 2017-2018 Maksym Pyatnytskyy                                            }
+{                                                                             }
+{ This program is distributed                                                 }
+{ WITHOUT ANY WARRANTY; without even the implied warranty of                  }
+{ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                        }
+{                                                                             }
+{*****************************************************************************}
+
 {$MODE DELPHI}
+{$INCLUDE FITSUtils.inc}
 
 unit LibRawMxWrapper;
 
 interface
 
 uses
-  Windows, SysUtils;
+  Windows, SysUtils, FITScompatibility;
 
 const LibRawWrapper = {$IFDEF WIN64}'LibRawMxWrapper_s_crt_64.dll'{$ELSE}'LibRawMxWrapper_s_crt.dll'{$ENDIF};
 

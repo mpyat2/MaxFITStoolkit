@@ -11,12 +11,13 @@
 
 {$APPTYPE CONSOLE}
 {$MODE DELPHI}
+{$INCLUDE FITSUtils.inc}
 
 program FIHED;
 
 uses
-  SysUtils, Classes, CmdObj, Version, FihedSwitchChars, FITSUtils, EnumFiles,
-  StringListNaturalSort, FitsUtilsHelp, CommonIni;
+  SysUtils, Classes, CmdObj, Version, FihedSwitchChars, EnumFiles,
+  FITScompatibility, FITSUtils, StringListNaturalSort, FitsUtilsHelp, CommonIni;
 // Do not include CmdObjStdSwitches in the current version, instead, use FihedSwitchChars.
 // Currently slash '/' is used to distinguish options (double slash) and FITS keywords (single slash)
 

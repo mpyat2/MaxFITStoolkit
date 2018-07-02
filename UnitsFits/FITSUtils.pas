@@ -9,14 +9,12 @@
 {                                                                             }
 {*****************************************************************************}
 
-{$MODE DELPHI}
+{$R+}{$Q+} // can be commented out in release mode. Should be BEFORE {$INCLUDE FITSUtils.inc}!
 
-{$R+}{$Q+} // can be commented out in release mode
+{$MODE DELPHI}
+{$INCLUDE FITSUtils.inc}
 
 unit FITSUtils;
-
-{$IFOPT R+}{$DEFINE range_check}{$ENDIF}
-{$IFOPT Q+}{$DEFINE overflow_check}{$ENDIF}
 
 // https://fits.gsfc.nasa.gov/fits_primer.html
 // https://heasarc.gsfc.nasa.gov/docs/fcg/standard_dict.html
@@ -24,7 +22,7 @@ unit FITSUtils;
 interface
 
 uses
-  SysUtils, Classes, StrUtils, Math, FITSTimeUtils;
+  SysUtils, Classes, StrUtils, Math, FITScompatibility, FITSTimeUtils;
 
 const recordEND     = 'END                                                                             ';    
 const KeywordEND    = 'END';
@@ -94,7 +92,10 @@ procedure GetBitPixAndNaxis(var FITSfile: FITSRecordfile; out BitPix: Integer; o
 procedure GetBscaleBzero(var FITSfile: FITSRecordFile; out Bscale, Bzero: Double);
 function GetDateObs(var FITSfile: FITSRecordFile): TDateTime;
 function GetExposureTime(var FITSfile: FITSRecordFile): Double;
-function GetFITSimage2D(var FITSfile: FITSRecordFile; out Width, Height, BitPix: Integer; out Bscale, Bzero: Double): PChar;
+// Returns padded 2D or 3D image.
+function GetFITSimage(var FITSfile: FITSRecordFile;
+                      out Width, Height, Layers, BitPix: Integer;
+                      out Bscale, Bzero: Double): PChar;
 
 implementation
 
@@ -768,7 +769,10 @@ begin
      Result := Exp2;
 end;
 
-function GetFITSimage2D(var FITSfile: FITSRecordFile; out Width, Height, BitPix: Integer; out Bscale, Bzero: Double): PChar;
+// Returns padded 2D or 3D image.
+function GetFITSimage(var FITSfile: FITSRecordFile;
+                      out Width, Height, Layers, BitPix: Integer;
+                      out Bscale, Bzero: Double): PChar;
 var
   EndPosition: Int64;
   NblocksInHeader: Int64;
@@ -787,24 +791,22 @@ begin
   StartOfImage := NblocksInHeader * RecordsInBlock;
   GetBscaleBzero(FITSfile, Bscale, Bzero);
   GetBitPixAndNaxis(FITSfile, BitPix, NaxisN);
-  if Length(NAxisN) <> 2 then
-    FITSError('2D FITS expected; NAXIS = ' + IntToStr(Length(NAxisN)) + ' in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+  if (Length(NAxisN) <> 2) and (Length(NAxisN) <> 3) then
+    FITSError('2D or 3D FITS expected; NAXIS = ' + IntToStr(Length(NAxisN)) + ' in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
   Width := NAxisN[0];
   Height := NAxisN[1];
+  if Length(NAxisN) = 3 then Layers := NAxisN[2] else Layers := 1;
   BytePix := Abs(BitPix) div 8;
-  NImagePoints := 1;
 
+  NImagePoints := 1;
 {$IFNDEF range_check}{$R+}{$ENDIF}
 {$IFNDEF overflow_check}{$Q+}{$ENDIF}
   for I := 0 to Length(NaxisN) - 1 do
     NImagePoints := NImagePoints * NaxisN[I];
-  if NImagePoints < 1 then
-    FITSError('Invalid number of pixels');
   NrecordsToRead := (NImagePoints * BytePix - 1) div FITSRecordLen + 1;
   ImageMemSize := NrecordsToRead * FITSRecordLen;
 {$IFNDEF range_check}{$R-}{$ENDIF}
 {$IFNDEF overflow_check}{$Q-}{$ENDIF}
-  // to-do: check here for too large image...
 
   GetMem(Result, ImageMemSize);
   try

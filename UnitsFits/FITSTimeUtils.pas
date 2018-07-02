@@ -6,12 +6,14 @@
 {*****************************************************************************}
 
 {$MODE DELPHI}
+{$INCLUDE FITSUtils.inc}
 
 unit FITSTimeUtils;
 
 interface 
 
-uses SysUtils;
+uses 
+  SysUtils, FITScompatibility;
 
 {$IFNDEF FPC}
 function LocalTimeToUniversal(LT: TDateTime): TDateTime; overload;

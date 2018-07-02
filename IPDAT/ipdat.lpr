@@ -11,11 +11,13 @@
 
 {$APPTYPE CONSOLE}
 {$MODE DELPHI}
+{$INCLUDE FITSUtils.inc}
 
 program IPDAT;
 
 uses
-  SysUtils, CmdObj{, CmdObjStdSwitches}, Version, FitsUtilsHelp, CommonIni;
+  SysUtils, CmdObj{, CmdObjStdSwitches}, Version, 
+  FITScompatibility, FitsUtilsHelp, CommonIni;
 
 {$R *.res}
 

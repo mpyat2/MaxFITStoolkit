@@ -11,12 +11,13 @@
 
 {$APPTYPE CONSOLE}
 {$MODE DELPHI}
+{$INCLUDE FITSUtils.inc}
 
 program APDAT;
 
 uses
-  SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, Version, Math, FitsUtilsHelp,
-  CommonIni;
+  SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, Version, Math,
+  FITScompatibility, FitsUtilsHelp, CommonIni;
 
 {$R *.res}
 

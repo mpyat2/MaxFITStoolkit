@@ -7,23 +7,24 @@
 {*****************************************************************************}
 
 {$MODE DELPHI}
+{$INCLUDE FITSUtils.inc}
 
 {.$DEFINE DEBUG_OUTPUT}
 
 unit CalcThread;
 
-{$IFOPT R+}{$DEFINE range_check}{$ENDIF}
-{$IFOPT Q+}{$DEFINE overflow_check}{$ENDIF}
-
 interface
 
-uses Windows, SysUtils, Classes, FitsUtils;
+uses 
+  Windows, SysUtils, Classes, 
+  FITScompatibility, FitsStatUtils, FitsUtils;
 
 type
   TStackMode = ( smAdd, smAvg, smMed );
 
 type
   TExtendedArray = array of Extended;
+  TSmallIntArray = array of SmallInt;
 
 type
   TDoubleArray = array of Double;
@@ -45,6 +46,7 @@ type
       FStackList: TStringList;
       FImages: TPCharArray;
       FDestPixelArrayPtr: PDoubleArray;
+      FUseFast16bitProcs: Boolean;
       FStackedResultMin: Extended;
       FStackedResultMax: Extended;
       FExecuteCompleted: Boolean;
@@ -59,6 +61,7 @@ type
                          const StackList: TStringList;
                          const Images: TPCharArray;
                          DestPixelArrayPtr: PDoubleArray;
+                         UseFast16bitProcs: Boolean;
                          ProgressProc: TProgressProc);
       property ThreadNo: Integer read FThreadNo;
       property StackedResultMin: Extended read FStackedResultMin;
@@ -118,71 +121,17 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
-// http://wiki.freepascal.org/Functions_for_descriptive_statistics
 
-procedure SortExtendedArray(var data: TExtendedArray);
-{ Based on Shell Sort - avoiding recursion allows for sorting of very
-  large arrays, too }
+// Special quick procedure for IRIS FITS (no scale, BITPIX=16)
+function GetFITSpixel16bitNoScale(FITSdata: PChar; N: Integer): SmallInt; inline;
 var
-  arrayLength, i, j, k: longint;
-  h: extended;
+  ResultBytes: array[0..1] of Byte absolute Result;
 begin
-  arrayLength := high(data);
-  k := arrayLength div 2;
-  while k > 0 do
-  begin
-    for i := 0 to arrayLength - k do
-    begin
-      j := i;
-      while (j >= 0) and (data[j] > data[j + k]) do
-      begin
-        h := data[j];
-        data[j] := data[j + k];
-        data[j + k] := h;
-        if j > k then
-          dec(j, k)
-        else
-          j := 0;
-      end;
-    end;
-    k := k div 2
-  end;
+  ResultBytes[0] :=  Byte(FITSdata[N * 2 + 1]);
+  ResultBytes[1] :=  Byte(FITSdata[N * 2]);
 end;
 
-// modifies data!
-function median(var data: TExtendedArray): extended;
-var
-  centralElement: longint;
-begin
-  result := 0;
-  if length(data) = 0 then exit;
-  SortExtendedArray(data);
-  centralElement := length(data) div 2;
-  if odd(length(data)) then
-    result := data[centralElement]
-  else
-    result := (data[centralElement - 1] + data[centralElement]) / 2;
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-function sum(const data: TExtendedArray): extended;
-var
-  i: longint;
-begin
-  result := 0;
-  if length(data) = 0 then exit;
-  for i := 0 to length(data) - 1 do
-    result := result + data[I];
-end;
-
-function average(const data: TExtendedArray): extended;
-begin
-  result := sum(data) / Length(data);
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
+// Universal procesure for all FITS
 function GetFITSpixelAsExtended(FITSdata: PChar; N, BitPix: Integer; BScale: Double; BZero: Double): Extended;
 var
   FITSValue: TFITSValue;
@@ -234,6 +183,7 @@ constructor TCalcThread.Create(ThreadNo: Integer;
                                const StackList: TStringList;
                                const Images: TPCharArray;
                                DestPixelArrayPtr: PDoubleArray;
+                               UseFast16bitProcs: Boolean;
                                ProgressProc: TProgressProc);
 begin
   inherited Create(True);
@@ -245,6 +195,7 @@ begin
   FStackList := StackList;
   FImages := Images;
   FDestPixelArrayPtr := DestPixelArrayPtr;
+  FUseFast16bitProcs := UseFast16bitProcs;
   FProgressProc := ProgressProc;
   FStackedResultMax := 0; // not nesessary
   FStackedResultMin := 0; // not nesessary
@@ -261,6 +212,7 @@ end;
 procedure TCalcThread.Execute;
 var
   StackPixels: TExtendedArray;
+  StackPixels16bit: TSmallIntArray;
   StackedResult: Extended;
   I, II, Counter: Integer;
 begin
@@ -272,7 +224,12 @@ begin
   try
     Counter := 0;
     if FNumberOfPixels <= 0 then Exit; // FExecuteComplete is not set!
-    SetLength(StackPixels, FStackList.Count);
+    StackPixels := nil;
+    StackPixels16bit := nil;
+    if FUseFast16bitProcs then
+      SetLength(StackPixels16bit, FStackList.Count)
+    else
+      SetLength(StackPixels, FStackList.Count);
     for II := FStartIndex to FStartIndex + FNumberOfPixels - 1 do begin
       if Terminated or GlobalTerminateAllThreads then begin
 {$IFDEF DEBUG_OUTPUT}
@@ -281,13 +238,25 @@ begin
         Exit;
       end;
 
-      for I := 0 to FStackList.Count - 1 do
-        StackPixels[I] := GetFITSpixelAsExtended(FImages[I], II, TFITSFileInfo(FStackList.Objects[I]).BitPix, TFITSFileInfo(FStackList.Objects[I]).BScale, TFITSFileInfo(FStackList.Objects[I]).BZero);
-      case FStackMode of
-        smAdd: StackedResult := sum(StackPixels);
-        smAvg: StackedResult := average(StackPixels);
-        smMed: StackedResult := median(StackPixels);
-        else raise Exception.Create('Internal error: invalid Stack Mode');
+      if FUseFast16bitProcs then begin
+        for I := 0 to FStackList.Count - 1 do
+          StackPixels16bit[I] := GetFITSpixel16bitNoScale(FImages[I], II);
+        case FStackMode of
+          smAdd: StackedResult := TStatHelper<SmallInt>.Sum(StackPixels16bit);
+          smAvg: StackedResult := TStatHelper<SmallInt>.Mean(StackPixels16bit);
+          smMed: StackedResult := TStatHelper<SmallInt>.SortAndMedian(StackPixels16bit);
+          else raise Exception.Create('Internal error: invalid Stack Mode');
+        end;
+      end
+      else begin
+        for I := 0 to FStackList.Count - 1 do
+          StackPixels[I] := GetFITSpixelAsExtended(FImages[I], II, TFITSFileInfo(FStackList.Objects[I]).BitPix, TFITSFileInfo(FStackList.Objects[I]).BScale, TFITSFileInfo(FStackList.Objects[I]).BZero);
+        case FStackMode of
+          smAdd: StackedResult := TStatHelper<Extended>.Sum(StackPixels);
+          smAvg: StackedResult := TStatHelper<Extended>.Mean(StackPixels);
+          smMed: StackedResult := TStatHelper<Extended>.SortAndMedian(StackPixels);
+          else raise Exception.Create('Internal error: invalid Stack Mode');
+        end;
       end;
       if Counter = 0 then begin
         FStackedResultMax := StackedResult;

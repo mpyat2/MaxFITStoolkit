@@ -10,13 +10,14 @@
 {*****************************************************************************}
 
 {$MODE DELPHI}
+{$INCLUDE FITSUtils.inc}
 
 unit FITSUtilsHelp;
 
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, FITScompatibility;
 
 const
   FITSUtilsHelpFile = 'FITSUTILS.TXT';

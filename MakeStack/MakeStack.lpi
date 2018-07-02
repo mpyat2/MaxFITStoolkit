@@ -35,7 +35,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="c:\personal\SKY2\*rgb-a* /g=out /f /B=100 /A /n=5 /t=8"/>
+        <CommandLineParams Value="c1 c2 c3 c4 c5 /g=test_stack_x /A /F /M=A"/>
       </local>
     </RunParams>
     <Units Count="1">

@@ -90,14 +90,27 @@ begin
     WriteLn(ParamStr(I));
 *)
 
-  A := MaxInt div 2;
-  B := MaxInt div 2;
+  A := MaxInt - 100;
+  B := MaxInt - 100;
   C := 2;
 
-{$Q+}{$R+}
-  WriteLn('A*B*C : ', Int64(A)*B*C);
+//{$Q+}{$R+}
   WriteLn('MaxInt: ', MaxInt);
-  if Int64(A)*B*C > MaxInt then
+  WriteLn('A : ', A);
+  WriteLn('B : ', B);
+  WriteLn('C : ', C);
+  E := (A+B);
+  WriteLn('E := (A+B): ', E);
+  WriteLn('(A+B)/2 : ', (A+B)/2);
+  WriteLn('(A+B+C)/3 : ', (A+B+C)/3);
+  E := (A+B+C)/3;
+  WriteLn('E := (A+B+C)/3 : ', E);
+  A64 := (A+B+C);
+  WriteLn(' A64 := (A+B+C) : ', A64);
+  WriteLn('A+B+C : ', A+B+C);
+  WriteLn('A*B*C : ', A*B*C);
+  WriteLn('Int64(A)*Int64(B)*Int64(C) : ', Int64(A)*Int64(B)*Int64(C));
+  if Int64(A)*Int64(B)*Int64(C) > MaxInt then
     WriteLn('Too large');
 
   Write('Press ENTER: ');

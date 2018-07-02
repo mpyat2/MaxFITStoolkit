@@ -1,7 +1,7 @@
 {*****************************************************************************}
 {                                                                             }
-{ CommonIni                                                                   }
-{ (c) 2017 Maksym Pyatnytskyy                                                 }
+{ FITScompatibility                                                           }
+{ (c) 2017-2018 Maksym Pyatnytskyy                                            }
 {                                                                             }
 { This program is distributed                                                 }
 { WITHOUT ANY WARRANTY; without even the implied warranty of                  }
@@ -10,32 +10,24 @@
 {*****************************************************************************}
 
 {$MODE DELPHI}
+{$INCLUDE FITSUtils.inc}
 
-unit CommonIni;
+// This unit must be included before any other FITS-related units
+unit FITScompatibility;
 
 interface
 
-uses
-  SysUtils, IniFiles;
-
-var
-  Ini: TMemIniFile;
+{$IFDEF ROUND_C}
+function Round(R: Extended): Int64; inline;
+{$ENDIF}
 
 implementation
 
-var
-  Pause: Boolean;
-  IniFileName: string;
-  
-initialization
-  IniFileName := ExtractFilePath(ParamStr(0)) + 'FITSUTILS.INI';
-  Ini := TMemIniFile.Create(IniFileName);
-  Pause := Ini.ReadBool('SETTINGS', 'PAUSE', False);
-finalization
-  if Pause then begin
-    WriteLn(StdErr);
-    Write(StdErr, 'Press ENTER to exit: ');
-    ReadLn;
-  end;
-  FreeAndNil(Ini);  
+{$IFDEF ROUND_C}
+function Round(R: Extended): Int64; inline;
+begin
+  if R > 0.0 then Result := Trunc(R + 0.5) else Result := Trunc(R - 0.5);
+end;
+{$ENDIF}
+
 end.

@@ -11,15 +11,13 @@
 
 {$APPTYPE CONSOLE}
 {$MODE DELPHI}
+{$INCLUDE FITSUtils.inc}
 
 program IREN;
 
-{$IFOPT R+}{$DEFINE range_check}{$ENDIF}
-{$IFOPT Q+}{$DEFINE overflow_check}{$ENDIF}
-
 uses
   Windows, SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles,
-  StringListNaturalSort, FITSUtils, FitsUtilsHelp, CommonIni;
+  FITScompatibility, StringListNaturalSort, FITSUtils, FitsUtilsHelp, CommonIni;
 
 {$R *.res}
 

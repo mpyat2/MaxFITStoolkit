@@ -9,21 +9,15 @@
 {                                                                             }
 {*****************************************************************************}
 
-// to-do:
-// 1) BaseNumber: overflow checking
-// 2) Val->GetInt
-
 {$APPTYPE CONSOLE}
 {$MODE DELPHI}
+{$INCLUDE FITSUtils.inc}
 
 program MakeStack;
 
-{$IFOPT R+}{$DEFINE range_check}{$ENDIF}
-{$IFOPT Q+}{$DEFINE overflow_check}{$ENDIF}
-
 uses
-  SysUtils, Classes, Math, DateUtils, CmdObj{, CmdObjStdSwitches},
-  Version, EnumFiles, FITSUtils, FITSTimeUtils, StringListNaturalSort,
+  SysUtils, Classes, Math, DateUtils, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles, 
+  FITScompatibility, FITSUtils, FITSTimeUtils, StringListNaturalSort,
   FitsUtilsHelp, CalcThread, CommonIni;
 
 {$R *.res}
@@ -125,6 +119,7 @@ var
   DestHeader: TFITSRecordArray;
   DestPixelArray: TDoubleArray;
   ScaledOrShifted: Boolean;
+  UseFast16bitProcs: Boolean;
   TotalExposure: Double;
   DestDateObs: TDateTime;
   DestObject: string;
@@ -183,6 +178,7 @@ begin
 
     ShowProgress('Reading', 0, StackList.Count);
     ScaledOrShifted := False;
+    UseFast16bitProcs := False;
     for I := 0 to StackList.Count - 1 do begin
       if not Overwrite and FileExists(OutFileName) then
         FileError('File ' + AnsiQuotedStr(OutFileName, '"') + ' already exists. Use /F switch to overwrite.');
@@ -215,6 +211,8 @@ begin
       ShowProgress('Reading', I + 1, StackList.Count);
     end;
     ShowProgress('Reading', StackList.Count, StackList.Count);
+
+    UseFast16bitProcs := (not ScaledOrShifted) and (MinBitPix = 16) and (MaxBitPix = 16);
 
     TimeStart := Now();
 
@@ -262,6 +260,7 @@ begin
                                                   StackList,
                                                   Images,
                                                   @DestPixelArray,
+                                                  UseFast16bitProcs,
                                                   ProgressProcWrapper.ThreadProgressProc);
             // check for exception while creation (see FPC docs)
             if Assigned(StackThreads[I].FatalException) then begin

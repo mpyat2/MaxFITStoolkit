@@ -1,10 +1,12 @@
 {$APPTYPE CONSOLE}
 {$MODE DELPHI}
+{$INCLUDE FITSUtils.inc}
 
 program FITSRGB;
 
 uses
-  SysUtils, CmdObj{, CmdObjStdSwitches}, Version, FITSUtils, EnumFiles, StringListNaturalSort, FitsUtilsHelp, CommonIni;
+  SysUtils, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles, FITScompatibility,
+  FITSUtils, StringListNaturalSort, FitsUtilsHelp, CommonIni;
 
 {$R *.res}
 

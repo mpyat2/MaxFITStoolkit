@@ -11,12 +11,13 @@
 
 {$APPTYPE CONSOLE}
 {$MODE DELPHI}
+{$INCLUDE FITSUtils.inc}
 
 program IDOBS;
 
 uses
   SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles,
-  StringListNaturalSort, FITSUtils, FitsUtilsHelp, CommonIni;
+  FITScompatibility, StringListNaturalSort, FITSUtils, FitsUtilsHelp, CommonIni;
 
 {$R *.res}
 

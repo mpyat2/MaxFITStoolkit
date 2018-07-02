@@ -1,11 +1,13 @@
 {$APPTYPE CONSOLE}
 {$MODE DELPHI}
+{$INCLUDE FITSUtils.inc}
 
 program iconvraw;
 
-uses SysUtils, Variants, DateUtils, Classes, CmdObj, Version, EnumFiles,
-     StringListNaturalSort, LibRawMxWrapper, FITSUtils, FITSTimeUtils,
-     FitsUtilsHelp, CommonIni;
+uses 
+  SysUtils, Variants, DateUtils, Classes, CmdObj, Version, EnumFiles,
+  FITScompatibility, StringListNaturalSort, LibRawMxWrapper, 
+  FITSUtils, FITSTimeUtils, FitsUtilsHelp, CommonIni;
 
 {$R *.res}
 
