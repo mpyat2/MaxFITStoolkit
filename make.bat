@@ -114,7 +114,9 @@ echo iconvraw\iconvraw.*            >> ziplist.txt
 echo iconvraw\LibRawMxWrapper*.dll  >> ziplist.txt
 echo makestack\makestack.*          >> ziplist.txt
 echo Hello\*.pas                    >> ziplist.txt
-echo Units\*.pas                    >> ziplist.txt
+echo UnitsCommon\*.pas              >> ziplist.txt
+echo UnitsFits\*.pas                >> ziplist.txt
+echo UnitsFits\*.inc                >> ziplist.txt
 echo Scripts\*                      >> ziplist.txt
 echo Samples\*                      >> ziplist.txt
 echo Setup\*.iss                    >> ziplist.txt
