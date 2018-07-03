@@ -1,3 +1,14 @@
+{*****************************************************************************}
+{                                                                             }
+{ FITSCFA                                                                     }
+{ (c) 2017 Maksym Pyatnytskyy                                                 }
+{                                                                             }
+{ This program is distributed                                                 }
+{ WITHOUT ANY WARRANTY; without even the implied warranty of                  }
+{ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                        }
+{                                                                             }
+{*****************************************************************************}
+
 {$APPTYPE CONSOLE}
 {$MODE DELPHI}
 {$INCLUDE FITSUtils.inc}
@@ -5,16 +16,15 @@
 program FITSCFA;
 
 uses
-  SysUtils, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles,
-  FITScompatibility, FITSUtils, StringListNaturalSort, IniFiles, FitsUtilsHelp,
-  CommonIni;
+  SysUtils, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles, FITScompatibility,
+  FITSUtils, StringListNaturalSort, IniFiles, FitsUtilsHelp, CommonIni;
 
 {$R *.res}
 
 procedure PrintVersion;
 begin
   WriteLn('FITS CFA splitter  Maksym Pyatnytskyy  2017');
-  WriteLn(GetVersionString(ParamStr(0)));
+  WriteLn(GetVersionString(AnsiUpperCase(ParamStr(0))){$IFDEF WIN64}, ' WIN64'{$ENDIF}, ' ', {$I %DATE%}, ' ', {$I %TIME%});
   WriteLn;
 end;
 
@@ -57,59 +67,18 @@ begin
   raise Exception.Create(S);
 end;
 
-type
-  TPCharArray = array of PChar;
-
-procedure AverageLayers(const Layers: TPCharArray; Len: Integer; BitPix: Integer);
-// result -> [0] layer
-var
-  A1: TFITSValue;
-  Asum: TFITSValue;
-
-  N, NN, Addr: Integer;
-  NLayers: Integer;
-  BytePix: Integer;
-begin
-  BytePix := Abs(BitPix) div 8;
-  NLayers := Length(Layers);
-  for NN := 0 to Len div BytePix do begin
-    FillChar(Asum, SizeOf(Asum), 0);
-    Addr := NN * BytePix;
-    for N := 0 to NLayers - 1 do begin
-      Move(Layers[N][Addr], A1, BytePix);
-      RevertBytes(A1, BitPix);
-      case BitPix of
-          8: Asum.H := Asum.H + A1.B;
-         16: Asum.H := Asum.H + A1.I;
-         32: Asum.H := Asum.H + A1.L;
-        -32: Asum.E := Asum.E + A1.S;
-        -64: Asum.E := Asum.E + A1.D;
-      end;
-    end;
-    case BitPix of
-        8: Asum.B := Round(Asum.H / NLayers);
-       16: Asum.I := Round(Asum.H / NLayers);
-       32: Asum.L := Round(Asum.H / NLayers);
-      -32: Asum.S := Asum.E / NLayers;
-      -64: Asum.D := Asum.E / NLayers;
-    end;
-    RevertBytes(Asum, BitPix);
-    Move(Asum, Layers[0][Addr], BytePix);
-  end;
-end;
-
 procedure FITSSplit(var FITSfile: FITSRecordfile; const FITSfileName: string; const Profile: string; const OutputDir: string; Overwrite: Boolean);
 var
-  N: Integer;
+  EndPosition: Int64;
+  NblocksInHeader: Int64;
+  StartOfImage: Int64;
   BitPix: Integer;
   BytePix: Integer;
   NaxisN: TIntArray;
   Naxis1, Naxis2: Integer;
   Naxis1new, Naxis2new: Integer;
-  NblocksInHeader: Integer;
   NrecordsToRead: Integer;
   NRecordsToWrite: Integer;
-  StartOfImage: Integer;
   Header: PChar;
   Image: PChar;
   ImageC: array[0..3] of PChar;
@@ -125,10 +94,10 @@ var
   OutFileName: string;
   FileModeSaved: Integer;
 begin
-  N := GetEndPosition(FITSfile);
-  if N < 0 then
+  EndPosition := GetEndPosition(FITSfile);
+  if EndPosition < 0 then
     FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSfileName, '"'));
-  NblocksInHeader := N div RecordsInBlock + 1;
+  NblocksInHeader := EndPosition div RecordsInBlock + 1;
   StartOfImage := NblocksInHeader * RecordsInBlock;
   GetBitPixAndNaxis(FITSfile, BitPix, NaxisN);
   if (Length(NaxisN) <> 2) then
@@ -139,13 +108,11 @@ begin
   Naxis1 := NaxisN[0];
   Naxis2 := NaxisN[1];
   Write(' [', Naxis1, 'x', Naxis2, '] [BITPIX=', BitPix, '] -> ');
-  //Naxis1new := (Naxis1 - 1) div 2 + 1;
-  //Naxis2new := (Naxis2 - 1) div 2 + 1;
   Naxis1new := Naxis1 div 2;
   Naxis2new := Naxis2 div 2;
   NrecordsToRead := ((Naxis1 * Naxis2 * BytePix - 1) div FITSRecordLen + 1);
   NRecordsToWrite := ((Naxis1new * Naxis2new * BytePix - 1) div FITSRecordLen + 1);
-  NRecordsToWrite := ((NRecordsToWrite - 1) div RecordsInBlock + 1) * RecordsInBlock;
+  NRecordsToWrite := ((NRecordsToWrite - 1) div RecordsInBlock + 1) * RecordsInBlock; // padding
   GetMem(Header, StartOfImage * FITSRecordLen);
   try
     FillChar(Header^, StartOfImage * FITSRecordLen, 0);
@@ -198,7 +165,7 @@ begin
               end;
             end;
             if Length(ImageToAverage) > 1 then begin
-              AverageLayers(ImageToAverage, Naxis1new * Naxis2new * BytePix, BitPix);
+              AverageFITSlayers(ImageToAverage, Naxis1new * Naxis2new * BytePix, BitPix);
               for ColorL2 := 1 to Length(ImageToAverage) - 1 do begin
                 for LL := ColorL + 1 to 3 do begin
                   if ImageC[LL] = ImageToAverage[ColorL2] then begin

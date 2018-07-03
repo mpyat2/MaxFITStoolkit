@@ -96,6 +96,7 @@ end;
 
 procedure ConvertFile(const FileName: string;
                       PrintInfo: Boolean;
+                      PrintTiming: Boolean;
                       const NewFileName: string;
                       CheckExistence: Boolean;
                       DontTruncate: Boolean;
@@ -156,7 +157,10 @@ var
   Name, Value, TempValue: string;
   Bzero: Integer;
   BayerPattern: array[0..16] of Char;
+  TimeProcStart: TDateTime;
 begin
+  TimeProcStart := Now();
+
   TimeShifted := False;
   RawFrameLeft := 0;
   RawFrameTop := 0;
@@ -275,6 +279,12 @@ begin
       Bzero := 0;
 
     bits := PChar(RawProcessorRawImage(RawProcessor));
+
+    if PrintTiming then begin
+      WriteLn;
+      Write('[decoded , elapsed: ', ((Now() - TimeProcStart) * (24 * 60 * 60)):0:2, ' s]');
+    end;
+
     FirstPixel := True;
     SumValue := 0;
     MinValue := 0;
@@ -339,6 +349,11 @@ begin
 
           Inc(N, BytePerPix);
         end;
+      end;
+
+      if PrintTiming then begin
+        WriteLn;
+        Write('[prepared, elapsed: ', ((Now() - TimeProcStart) * (24 * 60 * 60)):0:2, ' s]');
       end;
 
       if not PixelRealNumber and not BzeroShift and (MaxValue > High(SmallInt)) then begin
@@ -491,10 +506,16 @@ begin
   finally
     RawProcessorFree(RawProcessor);
   end;
+
+  if PrintTiming then begin
+    WriteLn;
+    WriteLn('[saved   , elapsed: ', ((Now() - TimeProcStart) * (24 * 60 * 60)):0:2, ' s]');
+  end;
 end;
 
 procedure ProcessInput(const FileMasks: array of string;
                        PrintInfo: Boolean;
+                       PrintTiming: Boolean;
                        const GenericName: string;
                        const OutputDir: string;
                        Overwrite: Boolean;
@@ -534,7 +555,18 @@ begin
         if not PrintInfo then begin
           Write(FileName, ^I'->'^I, NewFileName);
         end;
-        ConvertFile(FileList[I], PrintInfo, NewFileName, not Overwrite, DontTruncate, DoFlip, PixelRealNumber, BzeroShift, FITSParams, TimeShiftInSecondsV, TimeShifted);
+        ConvertFile(FileList[I],
+                    PrintInfo,
+                    PrintTiming,
+                    NewFileName,
+                    not Overwrite,
+                    DontTruncate,
+                    DoFlip,
+                    PixelRealNumber,
+                    BzeroShift,
+                    FITSParams,
+                    TimeShiftInSecondsV,
+                    TimeShifted);
         if TimeShifted then Write('DATE-OBS shifted by ', VarToStrDef(TimeShiftInSecondsV, 'NULL'), ' seconds');
         WriteLn;
         Inc(FileNumber);
@@ -568,6 +600,7 @@ var
   DoFlip: Boolean;
   OutputExt: string;
   PrintInfo: Boolean;
+  PrintTiming: Boolean;
   FITSparams: TStringList;
   PrintVer: Boolean;
   ErrorPos: Integer;
@@ -627,6 +660,7 @@ begin
   DoFlip := False;
   OutputExt := '.fit';
   PrintInfo := False;
+  PrintTiming := False;
   FITSparams := TStringList.Create;
   try
     for ParamN := 1 to CmdObj.CmdLine.ParamCount do begin
@@ -646,6 +680,9 @@ begin
         else
         if CmdObj.CmdLine.ParamIsKey(S, 'I') then
           PrintInfo := True
+        else
+        if CmdObj.CmdLine.ParamIsKey(S, 'TIMING') then
+          PrintTiming := True
         else
         if CmdObj.CmdLine.ParamIsKey(S, 'F') then
           Overwrite := True
@@ -732,7 +769,20 @@ begin
 
     FileList := TStringListNaturalSort.Create;
     try
-      ProcessInput(InputFileMasks, PrintInfo, GenericName, OutputDir, Overwrite, BaseNumber, DontTruncate, DoFlip, PixelRealNumber, BzeroShift, FITSParams, TimeShiftInSecondsV, OutputExt);
+      ProcessInput(InputFileMasks,
+                   PrintInfo,
+                   PrintTiming,
+                   GenericName,
+                   OutputDir,
+                   Overwrite,
+                   BaseNumber,
+                   DontTruncate,
+                   DoFlip,
+                   PixelRealNumber,
+                   BzeroShift,
+                   FITSParams,
+                   TimeShiftInSecondsV,
+                   OutputExt);
       WriteLn;
     finally
       FreeAndNil(FileList);

@@ -47,13 +47,6 @@ begin
   Result := BScale * V + BZero;
 end;
 
-type
-  TByteArray = array of Byte;
-  TSmallIntArray = array of SmallInt;
-  TLongIntArray = array of LongInt;
-  TSingleArray = array of Single;
-  TDoubleArray = array of Double;
-
 procedure ProcessInput(const FITSFileName: string);
 var
   FITSFile: FITSRecordFile;
@@ -198,7 +191,7 @@ var
   ParamN: Integer;
 
 begin
-  FileMode := fmOpenRead + fmShareDenyNone;
+  FileMode := fmOpenRead;
 
   PrintVer := (CmdObj.CmdLine.IsCmdOption('V') or CmdObj.CmdLine.IsCmdOption('version'));
   if PrintVer then PrintVersion;

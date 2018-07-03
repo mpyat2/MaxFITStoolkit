@@ -43,6 +43,13 @@ type
   TFITSRecordArray = array of FITSRecordType;
   TStringArray = array of string;
   TIntArray = array of Integer;
+  TByteArray = array of Byte;
+  TSmallIntArray = array of SmallInt;
+  TLongIntArray = array of LongInt;
+  TSingleArray = array of Single;
+  TDoubleArray = array of Double;
+  TExtendedArray = array of Extended;
+  TPCharArray = array of PChar;
 
 type
   TFITSValue = record
@@ -76,6 +83,8 @@ function AddCommentLikeKeyword(var FITSfile: FITSRecordFile; const Keyword: stri
 procedure GetHeader(var FITSfile: FITSRecordFile; const Header: TStrings);
 function GetEndPosition(var FITSfile: FITSRecordFile): Int64;
 procedure RevertBytes(var FITSvalue: TFITSValue; BitPix: Integer);
+procedure AverageFITSlayers(const Layers: TPCharArray; Len: LongInt; BitPix: Integer); // result -> [0] layer
+procedure Average16bitLayers(Layer1, Layer2: PChar; Len: LongInt); // result -> 1st layer
 procedure StrToFITSRecord(const S: string; out FITSRecord: FITSRecordType);
 function MakeFITSHeader(BitPix: Integer;
                         const Axes: TIntArray;
@@ -506,6 +515,63 @@ begin
   for I := 0 to N - 1 do
     TempFITSvalue.A[N - 1 - I] := FITSvalue.A[I];
   FITSvalue := TempFITSvalue;
+end;
+
+procedure AverageFITSlayers(const Layers: TPCharArray; Len: LongInt; BitPix: Integer); // result -> [0] layer
+var
+  A1: TFITSValue;
+  Asum: TFITSValue;
+  BytePix: Integer;
+  NLayers, N: SizeInt;
+  NN, Addr: LongInt;
+begin
+  BytePix := Abs(BitPix) div 8;
+  NLayers := Length(Layers);
+  for NN := 0 to Len div BytePix do begin
+    FillChar(Asum, SizeOf(Asum), 0);
+    Addr := NN * BytePix;
+    for N := 0 to NLayers - 1 do begin
+      Move(Layers[N][Addr], A1, BytePix);
+      RevertBytes(A1, BitPix);
+      case BitPix of
+          8: Asum.H := Asum.H + A1.B;
+         16: Asum.H := Asum.H + A1.I;
+         32: Asum.H := Asum.H + A1.L;
+        -32: Asum.E := Asum.E + A1.S;
+        -64: Asum.E := Asum.E + A1.D;
+      end;
+    end;
+    case BitPix of
+        8: Asum.B := Round(Asum.H / NLayers);
+       16: Asum.I := Round(Asum.H / NLayers);
+       32: Asum.L := Round(Asum.H / NLayers);
+      -32: Asum.S := Asum.E / NLayers;
+      -64: Asum.D := Asum.E / NLayers;
+    end;
+    RevertBytes(Asum, BitPix);
+    Move(Asum, Layers[0][Addr], BytePix);
+  end;
+end;
+
+procedure Average16bitLayers(Layer1, Layer2: PChar; Len: LongInt); // result -> 1st layer
+var
+  A1, A2: SmallInt;
+  A1Bytes: array[0..1] of Char absolute A1;
+  A2Bytes: array[0..1] of Char absolute A2;
+  ASum: SmallInt;
+  ASumBytes: array[0..1] of Char absolute ASum;
+  NN, Addr: LongInt;
+begin
+  for NN := 0 to Len do begin
+    Addr := NN * 2;
+    A1Bytes[1] := Layer1[Addr];
+    A1Bytes[0] := Layer1[Addr + 1];
+    A2Bytes[1] := Layer2[Addr];
+    A2Bytes[0] := Layer2[Addr + 1];
+    ASum := Round((LongInt(A1) + LongInt(A2)) / 2);
+    Layer1[Addr]     := ASumBytes[1];
+    Layer1[Addr + 1] := ASumBytes[0];
+  end;
 end;
 
 procedure StrToFITSRecord(const S: string; out FITSRecord: FITSRecordType);

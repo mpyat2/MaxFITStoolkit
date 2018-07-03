@@ -39,37 +39,12 @@ end;
 type
   TBayerPattern = array[0..3] of Char;
 
-type
-  TPCharArray = array of PChar;
-
 // 16-bit FITSes only are supported in the current version! (for efficiency)
-
-procedure AverageIntLayers(Layer1, Layer2: PChar; Len: Integer);
-// result -> 1st layer
-var
-  A1, A2: SmallInt;
-  A1Bytes: array[0..1] of Char absolute A1;
-  A2Bytes: array[0..1] of Char absolute A2;
-  ASum: SmallInt;
-  ASumBytes: array[0..1] of Char absolute ASum;
-  NN, Addr: Integer;
-begin
-  for NN := 0 to Len do begin
-    Addr := NN * 2;
-    A1Bytes[1] := Layer1[Addr];
-    A1Bytes[0] := Layer1[Addr + 1];
-    A2Bytes[1] := Layer2[Addr];
-    A2Bytes[0] := Layer2[Addr + 1];
-    ASum := Round((LongInt(A1) + LongInt(A2)) / 2);
-    Layer1[Addr]     := ASumBytes[1];
-    Layer1[Addr + 1] := ASumBytes[0];
-  end;
-end;
 
 procedure GetPixelValue16bit(Layer: PChar; C, R: Integer; Naxis1: Integer; out A: SmallInt); inline;
 var
   ABytes: array[0..1] of Char absolute A;
-  Addr: Integer;
+  Addr: LongInt;
 begin
   Addr := (R * Naxis1 + C) * 2;
   ABytes[1] := Layer[Addr];
@@ -79,7 +54,7 @@ end;
 procedure SetPixelValue16bit(Layer: PChar; C, R: Integer; Naxis1: Integer; A: SmallInt); inline;
 var
   ABytes: array[0..1] of Char absolute A;
-  Addr: Integer;
+  Addr: LongInt;
 begin
   Addr := (R * Naxis1 + C) * 2;
   Layer[Addr] := ABytes[1];
@@ -160,9 +135,9 @@ end;
 
 function CFAtoRGB(var FITSfile: FITSRecordFile; const FITSFileName: string; const OutputDir: string; const Prefix: string; const BayerPattern: TBayerPattern; Overwrite: Boolean; Linear: Boolean): Boolean;
 var
-  N: Integer;
-  NblocksInHeader: Integer;
-  StartOfImage: Integer;
+  EndPosition: Int64;
+  NblocksInHeader: Int64;
+  StartOfImage: Int64;
   Bscale, Bzero: Double;
   BlackLevel: SmallInt;
   BitPix: Integer;
@@ -191,12 +166,13 @@ var
   FileModeSaved: Integer;
   S: string;
   I: Integer;
+  N: Integer;
 begin
   Result := False;
-  N := GetEndPosition(FITSfile);
-  if N < 0 then
+  EndPosition := GetEndPosition(FITSfile);
+  if EndPosition < 0 then
     FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSfileName, '"'));
-  NblocksInHeader := N div RecordsInBlock + 1;
+  NblocksInHeader := EndPosition div RecordsInBlock + 1;
   StartOfImage := NblocksInHeader * RecordsInBlock;
   GetBitPixAndNaxis(FITSfile, BitPix, NaxisN);
   if (Length(NaxisN) <> 2) then
@@ -305,7 +281,7 @@ begin
           Assert(RedL <> nil);
           Assert(BlueL <> nil);
           Assert(Length(ImageToAverage) = 2);
-          AverageIntLayers(ImageToAverage[0], ImageToAverage[1], Naxis1new * Naxis2new);
+          Average16bitLayers(ImageToAverage[0], ImageToAverage[1], Naxis1new * Naxis2new);
           GreenL := ImageToAverage[0];
         end
         else begin

@@ -4,12 +4,13 @@
     <PathDelim Value="\"/>
     <Version Value="10"/>
     <BuildModes Active="Default"/>
-    <Units Count="7">
+    <Units Count="8">
       <Unit0>
         <Filename Value="FITSstat.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <CursorPos Y="17"/>
+        <TopLine Value="20"/>
+        <CursorPos Y="50"/>
         <UsageCount Value="29"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -56,8 +57,17 @@
         <UsageCount Value="10"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit6>
+      <Unit7>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="29"/>
+        <CursorPos Y="51"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit7>
     </Units>
-    <JumpHistory Count="12" HistoryIndex="11">
+    <JumpHistory Count="13" HistoryIndex="12">
       <Position1>
         <Filename Value="FITSstat.lpr"/>
         <Caret Line="150" Column="10" TopLine="130"/>
@@ -105,6 +115,10 @@
         <Filename Value="FITSstat.lpr"/>
         <Caret Line="21" Column="66" TopLine="10"/>
       </Position12>
+      <Position13>
+        <Filename Value="FITSstat.lpr"/>
+        <Caret Line="20" Column="33"/>
+      </Position13>
     </JumpHistory>
   </ProjectSession>
 </CONFIG>

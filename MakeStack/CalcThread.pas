@@ -16,24 +16,11 @@ unit CalcThread;
 interface
 
 uses 
-  Windows, SysUtils, Classes, 
-  FITScompatibility, FitsStatUtils, FitsUtils;
+  Windows, SysUtils, Classes, FITScompatibility, FitsStatUtils, FitsUtils;
 
 type
   TStackMode = ( smAdd, smAvg, smMed );
-
-type
-  TExtendedArray = array of Extended;
-  TSmallIntArray = array of SmallInt;
-
-type
-  TDoubleArray = array of Double;
   PDoubleArray = ^TDoubleArray;
-
-type
-  TPCharArray = array of PChar;
-
-type
   TProgressProc = function (ThreadNo, Counter, FStartIndex, FNumberOfPixels: Integer): Boolean of object;
 
 type
