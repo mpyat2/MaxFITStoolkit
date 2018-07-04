@@ -4,13 +4,14 @@
     <PathDelim Value="\"/>
     <Version Value="10"/>
     <BuildModes Active="Default"/>
-    <Units Count="3">
+    <Units Count="4">
       <Unit0>
         <Filename Value="fflip.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="FFLIP"/>
         <IsVisibleTab Value="True"/>
-        <CursorPos X="51" Y="6"/>
+        <TopLine Value="85"/>
+        <CursorPos X="39" Y="113"/>
         <UsageCount Value="20"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -29,12 +30,92 @@
         <UsageCount Value="10"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit2>
+      <Unit3>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="760"/>
+        <CursorPos X="49" Y="791"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit3>
     </Units>
-    <JumpHistory Count="1">
+    <JumpHistory Count="19" HistoryIndex="18">
       <Position1>
         <Filename Value="fflip.lpr"/>
         <Caret Line="20" Column="21" TopLine="9"/>
       </Position1>
+      <Position2>
+        <Filename Value="fflip.lpr"/>
+        <Caret Line="3" Column="43"/>
+      </Position2>
+      <Position3>
+        <Filename Value="fflip.lpr"/>
+        <Caret Line="18"/>
+      </Position3>
+      <Position4>
+        <Filename Value="fflip.lpr"/>
+        <Caret Line="14" Column="2"/>
+      </Position4>
+      <Position5>
+        <Filename Value="fflip.lpr"/>
+        <Caret Line="58" Column="3" TopLine="11"/>
+      </Position5>
+      <Position6>
+        <Filename Value="fflip.lpr"/>
+      </Position6>
+      <Position7>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <Caret Line="101" Column="28" TopLine="81"/>
+      </Position7>
+      <Position8>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <Caret Line="729" Column="157" TopLine="699"/>
+      </Position8>
+      <Position9>
+        <Filename Value="fflip.lpr"/>
+        <Caret Line="59" Column="18" TopLine="32"/>
+      </Position9>
+      <Position10>
+        <Filename Value="fflip.lpr"/>
+        <Caret Line="44" Column="25" TopLine="37"/>
+      </Position10>
+      <Position11>
+        <Filename Value="fflip.lpr"/>
+        <Caret Line="41" Column="17" TopLine="22"/>
+      </Position11>
+      <Position12>
+        <Filename Value="fflip.lpr"/>
+        <Caret Line="62" Column="10" TopLine="46"/>
+      </Position12>
+      <Position13>
+        <Filename Value="fflip.lpr"/>
+        <Caret Line="63" Column="13" TopLine="46"/>
+      </Position13>
+      <Position14>
+        <Filename Value="fflip.lpr"/>
+        <Caret Line="76" Column="57" TopLine="46"/>
+      </Position14>
+      <Position15>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <Caret Line="101" Column="11" TopLine="83"/>
+      </Position15>
+      <Position16>
+        <Filename Value="fflip.lpr"/>
+        <Caret Line="76" Column="6" TopLine="42"/>
+      </Position16>
+      <Position17>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <Caret Line="101" Column="11" TopLine="82"/>
+      </Position17>
+      <Position18>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <Caret Line="740" Column="17" TopLine="729"/>
+      </Position18>
+      <Position19>
+        <Filename Value="fflip.lpr"/>
+        <Caret Line="47" TopLine="42"/>
+      </Position19>
     </JumpHistory>
   </ProjectSession>
 </CONFIG>

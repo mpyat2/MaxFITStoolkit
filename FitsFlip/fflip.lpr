@@ -1,3 +1,14 @@
+{*****************************************************************************}
+{                                                                             }
+{ FIHED                                                                       }
+{ (c) 2017 Maksym Pyatnytskyy                                                 }
+{                                                                             }
+{ This program is distributed                                                 }
+{ WITHOUT ANY WARRANTY; without even the implied warranty of                  }
+{ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                        }
+{                                                                             }
+{*****************************************************************************}
+
 {$APPTYPE CONSOLE}
 {$MODE DELPHI}
 {$INCLUDE FITSUtils.inc}
@@ -13,7 +24,7 @@ uses
 procedure PrintVersion;
 begin
   WriteLn('FITS Flip  Maksym Pyatnytskyy  2017');
-  WriteLn(GetVersionString(ParamStr(0)));
+  WriteLn(GetVersionString(AnsiUpperCase(ParamStr(0))){$IFDEF WIN64}, ' WIN64'{$ENDIF}, ' ', {$I %DATE%}, ' ', {$I %TIME%});
   WriteLn;
 end;
 
@@ -27,12 +38,11 @@ end;
 
 procedure FITSflip(var FITSfile: FITSRecordfile; const FITSfileName: string; Vertically: Boolean);
 var
+  ImageMemSize: PtrUInt;
   BitPix: Integer;
   BytePix: Integer;
   NaxisN: TIntArray;
   Naxis1, Naxis2, Naxis3: Integer;
-  NblocksInHeader: Integer;
-  NrecordsToRead: Integer;
   StartOfImage: Integer;
   Image: PChar;
   Chunk: PChar;
@@ -41,15 +51,10 @@ var
   Buf: array[0..31] of Char; // more than enough
   Pix1Addr: Integer;
   Pix2Addr: Integer;
-  N, I, II, Planes: Integer;
+  I, II, Planes: Integer;
   Offset: Integer;
 begin
-  N := GetEndPosition(FITSfile);
-  if N < 0 then
-    FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSfileName, '"'));
-  NblocksInHeader := N div RecordsInBlock + 1;
-  StartOfImage := NblocksInHeader * RecordsInBlock;
-  GetBitPixAndNaxis(FITSfile, BitPix, NaxisN);
+  GetFITSproperties(FITSfile, BitPix, NaxisN, StartOfImage, ImageMemSize);
   if (Length(NaxisN) < 2) or (Length(NaxisN) > 3) then
     FileError('Cannot work with NAXIS other than 2 or 3, got ' + IntToStr(Length(NaxisN)) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
   BytePix := Abs(BitPix) div 8;
@@ -66,12 +71,11 @@ begin
   else 
     Naxis3 := 1;
   Write(']');  
-  NrecordsToRead := ((Naxis1 * Naxis2 * Naxis3 * BytePix - 1) div FITSRecordLen + 1);
-  GetMem(Image, NrecordsToRead * FITSRecordLen);
+  GetMem(Image, ImageMemSize);
   try
-    FillChar(Image^, NrecordsToRead * FITSRecordLen, 0);
+    FillChar(Image^, ImageMemSize, 0);
     Seek(FITSfile, StartOfImage);
-    BlockRead(FITSfile, Image^, NrecordsToRead);
+    BlockRead(FITSfile, Image^, ImageMemSize div FITSRecordLen);
     
     for Planes := 0 to Naxis3 - 1 do begin
       Offset := Naxis1 * Naxis2 * BytePix * Planes; 
@@ -105,7 +109,7 @@ begin
     end;
     
     Seek(FITSfile, StartOfImage);
-    BlockWrite(FITSfile, Image^, NrecordsToRead);
+    BlockWrite(FITSfile, Image^, ImageMemSize div FITSRecordLen);
   finally
     FreeMem(Image);
     Image := nil;

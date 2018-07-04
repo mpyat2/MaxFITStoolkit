@@ -135,9 +135,7 @@ end;
 
 function CFAtoRGB(var FITSfile: FITSRecordFile; const FITSFileName: string; const OutputDir: string; const Prefix: string; const BayerPattern: TBayerPattern; Overwrite: Boolean; Linear: Boolean): Boolean;
 var
-  EndPosition: Int64;
-  NblocksInHeader: Int64;
-  StartOfImage: Int64;
+  StartOfImage: Integer;
   Bscale, Bzero: Double;
   BlackLevel: SmallInt;
   BitPix: Integer;
@@ -145,17 +143,16 @@ var
   NaxisN: TIntArray;
   Naxis1, Naxis2: Integer;
   Naxis1new, Naxis2new: Integer;
-  NrecordsToRead: Integer;
-  NRecordsToWrite: Integer;
-  Header: PChar;
+  NRecordsToWrite: Int64;
   Buf: FITSRecordType;
+  Header: TFITSRecordArray;
   HeaderNew: TFITSRecordArray;
   EndOfHeaderFound: Boolean;
   Image: PChar;
   ImageC: array[0..3] of PChar;
   ImageToAverage: TPCharArray;
-  ImageMemSize: Integer;
-  ImageLayerMemSize: Integer;
+  ImageMemSize: PtrUInt;
+  ImageLayerMemSize: PtrUInt;
   ColorL: Integer;
   ShiftV, ShiftH: Integer;
   C, R, C2, R2, X, Y: Integer;
@@ -169,12 +166,7 @@ var
   N: Integer;
 begin
   Result := False;
-  EndPosition := GetEndPosition(FITSfile);
-  if EndPosition < 0 then
-    FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSfileName, '"'));
-  NblocksInHeader := EndPosition div RecordsInBlock + 1;
-  StartOfImage := NblocksInHeader * RecordsInBlock;
-  GetBitPixAndNaxis(FITSfile, BitPix, NaxisN);
+  GetFITSproperties(FITSfile, BitPix, NaxisN, StartOfImage, ImageMemSize); // ImageMemSize is padded!
   if (Length(NaxisN) <> 2) then
     FileError('Cannot work with NAXIS other than 2, got ' + IntToStr(Length(NaxisN)) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
   Naxis1 := NaxisN[0];
@@ -191,18 +183,12 @@ begin
 
 {$IFNDEF range_check}{$R+}{$ENDIF}
 {$IFNDEF overflow_check}{$Q+}{$ENDIF}
-
   // BlackLevel is used for setting zero-pixel border only in case of Linear interpolation.
   // So we can almost safely set it to zero if its value is out of supported range.
   if Bzero <> 0 then begin
     if (Round(-Bzero) <= High(SmallInt)) and (Round(-Bzero) >= Low(SmallInt)) then
       BlackLevel := Round(-Bzero);
   end;
-
-  // Paranoidal: check size of image in bytes.
-  if Int64(Naxis1) * Int64(Naxis2) * Int64(BytePix) > MaxInt then
-    FileError('Image too large');
-
 {$IFNDEF range_check}{$R-}{$ENDIF}
 {$IFNDEF overflow_check}{$Q-}{$ENDIF}
 
@@ -216,228 +202,222 @@ begin
     Naxis2new := Naxis2;
   end;
 
-  NrecordsToRead := ((Naxis1 * Naxis2 * BytePix - 1) div FITSRecordLen + 1);
-  GetMem(Header, StartOfImage * FITSRecordLen);
+  GetMem(Image, ImageMemSize);
   try
-    FillChar(Header^, StartOfImage * FITSRecordLen, 0);
-    Seek(FITSFile, 0);
-    BlockRead(FITSFile, Header^, StartOfImage);
-    ImageMemSize := NrecordsToRead * FITSRecordLen;
-    GetMem(Image, ImageMemSize);
+    FillChar(Image^, ImageMemSize, 0);
+    Seek(FITSfile, StartOfImage);
+    BlockRead(FITSfile, Image^, ImageMemSize div FITSRecordLen);
+    ImageLayerMemSize := Naxis1new * Naxis2new * BytePix;
+
+    for ColorL := 0 to 3 do ImageC[ColorL] := nil;
+    RedL := nil;
+    GreenL := nil;
+    BlueL := nil;
+
     try
-      FillChar(Image^, ImageMemSize, 0);
-      Seek(FITSfile, StartOfImage);
-      BlockRead(FITSfile, Image^, NrecordsToRead);
-      ImageLayerMemSize := Naxis1new * Naxis2new * BytePix;
 
-      for ColorL := 0 to 3 do ImageC[ColorL] := nil;
-      RedL := nil;
-      GreenL := nil;
-      BlueL := nil;
-
-      try
-
-        if not Linear then begin
-          // Superpixel
-          // Reading 4 color planes
-          for ShiftV := 0 to 1 do begin
-            for ShiftH := 0 to 1 do begin
-              ColorL := ShiftH + ShiftV * 2;
-              GetMem(ImageC[ColorL], ImageLayerMemSize);
-              FillChar(ImageC[ColorL]^, ImageLayerMemSize, 0);
-              for C := 0 to Naxis1 - 1 do begin
-                for R := 0 to Naxis2 - 1 do begin
-                  C2 := C + ShiftH;
-                  R2 := Naxis2 - 1 - (R + ShiftV); // start from the end of Naxis2, for "correct" order of pixels
-                  if (C2 >= 0) and (C2 < Naxis1) and (R2 >= 0) and (R2 < Naxis2) then begin
-                    PixAddr := (R2 * Naxis1 + C2) * BytePix;
-                    if (C mod 2 = 0) and (R mod 2 = 0) then begin
-                      X := C div 2;
-                      Y := R div 2;
-                      if (X >= 0) and (X < Naxis1new) and (Y >= 0) and (Y < Naxis2new) then begin
-                        PixAddr2 := ((Naxis2new - 1 - Y) * Naxis1new + X) * BytePix;
-                        Move(Image[PixAddr], ImageC[ColorL][PixAddr2], BytePix);
-                      end;
+      if not Linear then begin
+        // Superpixel
+        // Reading 4 color planes
+        for ShiftV := 0 to 1 do begin
+          for ShiftH := 0 to 1 do begin
+            ColorL := ShiftH + ShiftV * 2;
+            GetMem(ImageC[ColorL], ImageLayerMemSize);
+            FillChar(ImageC[ColorL]^, ImageLayerMemSize, 0);
+            for C := 0 to Naxis1 - 1 do begin
+              for R := 0 to Naxis2 - 1 do begin
+                C2 := C + ShiftH;
+                R2 := Naxis2 - 1 - (R + ShiftV); // start from the end of Naxis2, for "correct" order of pixels
+                if (C2 >= 0) and (C2 < Naxis1) and (R2 >= 0) and (R2 < Naxis2) then begin
+                  PixAddr := (R2 * Naxis1 + C2) * BytePix;
+                  if (C mod 2 = 0) and (R mod 2 = 0) then begin
+                    X := C div 2;
+                    Y := R div 2;
+                    if (X >= 0) and (X < Naxis1new) and (Y >= 0) and (Y < Naxis2new) then begin
+                      PixAddr2 := ((Naxis2new - 1 - Y) * Naxis1new + X) * BytePix;
+                      Move(Image[PixAddr], ImageC[ColorL][PixAddr2], BytePix);
                     end;
                   end;
                 end;
               end;
             end;
           end;
-          // Averaging 2 G-planes
-          ImageToAverage := nil;
-          for ColorL := 0 to 4 do begin
-            if BayerPattern[ColorL] = 'G' then begin
-              SetLength(ImageToAverage, Length(ImageToAverage) + 1);
-              ImageToAverage[Length(ImageToAverage) - 1] := ImageC[ColorL];
-            end
-            else
+        end;
+        // Averaging 2 G-planes
+        ImageToAverage := nil;
+        for ColorL := 0 to 4 do begin
+          if BayerPattern[ColorL] = 'G' then begin
+            SetLength(ImageToAverage, Length(ImageToAverage) + 1);
+            ImageToAverage[Length(ImageToAverage) - 1] := ImageC[ColorL];
+          end
+          else
+          if BayerPattern[ColorL] = 'R' then
+            RedL := ImageC[ColorL]
+          else
+          if BayerPattern[ColorL] = 'B' then
+            BlueL := ImageC[ColorL];
+        end;
+        Assert(RedL <> nil);
+        Assert(BlueL <> nil);
+        Assert(Length(ImageToAverage) = 2);
+        Average16bitLayers(ImageToAverage[0], ImageToAverage[1], Naxis1new * Naxis2new);
+        GreenL := ImageToAverage[0];
+      end
+      else begin
+        // Linear interpolation
+        // Reading 4 color planes
+        // Step1: allocating memory
+        for ColorL := 0 to 3 do begin
+          if BayerPattern[ColorL] = 'R' then begin
+            GetMem(ImageC[ColorL], ImageLayerMemSize);
+            FillChar(ImageC[ColorL]^, ImageLayerMemSize, 0);
+            RedL := ImageC[ColorL];
+          end
+          else
+          if BayerPattern[ColorL] = 'G' then begin
+            if GreenL = nil then begin
+              GetMem(ImageC[ColorL], ImageLayerMemSize);
+              FillChar(ImageC[ColorL]^, ImageLayerMemSize, 0);
+              GreenL := ImageC[ColorL];
+            end;
+          end
+          else
+          if BayerPattern[ColorL] = 'B' then begin
+            GetMem(ImageC[ColorL], ImageLayerMemSize);
+            FillChar(ImageC[ColorL]^, ImageLayerMemSize, 0);
+            BlueL := ImageC[ColorL];
+          end
+        end;
+        Assert(GreenL <> nil);
+        Assert(RedL <> nil);
+        Assert(BlueL <> nil);
+        // Moving exisiting pixels to color planes
+        for C := 0 to Naxis1 - 1 do begin
+          for R := Naxis2 - 1 downto 0 do begin // start from the end of Naxis2, for "correct" order of pixels
+            PixAddr := (R * Naxis1 + C) * BytePix;
+            ColorL := C mod 2 + 2 * ((Naxis2 - 1 - R) mod 2);
             if BayerPattern[ColorL] = 'R' then
-              RedL := ImageC[ColorL]
+              Move(Image[PixAddr], RedL[PixAddr], BytePix)
+            else
+            if BayerPattern[ColorL] = 'G' then
+              Move(Image[PixAddr], GreenL[PixAddr], BytePix)
             else
             if BayerPattern[ColorL] = 'B' then
-              BlueL := ImageC[ColorL];
-          end;
-          Assert(RedL <> nil);
-          Assert(BlueL <> nil);
-          Assert(Length(ImageToAverage) = 2);
-          Average16bitLayers(ImageToAverage[0], ImageToAverage[1], Naxis1new * Naxis2new);
-          GreenL := ImageToAverage[0];
-        end
-        else begin
-          // Linear interpolation
-          // Reading 4 color planes
-          // Step1: allocating memory
-          for ColorL := 0 to 3 do begin
-            if BayerPattern[ColorL] = 'R' then begin
-              GetMem(ImageC[ColorL], ImageLayerMemSize);
-              FillChar(ImageC[ColorL]^, ImageLayerMemSize, 0);
-              RedL := ImageC[ColorL];
-            end
-            else
-            if BayerPattern[ColorL] = 'G' then begin
-              if GreenL = nil then begin
-                GetMem(ImageC[ColorL], ImageLayerMemSize);
-                FillChar(ImageC[ColorL]^, ImageLayerMemSize, 0);
-                GreenL := ImageC[ColorL];
-              end;
-            end
-            else
-            if BayerPattern[ColorL] = 'B' then begin
-              GetMem(ImageC[ColorL], ImageLayerMemSize);
-              FillChar(ImageC[ColorL]^, ImageLayerMemSize, 0);
-              BlueL := ImageC[ColorL];
-            end
-          end;
-          Assert(GreenL <> nil);
-          Assert(RedL <> nil);
-          Assert(BlueL <> nil);
-          // Moving exisiting pixels to color planes
-          for C := 0 to Naxis1 - 1 do begin
-            for R := Naxis2 - 1 downto 0 do begin // start from the end of Naxis2, for "correct" order of pixels
-              PixAddr := (R * Naxis1 + C) * BytePix;
-              ColorL := C mod 2 + 2 * ((Naxis2 - 1 - R) mod 2);
-              if BayerPattern[ColorL] = 'R' then
-                Move(Image[PixAddr], RedL[PixAddr], BytePix)
-              else
-              if BayerPattern[ColorL] = 'G' then
-                Move(Image[PixAddr], GreenL[PixAddr], BytePix)
-              else
-              if BayerPattern[ColorL] = 'B' then
-                Move(Image[PixAddr], BlueL[PixAddr], BytePix);
-            end;
-          end;
-          // Interpolating
-          InterpolateLayer16bit(GreenL, 'G', Naxis1, Naxis2, BayerPattern, BlackLevel);
-          InterpolateLayer16bit(RedL,   'R', Naxis1, Naxis2, BayerPattern, BlackLevel);
-          InterpolateLayer16bit(BlueL,  'B', Naxis1, Naxis2, BayerPattern, BlackLevel);
-        end;
-
-        // Saving file
-        EndOfHeaderFound := False;
-        // Creating new header with NAXIS=3 and new sizes
-        HeaderNew := nil;
-        for I := 0 to StartOfImage - 1 do begin
-          Move(Header[I * FITSRecordLen], Buf, FITSRecordLen);
-          if Copy(Buf, 1, FITSKeywordLen) = PadCh('NAXIS', FITSKeywordLen, ' ') then begin
-            // Fix NAXIS
-            Str(3:FITSNumericAlign - FITSKeywordLen - 2, S);
-            StrToFITSRecord(PadCh('NAXIS', FITSKeywordLen, ' ') + '= ' + S, Buf);
-          end
-          else
-          if Copy(Buf, 1, FITSKeywordLen) = PadCh('NAXIS1', FITSKeywordLen, ' ') then begin
-            // Fix NAXIS1
-            Str(Naxis1new:FITSNumericAlign - FITSKeywordLen - 2, S);
-            StrToFITSRecord(PadCh('NAXIS1', FITSKeywordLen, ' ') + '= ' + S, Buf);
-          end
-          else
-          if Copy(Buf, 1, FITSKeywordLen) = PadCh('NAXIS2', FITSKeywordLen, ' ') then begin
-            // Fix NAXIS2 ...
-            Str(Naxis2new:FITSNumericAlign - FITSKeywordLen - 2, S);
-            StrToFITSRecord(PadCh('NAXIS2', FITSKeywordLen, ' ') + '= ' + S, Buf);
-          end;
-          SetLength(HeaderNew, Length(HeaderNew) + 1);
-          Move(Buf, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
-          if Copy(Buf, 1, FITSKeywordLen) = PadCh('NAXIS2', FITSKeywordLen, ' ') then begin
-            // ... and add NAXIS3=3 after NAXIS2.
-            Str(3:FITSNumericAlign - FITSKeywordLen - 2, S);
-            StrToFITSRecord(PadCh('NAXIS3', FITSKeywordLen, ' ') + '= ' + S, Buf);
-            SetLength(HeaderNew, Length(HeaderNew) + 1);
-            Move(Buf, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
-          end
-          else
-          if Buf = recordEND then begin
-            // adding comment before END
-            S := PadCh('COMMENT', FITSKeywordLen, ' ') + 'Debayered by CFA2RGB';
-            if not Linear then S := S + ' (superpixel mode)' else S := S + ' (linear interpolation)';
-            StrToFITSRecord(S, Buf);
-            Move(Buf, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
-            SetLength(HeaderNew, Length(HeaderNew) + 1);
-            Move(recordEND, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
-            EndOfHeaderFound := True;
-            Break;
+              Move(Image[PixAddr], BlueL[PixAddr], BytePix);
           end;
         end;
-
-        Assert(EndOfHeaderFound);
-
-        // Padding header...
-        N := Length(HeaderNew) mod RecordsInBlock;
-        if N > 0 then begin
-          for I := 1 to RecordsInBlock - N do begin
-            SetLength(HeaderNew, Length(HeaderNew) + 1);
-            FillChar(HeaderNew[Length(HeaderNew) - 1], SizeOf(FITSRecordType), ' ');
-          end;
-        end;
-        StartOfImage := Length(HeaderNew);
-
-        // Reallocating Image
-        FreeMem(Image);
-        NRecordsToWrite := (3 * ImageLayerMemSize - 1) div FITSRecordLen + 1;
-        NRecordsToWrite := ((NRecordsToWrite - 1) div RecordsInBlock + 1) * RecordsInBlock;
-        GetMem(Image, NRecordsToWrite * FITSRecordLen);
-        FillChar(Image^, NRecordsToWrite * FITSRecordLen, 0);
-        Move(RedL[0], Image[0], ImageLayerMemSize);
-        Move(GreenL[0], Image[ImageLayerMemSize], ImageLayerMemSize);
-        Move(BlueL[0], Image[ImageLayerMemSize * 2], ImageLayerMemSize);
-
-        // Writing file
-        OutFileName := Prefix + ExtractFileName(FITSfileName);
-        if OutputDir = '' then
-          OutFileName := ExtractFilePath(FITSfileName) + OutFileName
-        else
-          OutFileName := IncludeTrailingPathDelimiter(OutputDir) + OutFileName;
-        Write(ExtractFileName(OutFileName));
-        if not Overwrite and FileExists(OutFileName) then
-          FileError('File ' + AnsiQuotedStr(OutFileName, '"') + ' already exists. Use /F switch to overwrite.');
-        AssignFile(OutFile, OutFileName);
-        FileModeSaved := FileMode;
-        FileMode := fmOpenReadWrite;
-        try
-          Rewrite(OutFile);
-          try
-            BlockWrite(OutFile, HeaderNew[0], StartOfImage);
-            BlockWrite(OutFile, Image^, NRecordsToWrite);
-          finally
-            CloseFile(OutFile);
-          end;
-        finally
-          FileMode := FileModeSaved;
-        end;
-
-      finally
-        for ColorL := 3 downto 0 do begin
-          if ImageC[ColorL] <> nil then FreeMem(ImageC[ColorL]);
-          ImageC[ColorL] := nil;
-        end;
+        // Interpolating
+        InterpolateLayer16bit(GreenL, 'G', Naxis1, Naxis2, BayerPattern, BlackLevel);
+        InterpolateLayer16bit(RedL,   'R', Naxis1, Naxis2, BayerPattern, BlackLevel);
+        InterpolateLayer16bit(BlueL,  'B', Naxis1, Naxis2, BayerPattern, BlackLevel);
       end;
-    finally
+
       FreeMem(Image);
       Image := nil;
+
+      // Saving file
+      EndOfHeaderFound := False;
+      // Creating new header with NAXIS=3 and new sizes
+      HeaderNew := nil;
+      GetHeader(FITSFile, Header);
+      for I := 0 to Length(Header) - 1 do begin
+        Move(Header[I], Buf, FITSRecordLen);
+        if Copy(Buf, 1, FITSKeywordLen) = PadCh('NAXIS', FITSKeywordLen, ' ') then begin
+          // Fix NAXIS
+          Str(3:FITSNumericAlign - FITSKeywordLen - 2, S);
+          StrToFITSRecord(PadCh('NAXIS', FITSKeywordLen, ' ') + '= ' + S, Buf);
+        end
+        else
+        if Copy(Buf, 1, FITSKeywordLen) = PadCh('NAXIS1', FITSKeywordLen, ' ') then begin
+          // Fix NAXIS1
+          Str(Naxis1new:FITSNumericAlign - FITSKeywordLen - 2, S);
+          StrToFITSRecord(PadCh('NAXIS1', FITSKeywordLen, ' ') + '= ' + S, Buf);
+        end
+        else
+        if Copy(Buf, 1, FITSKeywordLen) = PadCh('NAXIS2', FITSKeywordLen, ' ') then begin
+          // Fix NAXIS2 ...
+          Str(Naxis2new:FITSNumericAlign - FITSKeywordLen - 2, S);
+          StrToFITSRecord(PadCh('NAXIS2', FITSKeywordLen, ' ') + '= ' + S, Buf);
+        end;
+        SetLength(HeaderNew, Length(HeaderNew) + 1);
+        Move(Buf, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
+        if Copy(Buf, 1, FITSKeywordLen) = PadCh('NAXIS2', FITSKeywordLen, ' ') then begin
+          // ... and add NAXIS3=3 after NAXIS2.
+          Str(3:FITSNumericAlign - FITSKeywordLen - 2, S);
+          StrToFITSRecord(PadCh('NAXIS3', FITSKeywordLen, ' ') + '= ' + S, Buf);
+          SetLength(HeaderNew, Length(HeaderNew) + 1);
+          Move(Buf, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
+        end
+        else
+        if Buf = recordEND then begin
+          // adding comment before END
+          S := PadCh('COMMENT', FITSKeywordLen, ' ') + 'Debayered by CFA2RGB';
+          if not Linear then S := S + ' (superpixel mode)' else S := S + ' (linear interpolation)';
+          StrToFITSRecord(S, Buf);
+          Move(Buf, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
+          SetLength(HeaderNew, Length(HeaderNew) + 1);
+          Move(recordEND, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
+          EndOfHeaderFound := True;
+          Break;
+        end;
+      end;
+      Header := nil;
+
+      Assert(EndOfHeaderFound);
+
+      // Padding new header...
+      N := Length(HeaderNew) mod RecordsInBlock;
+      if N > 0 then begin
+        for I := 1 to RecordsInBlock - N do begin
+          SetLength(HeaderNew, Length(HeaderNew) + 1);
+          FillChar(HeaderNew[Length(HeaderNew) - 1], SizeOf(FITSRecordType), ' ');
+        end;
+      end;
+      // Updating StartOfImage
+      StartOfImage := Length(HeaderNew);
+
+      // Reallocating Image
+      NRecordsToWrite := (3 * Int64(ImageLayerMemSize) - 1) div FITSRecordLen + 1;
+      NRecordsToWrite := ((NRecordsToWrite - 1) div RecordsInBlock + 1) * RecordsInBlock; // padding
+      GetMem(Image, NRecordsToWrite * FITSRecordLen);
+      FillChar(Image^, NRecordsToWrite * FITSRecordLen, 0);
+      Move(RedL[0], Image[0], ImageLayerMemSize);
+      Move(GreenL[0], Image[ImageLayerMemSize], ImageLayerMemSize);
+      Move(BlueL[0], Image[ImageLayerMemSize * 2], ImageLayerMemSize);
+
+      // Writing file
+      OutFileName := Prefix + ExtractFileName(FITSfileName);
+      if OutputDir = '' then
+        OutFileName := ExtractFilePath(FITSfileName) + OutFileName
+      else
+        OutFileName := IncludeTrailingPathDelimiter(OutputDir) + OutFileName;
+      Write(ExtractFileName(OutFileName));
+      if not Overwrite and FileExists(OutFileName) then
+        FileError('File ' + AnsiQuotedStr(OutFileName, '"') + ' already exists. Use /F switch to overwrite.');
+      AssignFile(OutFile, OutFileName);
+      FileModeSaved := FileMode;
+      FileMode := fmOpenReadWrite;
+      try
+        Rewrite(OutFile);
+        try
+          BlockWrite(OutFile, HeaderNew[0], StartOfImage);
+          BlockWrite(OutFile, Image^, NRecordsToWrite);
+        finally
+          CloseFile(OutFile);
+        end;
+      finally
+        FileMode := FileModeSaved;
+      end;
+
+    finally
+      for ColorL := 3 downto 0 do begin
+        if ImageC[ColorL] <> nil then FreeMem(ImageC[ColorL]);
+        ImageC[ColorL] := nil;
+      end;
     end;
   finally
-    FreeMem(Header);
-    Header := nil;
+    FreeMem(Image);
+    Image := nil;
   end;
   Result := True;
 end;

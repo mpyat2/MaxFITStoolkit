@@ -11,6 +11,9 @@
 
 {$APPTYPE CONSOLE}
 {$MODE DELPHI}
+
+{$ASSERTIONS ON}          // can be disabled in release mode
+
 {$INCLUDE FITSUtils.inc}
 
 program FITSCFA;
@@ -69,23 +72,23 @@ end;
 
 procedure FITSSplit(var FITSfile: FITSRecordfile; const FITSfileName: string; const Profile: string; const OutputDir: string; Overwrite: Boolean);
 var
-  EndPosition: Int64;
-  NblocksInHeader: Int64;
-  StartOfImage: Int64;
+  StartOfImage: Integer;
   BitPix: Integer;
   BytePix: Integer;
   NaxisN: TIntArray;
   Naxis1, Naxis2: Integer;
   Naxis1new, Naxis2new: Integer;
-  NrecordsToRead: Integer;
   NRecordsToWrite: Integer;
-  Header: PChar;
+  Header: TFITSRecordArray;
+  HeaderNew: TFITSRecordArray;
+  EndOfHeaderFound: Boolean;
+  Buf: FITSRecordType;
   Image: PChar;
   ImageC: array[0..3] of PChar;
   ImageToAverage: TPCharArray;
   ImageNames: array[0..3] of string;
-  ImageMemSize: Integer;
-  Image2MemSize: Integer;
+  ImageMemSize: PtrUInt;
+  Image2MemSize: PtrUInt;
   C, R, C2, R2, X, Y: Integer;
   ShiftV, ShiftH: Integer;
   ColorL, ColorL2, LL: Integer;
@@ -93,13 +96,10 @@ var
   OutFile: FITSRecordfile;
   OutFileName: string;
   FileModeSaved: Integer;
+  S: string;
+  N, I: Integer;
 begin
-  EndPosition := GetEndPosition(FITSfile);
-  if EndPosition < 0 then
-    FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSfileName, '"'));
-  NblocksInHeader := EndPosition div RecordsInBlock + 1;
-  StartOfImage := NblocksInHeader * RecordsInBlock;
-  GetBitPixAndNaxis(FITSfile, BitPix, NaxisN);
+  GetFITSproperties(FITSfile, BitPix, NaxisN, StartOfImage, ImageMemSize);
   if (Length(NaxisN) <> 2) then
     FileError('Cannot work with NAXIS other than 2, got ' + IntToStr(Length(NaxisN)) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
   if (BitPix <> 8) and (BitPix <> 16) and (BitPix <> 32) and (BitPix <> -32) and (BitPix <> -64) then
@@ -108,120 +108,150 @@ begin
   Naxis1 := NaxisN[0];
   Naxis2 := NaxisN[1];
   Write(' [', Naxis1, 'x', Naxis2, '] [BITPIX=', BitPix, '] -> ');
+  GetHeader(FITSFile, Header);
   Naxis1new := Naxis1 div 2;
   Naxis2new := Naxis2 div 2;
-  NrecordsToRead := ((Naxis1 * Naxis2 * BytePix - 1) div FITSRecordLen + 1);
   NRecordsToWrite := ((Naxis1new * Naxis2new * BytePix - 1) div FITSRecordLen + 1);
   NRecordsToWrite := ((NRecordsToWrite - 1) div RecordsInBlock + 1) * RecordsInBlock; // padding
-  GetMem(Header, StartOfImage * FITSRecordLen);
+  GetMem(Image, ImageMemSize);
   try
-    FillChar(Header^, StartOfImage * FITSRecordLen, 0);
-    Seek(FITSFile, 0);
-    BlockRead(FITSFile, Header^, StartOfImage);
-    ImageMemSize := NrecordsToRead * FITSRecordLen;
-    GetMem(Image, ImageMemSize);
+    FillChar(Image^, ImageMemSize, 0);
+    Seek(FITSfile, StartOfImage);
+    BlockRead(FITSfile, Image^, ImageMemSize div FITSRecordLen);
+    Image2MemSize := NrecordsToWrite * FITSRecordLen;
+    for ColorL := 0 to 3 do ImageC[ColorL] := nil;
     try
-      FillChar(Image^, ImageMemSize, 0);
-      Seek(FITSfile, StartOfImage);
-      BlockRead(FITSfile, Image^, NrecordsToRead);
-      Image2MemSize := NrecordsToWrite * FITSRecordLen;
-      for ColorL := 0 to 3 do ImageC[ColorL] := nil;
-      try
-        for ShiftV := 0 to 1 do begin
-          for ShiftH := 0 to 1 do begin
-            ColorL := ShiftH + ShiftV * 2;
-            ImageNames[ColorL] := Trim(Ini.ReadString(Profile, IntToStr(ColorL + 1), ''));
-            if ImageNames[ColorL] = '' then ImageNames[ColorL] := 'p' + IntToStr(ColorL + 1);
-            GetMem(ImageC[ColorL], Image2MemSize);
-            FillChar(ImageC[ColorL]^, Image2MemSize, 0);
-            for C := 0 to Naxis1 - 1 do begin
-              for R := 0 to Naxis2 - 1 do begin
-                C2 := C + ShiftH;
-                R2 := Naxis2 - 1 - (R + ShiftV); // start from the end of Naxis2, for "correct" order of pixels
-                if (C2 >= 0) and (C2 < Naxis1) and (R2 >= 0) and (R2 < Naxis2) then begin
-                  PixAddr := (R2 * Naxis1 + C2) * BytePix;
-                  if (C mod 2 = 0) and (R mod 2 = 0) then begin
-                    X := C div 2;
-                    Y := R div 2;
-                    if (X >= 0) and (X < Naxis1new) and (Y >= 0) and (Y < Naxis2new) then begin
-                      PixAddr2 := ((Naxis2new - 1 - Y) * Naxis1new + X) * BytePix;
-                      Move(Image[PixAddr], ImageC[ColorL][PixAddr2], BytePix);
-                    end;
+      for ShiftV := 0 to 1 do begin
+        for ShiftH := 0 to 1 do begin
+          ColorL := ShiftH + ShiftV * 2;
+          ImageNames[ColorL] := Trim(Ini.ReadString(Profile, IntToStr(ColorL + 1), ''));
+          if ImageNames[ColorL] = '' then ImageNames[ColorL] := 'p' + IntToStr(ColorL + 1);
+          GetMem(ImageC[ColorL], Image2MemSize);
+          FillChar(ImageC[ColorL]^, Image2MemSize, 0);
+          for C := 0 to Naxis1 - 1 do begin
+            for R := 0 to Naxis2 - 1 do begin
+              C2 := C + ShiftH;
+              R2 := Naxis2 - 1 - (R + ShiftV); // start from the end of Naxis2, for "correct" order of pixels
+              if (C2 >= 0) and (C2 < Naxis1) and (R2 >= 0) and (R2 < Naxis2) then begin
+                PixAddr := (R2 * Naxis1 + C2) * BytePix;
+                if (C mod 2 = 0) and (R mod 2 = 0) then begin
+                  X := C div 2;
+                  Y := R div 2;
+                  if (X >= 0) and (X < Naxis1new) and (Y >= 0) and (Y < Naxis2new) then begin
+                    PixAddr2 := ((Naxis2new - 1 - Y) * Naxis1new + X) * BytePix;
+                    Move(Image[PixAddr], ImageC[ColorL][PixAddr2], BytePix);
                   end;
                 end;
               end;
             end;
           end;
         end;
+      end;
 
-        for ColorL := 0 to 3 do begin
-          if ImageNames[ColorL] <> '' then begin
-            SetLength(ImageToAverage, 1);
-            ImageToAverage[0] := ImageC[ColorL];
-            for ColorL2 := ColorL + 1 to 3 do begin
-              if ImageNames[ColorL] = ImageNames[ColorL2] then begin
-                SetLength(ImageToAverage, Length(ImageToAverage) + 1);
-                ImageToAverage[Length(ImageToAverage) - 1] := ImageC[ColorL2];
-              end;
+      for ColorL := 0 to 3 do begin
+        if ImageNames[ColorL] <> '' then begin
+          SetLength(ImageToAverage, 1);
+          ImageToAverage[0] := ImageC[ColorL];
+          for ColorL2 := ColorL + 1 to 3 do begin
+            if ImageNames[ColorL] = ImageNames[ColorL2] then begin
+              SetLength(ImageToAverage, Length(ImageToAverage) + 1);
+              ImageToAverage[Length(ImageToAverage) - 1] := ImageC[ColorL2];
             end;
-            if Length(ImageToAverage) > 1 then begin
-              AverageFITSlayers(ImageToAverage, Naxis1new * Naxis2new * BytePix, BitPix);
-              for ColorL2 := 1 to Length(ImageToAverage) - 1 do begin
-                for LL := ColorL + 1 to 3 do begin
-                  if ImageC[LL] = ImageToAverage[ColorL2] then begin
-                    ImageNames[LL] := '';
-                    FreeMem(ImageC[LL]);
-                    ImageC[LL] := nil;
-                  end;
+          end;
+          if Length(ImageToAverage) > 1 then begin
+            AverageFITSlayers(ImageToAverage, Naxis1new * Naxis2new * BytePix, BitPix);
+            for ColorL2 := 1 to Length(ImageToAverage) - 1 do begin
+              for LL := ColorL + 1 to 3 do begin
+                if ImageC[LL] = ImageToAverage[ColorL2] then begin
+                  ImageNames[LL] := '';
+                  FreeMem(ImageC[LL]);
+                  ImageC[LL] := nil;
                 end;
               end;
             end;
           end;
         end;
+      end;
 
-        for ColorL := 0 to 3 do begin
-          if ImageNames[ColorL] <> '' then begin
-            OutFileName := ImageNames[ColorL] + '-' + ExtractFileName(FITSfileName);
-            if OutputDir = '' then
-              OutFileName := ExtractFilePath(FITSfileName) + OutFileName
+      for ColorL := 0 to 3 do begin
+        if ImageNames[ColorL] <> '' then begin
+          EndOfHeaderFound := False;
+          // We should update NAXIS1 and NAXIS2
+          HeaderNew := nil;
+          for I := 0 to Length(Header) - 1 do begin
+            Move(Header[I], Buf, FITSRecordLen);
+            if Copy(Buf, 1, FITSKeywordLen) = PadCh('NAXIS1', FITSKeywordLen, ' ') then begin
+              // Fix NAXIS1
+              Str(Naxis1new:FITSNumericAlign - FITSKeywordLen - 2, S);
+              StrToFITSRecord(PadCh('NAXIS1', FITSKeywordLen, ' ') + '= ' + S, Buf);
+            end
             else
-              OutFileName := IncludeTrailingPathDelimiter(OutputDir) + OutFileName;
-            Write(' ', ExtractFileName(OutFileName));
-            if not Overwrite and FileExists(OutFileName) then
-              FileError('File ' + AnsiQuotedStr(OutFileName, '"') + ' already exists. Use /F switch to overwrite.');
-            AssignFile(OutFile, OutFileName);
-            FileModeSaved := FileMode;
-            FileMode := fmOpenReadWrite;
-            try
-              Rewrite(OutFile);
-              try
-                BlockWrite(OutFile, Header^, StartOfImage);
-                SetKeywordValue(OutFile, 'NAXIS1', IntToStr(Naxis1new), True, '', False);
-                SetKeywordValue(OutFile, 'NAXIS2', IntToStr(Naxis2new), True, '', False);
-                Seek(OutFile, StartOfImage);
-                BlockWrite(OutFile, ImageC[ColorL]^, NrecordsToWrite);
-                SetKeywordValue(OutFile, 'FILTER', FITSQuotedValue(' ' + ImageNames[ColorL]), False, 'Color Layer', True);
-              finally
-                CloseFile(OutFile);
-              end;
-            finally
-              FileMode := FileModeSaved;
+            if Copy(Buf, 1, FITSKeywordLen) = PadCh('NAXIS2', FITSKeywordLen, ' ') then begin
+              // Fix NAXIS2 ...
+              Str(Naxis2new:FITSNumericAlign - FITSKeywordLen - 2, S);
+              StrToFITSRecord(PadCh('NAXIS2', FITSKeywordLen, ' ') + '= ' + S, Buf);
+            end;
+            SetLength(HeaderNew, Length(HeaderNew) + 1);
+            Move(Buf, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
+            if Buf = recordEND then begin
+              // adding FILTER keyword
+              S := PadCh('FILTER', FITSKeywordLen, ' ') + '= ' + FITSQuotedValue(' ' + ImageNames[ColorL]) + ' / Color Layer';
+              StrToFITSRecord(S, Buf);
+              Move(Buf, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
+              SetLength(HeaderNew, Length(HeaderNew) + 1);
+              Move(recordEND, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
+              EndOfHeaderFound := True;
+              Break;
             end;
           end;
-        end;
-      finally
-        for ColorL := 3 downto 0 do begin
-          if ImageC[ColorL] <> nil then FreeMem(ImageC[ColorL]);
-          ImageC[ColorL] := nil;
+
+          Assert(EndOfHeaderFound);
+
+          // Padding new header...
+          N := Length(HeaderNew) mod RecordsInBlock;
+          if N > 0 then begin
+            for I := 1 to RecordsInBlock - N do begin
+              SetLength(HeaderNew, Length(HeaderNew) + 1);
+              FillChar(HeaderNew[Length(HeaderNew) - 1], SizeOf(FITSRecordType), ' ');
+            end;
+          end;
+          // Updating StartOfImage
+          StartOfImage := Length(HeaderNew);
+
+          // Writing file
+          OutFileName := ImageNames[ColorL] + '-' + ExtractFileName(FITSfileName);
+          if OutputDir = '' then
+            OutFileName := ExtractFilePath(FITSfileName) + OutFileName
+          else
+            OutFileName := IncludeTrailingPathDelimiter(OutputDir) + OutFileName;
+          Write(' ', ExtractFileName(OutFileName));
+          if not Overwrite and FileExists(OutFileName) then
+            FileError('File ' + AnsiQuotedStr(OutFileName, '"') + ' already exists. Use /F switch to overwrite.');
+          AssignFile(OutFile, OutFileName);
+          FileModeSaved := FileMode;
+          FileMode := fmOpenReadWrite;
+          try
+            Rewrite(OutFile);
+            try
+              BlockWrite(OutFile, HeaderNew[0], StartOfImage);
+              BlockWrite(OutFile, ImageC[ColorL]^, NrecordsToWrite);
+            finally
+              CloseFile(OutFile);
+            end;
+          finally
+            FileMode := FileModeSaved;
+          end;
         end;
       end;
     finally
-      FreeMem(Image);
-      Image := nil;
+      for ColorL := 3 downto 0 do begin
+        if ImageC[ColorL] <> nil then FreeMem(ImageC[ColorL]);
+        ImageC[ColorL] := nil;
+      end;
     end;
   finally
-    FreeMem(Header);
-    Header := nil;
+    FreeMem(Image);
+    Image := nil;
   end;
 end;
 

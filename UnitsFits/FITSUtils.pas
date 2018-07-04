@@ -76,12 +76,13 @@ function StripQuotes(const S: string): string;
 function GetDouble(const S: string; out V: Double): Boolean; inline;
 function GetInt(const S: string; out V: Integer): Boolean; inline;
 
+//function GetEndPosition(var FITSfile: FITSRecordFile): Int64;
 function IsFITS(var FITSfile: FITSRecordFile): Boolean;
 function GetKeywordValue(var FITSfile: FITSRecordFile; const Keyword: string; out Value: string; RemoveComment: Boolean; TrimVal: Boolean): Int64;
 function SetKeywordValue(var FITSfile: FITSRecordFile; const Keyword: string; const Value: string; AlignNumeric: Boolean; const Comment: string; CanResize: Boolean): Boolean;
 function AddCommentLikeKeyword(var FITSfile: FITSRecordFile; const Keyword: string; const Value: string; CanResize: Boolean): Boolean;
-procedure GetHeader(var FITSfile: FITSRecordFile; const Header: TStrings);
-function GetEndPosition(var FITSfile: FITSRecordFile): Int64;
+procedure GetHeader(var FITSfile: FITSRecordFile; const Header: TStrings); overload;
+procedure GetHeader(var FITSfile: FITSRecordFile; out Header: TFITSRecordArray); overload;
 procedure RevertBytes(var FITSvalue: TFITSValue; BitPix: Integer);
 procedure AverageFITSlayers(const Layers: TPCharArray; Len: LongInt; BitPix: Integer); // result -> [0] layer
 procedure Average16bitLayers(Layer1, Layer2: PChar; Len: LongInt); // result -> 1st layer
@@ -96,7 +97,8 @@ function MakeFITSHeader(BitPix: Integer;
                         const Telescope: string;
                         const Instrument: string;
                         const Comments: TStringArray): TFITSRecordArray;
-procedure GetBitPixAndNaxis(var FITSfile: FITSRecordfile; out BitPix: Integer; out NaxisN: TIntArray);
+// ImageMemSize is padded to FITSRecordLen, so NrecordsToRead = ImageMemSize div FITSRecordLen!
+procedure GetFITSproperties(var FITSfile: FITSRecordfile; out BitPix: Integer; out NaxisN: TIntArray; out StartOfImage: Integer; out ImageMemSize: PtrUInt);
 // physical_value = BZERO + BSCALE * array_value (https://heasarc.gsfc.nasa.gov/docs/fcg/standard_dict.html)
 procedure GetBscaleBzero(var FITSfile: FITSRecordFile; out Bscale, Bzero: Double);
 function GetDateObs(var FITSfile: FITSRecordFile): TDateTime;
@@ -211,6 +213,25 @@ begin
   end;
 end;
 
+function GetEndPosition(var FITSfile: FITSRecordFile): Int64;
+// Position is zero-based
+var
+  Buf: FITSRecordType;
+  NRecord: Int64;
+begin
+  Result := -1;
+  NRecord := -1;
+  Seek(FITSfile, 0);
+  while not EOF(FITSfile) do begin
+    BlockRead(FITSfile, Buf, 1);
+    Inc(NRecord);
+    if Buf = recordEND then begin
+      Result := NRecord;
+      Exit;
+    end;
+  end;
+end;
+
 function IsFITS(var FITSfile: FITSRecordFile): Boolean;
 var
   Buf: FITSRecordType;
@@ -229,25 +250,6 @@ begin
   EndPosition := GetEndPosition(FITSfile);
   if EndPosition < 1 then Exit;
   Result := True;
-end;
-
-function GetEndPosition(var FITSfile: FITSRecordFile): Int64;
-// Position is zero-based
-var
-  Buf: FITSRecordType;
-  NRecord: Int64;
-begin
-  Result := -1;
-  NRecord := -1;
-  Seek(FITSfile, 0);
-  while not EOF(FITSfile) do begin
-    BlockRead(FITSfile, Buf, 1);
-    Inc(NRecord);
-    if Buf = recordEND then begin
-      Result := NRecord;
-      Exit;
-    end;
-  end;
 end;
 
 function GetHeaderRecordPosition(var FITSfile: FITSRecordFile; const Keyword: string): Int64;
@@ -489,7 +491,24 @@ begin
   Result := True;
 end;
 
-procedure GetHeader(var FITSfile: FITSRecordFile; const Header: TStrings);
+procedure GetHeader(var FITSfile: FITSRecordFile; out Header: TFITSRecordArray); overload;
+var
+  Buf: FITSRecordType;
+begin
+  Header := nil;
+  if GetEndPosition(FITSfile) < 0 then
+    FITSError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
+  Seek(FITSfile, 0);
+  while not EOF(FITSfile) do begin
+    BlockRead(FITSfile, Buf, 1);
+    SetLength(Header, Length(Header) + 1);
+    Move(Buf, Header[Length(Header) - 1], SizeOf(FITSRecordType));
+    if Buf = recordEND then
+      Exit;
+  end;
+end;
+
+procedure GetHeader(var FITSfile: FITSRecordFile; const Header: TStrings); overload;
 // It is practically impossible that number of keywords in a header could be > MaxInt.
 var
   Buf: FITSRecordType;
@@ -707,7 +726,7 @@ begin
   end;
 end;
 
-procedure GetBitPixAndNaxis(var FITSfile: FITSRecordfile; out BitPix: Integer; out NaxisN: TIntArray);
+procedure GetFITSproperties(var FITSfile: FITSRecordfile; out BitPix: Integer; out NaxisN: TIntArray; out StartOfImage: Integer; out ImageMemSize: PtrUInt);
 var
   Value: string;
   Naxis: Integer;
@@ -715,10 +734,20 @@ var
   I: Integer;
   ValidNumber: Boolean;
   FITSfileName: string;
+  NblocksInHeader: Int64;
+  EndPosition: Int64;
+  NImagePoints: Int64;
+  NrecordsToRead: Int64;
+  BytePix: Integer;
 begin
   BitPix := 0;
   NaxisN := nil;
   FITSfileName := FITSRecordTypeFileName(FITSfile);
+
+  EndPosition := GetEndPosition(FITSfile);
+  if EndPosition < 0 then
+    FITSError('Cannot find End of Header. File ' + AnsiQuotedStr(FITSfileName, '"'));
+  NblocksInHeader := EndPosition div RecordsInBlock + 1;
 
   if GetKeywordValue(FITSfile, 'BITPIX', Value, True, True) < 0 then
     FITSError('Cannot get value of BITPIX. File ' + AnsiQuotedStr(FITSfileName, '"'));
@@ -741,6 +770,28 @@ begin
       FITSError('NAXIS' + IntToStr(I + 1) + ' has invalid or unsupported value. File ' + AnsiQuotedStr(FITSfileName, '"'));
     NaxisN[I] := N;
   end;
+
+  BytePix := Abs(BitPix) div 8;
+  NImagePoints := 1;
+
+  // Paranoidal: check maximum size.
+{$IFNDEF range_check}{$R+}{$ENDIF}
+{$IFNDEF overflow_check}{$Q+}{$ENDIF}
+  try
+    StartOfImage := NblocksInHeader * RecordsInBlock;
+  except
+    on E: Exception do
+      FITSError('Cannot get StartOfImage. File ' + AnsiQuotedStr(FITSfileName, '"') + ^M^J'Error:'^M^J + E.Message);
+  end;
+  for I := 0 to Length(NaxisN) - 1 do
+    NImagePoints := NImagePoints * NaxisN[I];
+  if NImagePoints > MaxInt then
+    FITSError('Current version of FitsUtils does not support image with number of points >= ' + IntToStr(MaxInt) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
+  NrecordsToRead := (NImagePoints * BytePix - 1) div FITSRecordLen + 1;
+  ImageMemSize := NrecordsToRead * FITSRecordLen;
+{$IFNDEF range_check}{$R-}{$ENDIF}
+{$IFNDEF overflow_check}{$Q-}{$ENDIF}
+
 end;
 
 procedure GetBscaleBzero(var FITSfile: FITSRecordFile; out Bscale, Bzero: Double);
@@ -840,45 +891,25 @@ function GetFITSimage(var FITSfile: FITSRecordFile;
                       out Width, Height, Layers, BitPix: Integer;
                       out Bscale, Bzero: Double): PChar;
 var
-  EndPosition: Int64;
-  NblocksInHeader: Int64;
-  StartOfImage: Int64;
-  NImagePoints: Int64;
-  NrecordsToRead: Int64;
+  StartOfImage: Integer;
   ImageMemSize: PtrUInt;
-  BytePix: Integer;
   I: Integer;
   NaxisN: TIntArray;
 begin
-  EndPosition := GetEndPosition(FITSfile);
-  if EndPosition < 0 then
-    FITSError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
-  NblocksInHeader := EndPosition div RecordsInBlock + 1;
-  StartOfImage := NblocksInHeader * RecordsInBlock;
-  GetBscaleBzero(FITSfile, Bscale, Bzero);
-  GetBitPixAndNaxis(FITSfile, BitPix, NaxisN);
+  GetFITSproperties(FITSfile, BitPix, NaxisN, StartOfImage, ImageMemSize);
   if (Length(NAxisN) <> 2) and (Length(NAxisN) <> 3) then
     FITSError('2D or 3D FITS expected; NAXIS = ' + IntToStr(Length(NAxisN)) + ' in file ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
   Width := NAxisN[0];
   Height := NAxisN[1];
   if Length(NAxisN) = 3 then Layers := NAxisN[2] else Layers := 1;
-  BytePix := Abs(BitPix) div 8;
-
-  NImagePoints := 1;
-{$IFNDEF range_check}{$R+}{$ENDIF}
-{$IFNDEF overflow_check}{$Q+}{$ENDIF}
-  for I := 0 to Length(NaxisN) - 1 do
-    NImagePoints := NImagePoints * NaxisN[I];
-  NrecordsToRead := (NImagePoints * BytePix - 1) div FITSRecordLen + 1;
-  ImageMemSize := NrecordsToRead * FITSRecordLen;
-{$IFNDEF range_check}{$R-}{$ENDIF}
-{$IFNDEF overflow_check}{$Q-}{$ENDIF}
+  GetBscaleBzero(FITSfile, Bscale, Bzero);
 
   GetMem(Result, ImageMemSize);
   try
     FillChar(Result^, ImageMemSize, 0);
     Seek(FITSfile, StartOfImage);
-    BlockRead(FITSfile, Result^, NrecordsToRead);
+    // ImageMemSize is padded to FITSRecordLen, so NrecordsToRead = ImageMemSize div FITSRecordLen!
+    BlockRead(FITSfile, Result^, ImageMemSize div FITSRecordLen);
   except
     FreeMem(Result);
     Result := nil;

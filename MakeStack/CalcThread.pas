@@ -65,8 +65,8 @@ type
     Naxis: TIntArray;
     BScale: Double;
     BZero: Double;
-    StartOfImage: Int64;
-    ImageMemSize: PtrUInt; // Padded!
+    StartOfImage: Integer;
+    ImageMemSize: PtrUInt; // Padded to FITSRecordLen!
     ObjectName: string;
     Telescope: string;
     Instrument: string;

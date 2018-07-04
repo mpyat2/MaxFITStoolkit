@@ -348,6 +348,7 @@ begin
 
     DestBytePix := Abs(DestBitPix) div 8;
     DestImageMemSize := Pixels * DestBytePix;
+    // Align DestImageMemSize to FITSRecordLen * RecordsInBlock to simpliry writing.
     DestImageMemSize := ((DestImageMemSize - 1) div (FITSRecordLen * RecordsInBlock) + 1) * FITSRecordLen * RecordsInBlock;
     GetMem(DestImage, DestImageMemSize);
     try
@@ -425,42 +426,25 @@ end;
 procedure ProcessFile(const FileName: string);
 var
   FITSfile: FITSRecordFile;
-  NblocksInHeader: Int64;
-  EndPosition: Int64;
-  ImageMemSizeTemp: PtrUInt;
   FitsInfo: TFITSFileInfo;
-  BytePix: Integer;
-  I: Integer;
 begin
   AssignFile(FITSfile, FileName);
   Reset(FITSfile);
   try
     if not IsFits(FITSfile) then
       FileError('Not a valid FITS file: ' + AnsiQuotedStr(FileName, '"'));
-    EndPosition := GetEndPosition(FITSfile);
-    if EndPosition < 0 then
-      FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FileName, '"'));
-    NblocksInHeader := EndPosition div RecordsInBlock + 1;
 
     FitsInfo := TFITSFileInfo.Create;
     FileListAllFiles.AddObject(FileName, FitsInfo);
-    GetBitPixAndNaxis(FITSfile, FitsInfo.BitPix, FitsInfo.Naxis);
+    GetFITSproperties(FITSfile, FitsInfo.BitPix, FitsInfo.Naxis, FitsInfo.StartOfImage, FitsInfo.ImageMemSize); // ImageMemSize is padded to FITSRecordLen!
     if (FitsInfo.BitPix <> 8) and (FitsInfo.BitPix <> 16) and (FitsInfo.BitPix <> 32) and (FitsInfo.BitPix <> -32) and (FitsInfo.BitPix <> -64) then
       FileError('Nonstandard BitPix = ' + IntToStr(FitsInfo.BitPix) + ' in file ' + AnsiQuotedStr(FileName, '"'));
-    BytePix := Abs(FitsInfo.BitPix) div 8;
     GetBscaleBzero(FITSfile, FitsInfo.BScale, FitsInfo.BZero);
     FitsInfo.DateObs := GetDateObs(FITSfile);
     FitsInfo.Exposure := GetExposureTime(FITSfile);
     FitsInfo.ObjectName := GetFITSstringValue(FITSfile, 'OBJECT');
     FitsInfo.Telescope  := GetFITSstringValue(FITSfile, 'TELESCOP');
     FitsInfo.Instrument := GetFITSstringValue(FITSfile, 'INSTRUME');
-    FitsInfo.StartOfImage := NblocksInHeader * RecordsInBlock;
-    ImageMemSizeTemp := 1;
-    for I := 0 to Length(FitsInfo.Naxis) - 1 do
-      ImageMemSizeTemp := ImageMemSizeTemp * FitsInfo.Naxis[I];
-    ImageMemSizeTemp := ImageMemSizeTemp * BytePix;
-    ImageMemSizeTemp := ((ImageMemSizeTemp - 1) div (FITSRecordLen * RecordsInBlock) + 1) * FITSRecordLen * RecordsInBlock;
-    FitsInfo.ImageMemSize := ImageMemSizeTemp;
   finally
     CloseFile(FITSfile);
   end;

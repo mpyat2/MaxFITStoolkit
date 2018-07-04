@@ -1,5 +1,19 @@
+{*****************************************************************************}
+{                                                                             }
+{ FITSRGB                                                                     }
+{ (c) 2017 Maksym Pyatnytskyy                                                 }
+{                                                                             }
+{ This program is distributed                                                 }
+{ WITHOUT ANY WARRANTY; without even the implied warranty of                  }
+{ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                        }
+{                                                                             }
+{*****************************************************************************}
+
 {$APPTYPE CONSOLE}
 {$MODE DELPHI}
+
+{$ASSERTIONS ON}          // can be disabled in release mode
+
 {$INCLUDE FITSUtils.inc}
 
 program FITSRGB;
@@ -13,7 +27,7 @@ uses
 procedure PrintVersion;
 begin
   WriteLn('FITS RGB splitter  Maksym Pyatnytskyy  2018');
-  WriteLn(GetVersionString(ParamStr(0)));
+  WriteLn(GetVersionString(AnsiUpperCase(ParamStr(0))){$IFDEF WIN64}, ' WIN64'{$ENDIF}, ' ', {$I %DATE%}, ' ', {$I %TIME%});
   WriteLn;
 end;
 
@@ -30,34 +44,28 @@ const
 
 procedure FITSSplitRGB(var FITSfile: FITSRecordfile; const FITSfileName: string; const OutputDir: string; Overwrite: Boolean);
 var
-  N: Integer;
   BitPix: Integer;
-  BytePix: Integer;
   NaxisN: TIntArray;
-  Naxis1, Naxis2, Naxis3: Integer;
-  NblocksInHeader: Integer;
   StartOfImage: Integer;
-  Header: PChar;
-  Buf: FITSRecordType;
+  ImageMemSize: PtrUInt;
+  BytePix: Integer;
+  Naxis1, Naxis2, Naxis3: Integer;
+  Header: TFITSRecordArray;
   HeaderNew: TFITSRecordArray;
+  EndOfHeaderFound: Boolean;
+  Buf: FITSRecordType;
   Image: PChar;
   ImageLayer: PChar;
-  ImageLayerSize: Integer;
-  ImageLayerSizePadded: Integer;
-  ImageMemSize: Integer;
+  ImageLayerSize: SizeInt;
+  ImageLayerSizePadded: PtrUInt;
   ColorL: Integer;
   OutFile: FITSRecordfile;
   OutFileName: string;
   FileModeSaved: Integer;
   S: string;
-  I: Integer;
+  N, I: Integer;
 begin
-  N := GetEndPosition(FITSfile);
-  if N < 0 then
-    FileError('Cannot find End of Header in file ' + AnsiQuotedStr(FITSfileName, '"'));
-  NblocksInHeader := N div RecordsInBlock + 1;
-  StartOfImage := NblocksInHeader * RecordsInBlock;
-  GetBitPixAndNaxis(FITSfile, BitPix, NaxisN);
+  GetFITSproperties(FITSfile, BitPix, NaxisN, StartOfImage, ImageMemSize);
   if (Length(NaxisN) <> 3) then
     FileError('Cannot work with NAXIS other than 3, got ' + IntToStr(Length(NaxisN)) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
   BytePix := Abs(BitPix) div 8;
@@ -67,87 +75,89 @@ begin
   if (Naxis3 <> 3) then
     FileError('Cannot work with NAXIS3 other than 3, got ' + IntToStr(Naxis3) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
   Write(' [', Naxis1, 'x', Naxis2, 'x', Naxis3, '] [BITPIX=', BitPix, '] -> ');
-  GetMem(Header, StartOfImage * FITSRecordLen);
+  GetHeader(FITSFile, Header);
+  ImageLayerSize := Naxis1 * Naxis2 * BytePix;
+  ImageLayerSizePadded := ((ImageLayerSize - 1) div (FITSRecordLen * RecordsInBlock) + 1) * (FITSRecordLen * RecordsInBlock);
+  GetMem(Image, ImageMemSize);
   try
-    FillChar(Header^, StartOfImage * FITSRecordLen, 0);
-    Seek(FITSFile, 0);
-    BlockRead(FITSFile, Header^, StartOfImage);
-    ImageLayerSize := Naxis1 * Naxis2 * BytePix;
-    ImageLayerSizePadded := ((ImageLayerSize - 1) div (FITSRecordLen * RecordsInBlock) + 1) * FITSRecordLen * RecordsInBlock;
-    ImageMemSize := ((3 * ImageLayerSize - 1) div (FITSRecordLen * RecordsInBlock) + 1) * FITSRecordLen * RecordsInBlock;
-    GetMem(Image, ImageMemSize);
+    FillChar(Image^, ImageMemSize, 0);
+    GetMem(ImageLayer, ImageLayerSizePadded);
     try
-      FillChar(Image^, ImageMemSize, 0);
-      GetMem(ImageLayer, ImageLayerSizePadded);
-      try
-        FillChar(ImageLayer^, ImageLayerSizePadded, 0);
-        BlockRead(FITSFile, Image^, ImageMemSize div FITSRecordLen);
-        for ColorL := 0 to 2 do begin
-           OutFileName := ColorNames[ColorL] + '-' + ExtractFileName(FITSfileName);
-          if OutputDir = '' then
-            OutFileName := ExtractFilePath(FITSfileName) + OutFileName
-          else
-            OutFileName := IncludeTrailingPathDelimiter(OutputDir) + OutFileName;
-          Write(' ', ExtractFileName(OutFileName));
-          if not Overwrite and FileExists(OutFileName) then
-            FileError('File ' + AnsiQuotedStr(OutFileName, '"') + ' already exists. Use /F switch to overwrite.');
-          Move(Image[ImageLayerSize * ColorL], ImageLayer[0], ImageLayerSize);
+      FillChar(ImageLayer^, ImageLayerSizePadded, 0);
+      Seek(FITSfile, StartOfImage);
+      BlockRead(FITSFile, Image^, ImageMemSize div FITSRecordLen);
+      for ColorL := 0 to 2 do begin
+         OutFileName := ColorNames[ColorL] + '-' + ExtractFileName(FITSfileName);
+        if OutputDir = '' then
+          OutFileName := ExtractFilePath(FITSfileName) + OutFileName
+        else
+          OutFileName := IncludeTrailingPathDelimiter(OutputDir) + OutFileName;
+        Write(' ', ExtractFileName(OutFileName));
+        if not Overwrite and FileExists(OutFileName) then
+          FileError('File ' + AnsiQuotedStr(OutFileName, '"') + ' already exists. Use /F switch to overwrite.');
+        Move(Image[ImageLayerSize * ColorL], ImageLayer[0], ImageLayerSize);
 
-          // We should remove NAXIS3 record and update NAXIS.
-          HeaderNew := nil;
-          for I := 0 to StartOfImage - 1 do begin
-            Move(Header[I * FITSRecordLen], Buf, FITSRecordLen);
-            if Copy(Buf, 1, FITSKeywordLen) = PadCh('NAXIS', FITSKeywordLen, ' ') then begin
-              Str(2:FITSNumericAlign - FITSKeywordLen - 2, S);
-              StrToFITSRecord(PadCh('NAXIS', FITSKeywordLen, ' ') + '= ' + S, Buf);
-            end;
-            if Copy(Buf, 1, FITSKeywordLen) <> PadCh('NAXIS3', FITSKeywordLen, ' ') then begin
-              SetLength(HeaderNew, Length(HeaderNew) + 1);
-              Move(Buf, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
-            end;
-            if Buf = recordEND then
-              Break;
+
+        EndOfHeaderFound := False;
+        // We should remove NAXIS3 record and update NAXIS.
+        HeaderNew := nil;
+        for I := 0 to Length(Header) - 1 do begin
+          Move(Header[I], Buf, FITSRecordLen);
+          if Copy(Buf, 1, FITSKeywordLen) = PadCh('NAXIS', FITSKeywordLen, ' ') then begin
+            Str(2:FITSNumericAlign - FITSKeywordLen - 2, S);
+            StrToFITSRecord(PadCh('NAXIS', FITSKeywordLen, ' ') + '= ' + S, Buf);
           end;
-
-          // Padding
-          N := Length(HeaderNew) mod RecordsInBlock;
-          if N > 0 then begin
-            for I := 1 to RecordsInBlock - N do begin
-              SetLength(HeaderNew, Length(HeaderNew) + 1);
-              FillChar(HeaderNew[Length(HeaderNew) - 1], SizeOf(FITSRecordType), ' ');
-            end;
+          if Copy(Buf, 1, FITSKeywordLen) <> PadCh('NAXIS3', FITSKeywordLen, ' ') then begin
+            SetLength(HeaderNew, Length(HeaderNew) + 1);
+            Move(Buf, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
           end;
-
-          // Updating StartOfImage
-          StartOfImage := Length(HeaderNew);
-
-          AssignFile(OutFile, OutFileName);
-          FileModeSaved := FileMode;
-          FileMode := fmOpenReadWrite;
-          try
-            Rewrite(OutFile);
-            try
-              BlockWrite(OutFile, HeaderNew[0], StartOfImage);
-              BlockWrite(OutFile, ImageLayer^, ImageLayerSizePadded div FITSRecordLen);
-              AddCommentLikeKeyword(OutFile, 'COMMENT', 'Color Layer: ' + ColorNames[ColorL], True);
-            finally
-              CloseFile(OutFile);
-            end;
-          finally
-            FileMode := FileModeSaved;
+          if Buf = recordEND then begin
+            // adding comment before END
+            S := PadCh('COMMENT', FITSKeywordLen, ' ') + 'Color Layer: ' + ColorNames[ColorL];
+            StrToFITSRecord(S, Buf);
+            Move(Buf, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
+            SetLength(HeaderNew, Length(HeaderNew) + 1);
+            Move(recordEND, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
+            EndOfHeaderFound := True;
+            Break;
           end;
         end;
-      finally
-        FreeMem(ImageLayer);
-        ImageLayer := nil;
+
+        Assert(EndOfHeaderFound);
+
+        // Padding new header...
+        N := Length(HeaderNew) mod RecordsInBlock;
+        if N > 0 then begin
+          for I := 1 to RecordsInBlock - N do begin
+            SetLength(HeaderNew, Length(HeaderNew) + 1);
+            FillChar(HeaderNew[Length(HeaderNew) - 1], SizeOf(FITSRecordType), ' ');
+          end;
+        end;
+        // Updating StartOfImage
+        StartOfImage := Length(HeaderNew);
+
+        AssignFile(OutFile, OutFileName);
+        FileModeSaved := FileMode;
+        FileMode := fmOpenReadWrite;
+        try
+          Rewrite(OutFile);
+          try
+            BlockWrite(OutFile, HeaderNew[0], StartOfImage);
+            BlockWrite(OutFile, ImageLayer^, ImageLayerSizePadded div FITSRecordLen);
+          finally
+            CloseFile(OutFile);
+          end;
+        finally
+          FileMode := FileModeSaved;
+        end;
       end;
     finally
-      FreeMem(Image);
-      Image := nil;
+      FreeMem(ImageLayer);
+      ImageLayer := nil;
     end;
   finally
-    FreeMem(Header);
-    Header := nil;
+    FreeMem(Image);
+    Image := nil;
   end;
 end;
 

@@ -22,7 +22,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="1"/>
-      <BuildNr Value="15"/>
+      <BuildNr Value="16"/>
       <StringTable ProductVersion="0.0.0.0"/>
     </VersionInfo>
     <BuildModes Count="1">
@@ -52,8 +52,8 @@
       <Filename Value="FitsRGB"/>
     </Target>
     <SearchPaths>
-      <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="..\Units"/>
+      <IncludeFiles Value="$(ProjOutDir);..\UnitsFits"/>
+      <OtherUnitFiles Value="..\UnitsCommon;..\UnitsFits"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

@@ -9,8 +9,13 @@
         <Filename Value="FitsCfa.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="FITSCFA"/>
-        <TopLine Value="297"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="173"/>
+        <CursorPos Y="180"/>
         <UsageCount Value="25"/>
+        <Bookmarks Count="1">
+          <Item0 X="18" Y="180" ID="1"/>
+        </Bookmarks>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
@@ -90,114 +95,150 @@
       </Unit10>
       <Unit11>
         <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="825"/>
-        <CursorPos X="18" Y="856"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="377"/>
+        <CursorPos X="39" Y="392"/>
         <UsageCount Value="10"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit11>
       <Unit12>
         <Filename Value="..\UnitsFits\FITSUtils.inc"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="1"/>
+        <EditorIndex Value="2"/>
         <CursorPos X="2" Y="5"/>
         <UsageCount Value="10"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit12>
     </Units>
-    <JumpHistory Count="23" HistoryIndex="22">
+    <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="161" TopLine="132"/>
+        <Caret Line="185" TopLine="172"/>
       </Position1>
       <Position2>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="162" TopLine="132"/>
+        <Caret Line="186" TopLine="172"/>
       </Position2>
       <Position3>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="163" TopLine="132"/>
+        <Caret Line="182" TopLine="172"/>
       </Position3>
       <Position4>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="164" TopLine="149"/>
+        <Caret Line="183" TopLine="172"/>
       </Position4>
       <Position5>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="165" TopLine="149"/>
+        <Caret Line="189" TopLine="172"/>
       </Position5>
       <Position6>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="166" TopLine="149"/>
+        <Caret Line="191" TopLine="172"/>
       </Position6>
       <Position7>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="167" TopLine="149"/>
+        <Caret Line="192" TopLine="172"/>
       </Position7>
       <Position8>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="168" TopLine="149"/>
+        <Caret Line="182" TopLine="172"/>
       </Position8>
       <Position9>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="169" TopLine="149"/>
+        <Caret Line="183" TopLine="172"/>
       </Position9>
       <Position10>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="170" TopLine="149"/>
+        <Caret Line="189" TopLine="172"/>
       </Position10>
       <Position11>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="171" TopLine="149"/>
+        <Caret Line="197" TopLine="172"/>
       </Position11>
       <Position12>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="172" TopLine="149"/>
+        <Caret Line="198" TopLine="172"/>
       </Position12>
       <Position13>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="89" Column="29" TopLine="85"/>
+        <Caret Line="194" Column="13" TopLine="172"/>
       </Position13>
       <Position14>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="9" Column="32"/>
+        <Caret Line="102" TopLine="84"/>
       </Position14>
       <Position15>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Column="81"/>
+        <Caret Line="151" TopLine="141"/>
       </Position15>
       <Position16>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="77" Column="3" TopLine="69"/>
+        <Caret Line="180" TopLine="162"/>
       </Position16>
       <Position17>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="14" Column="2"/>
+        <Caret Line="181" TopLine="162"/>
       </Position17>
       <Position18>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="209" Column="27" TopLine="178"/>
+        <Caret Line="182" TopLine="162"/>
       </Position18>
       <Position19>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="90" Column="19" TopLine="73"/>
+        <Caret Line="183" TopLine="162"/>
       </Position19>
       <Position20>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="73" Column="110" TopLine="65"/>
+        <Caret Line="189" TopLine="170"/>
       </Position20>
       <Position21>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="73" Column="25" TopLine="67"/>
+        <Caret Line="194" TopLine="170"/>
       </Position21>
       <Position22>
         <Filename Value="FitsCfa.lpr"/>
-        <Caret Line="100" Column="26" TopLine="82"/>
+        <Caret Line="195" TopLine="170"/>
       </Position22>
       <Position23>
         <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="196" TopLine="170"/>
       </Position23>
+      <Position24>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="198" TopLine="170"/>
+      </Position24>
+      <Position25>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="199" TopLine="170"/>
+      </Position25>
+      <Position26>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="200" TopLine="178"/>
+      </Position26>
+      <Position27>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="201" TopLine="178"/>
+      </Position27>
+      <Position28>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="202" TopLine="178"/>
+      </Position28>
+      <Position29>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="203" TopLine="178"/>
+      </Position29>
+      <Position30>
+        <Filename Value="FitsCfa.lpr"/>
+        <Caret Line="204" TopLine="178"/>
+      </Position30>
     </JumpHistory>
   </ProjectSession>
+  <Debugging>
+    <Watches Count="1">
+      <Item1>
+        <Expression Value="HeaderNew[Length(HeaderNew)-1]"/>
+      </Item1>
+    </Watches>
+  </Debugging>
 </CONFIG>
