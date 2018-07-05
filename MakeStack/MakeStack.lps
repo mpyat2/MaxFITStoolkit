@@ -172,18 +172,19 @@
       </Unit22>
       <Unit23>
         <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="760"/>
-        <CursorPos X="17" Y="778"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="883"/>
+        <CursorPos X="6" Y="904"/>
         <UsageCount Value="11"/>
         <Bookmarks Count="1">
-          <Item0 X="17" Y="778" ID="1"/>
+          <Item0 X="3" Y="791" ID="1"/>
         </Bookmarks>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit23>
       <Unit24>
         <Filename Value="..\UnitsFits\FITSUtils.inc"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
         <CursorPos X="3" Y="5"/>
         <UsageCount Value="10"/>
@@ -194,118 +195,119 @@
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="428" TopLine="412"/>
       </Position1>
       <Position2>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="429" TopLine="412"/>
+        <Caret Line="114" Column="19" TopLine="83"/>
       </Position2>
       <Position3>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="442" Column="5" TopLine="416"/>
+        <Caret Line="205" Column="48" TopLine="175"/>
       </Position3>
       <Position4>
         <Filename Value="MakeStack.lpr"/>
+        <Caret Line="206" Column="51" TopLine="176"/>
       </Position4>
       <Position5>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="205" Column="48" TopLine="175"/>
+        <Caret Line="207" Column="62" TopLine="177"/>
       </Position5>
       <Position6>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="206" Column="51" TopLine="176"/>
+        <Caret Line="351" Column="85" TopLine="336"/>
       </Position6>
       <Position7>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="207" Column="62" TopLine="177"/>
+        <Caret Line="352" Column="43" TopLine="336"/>
       </Position7>
       <Position8>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="439" Column="110" TopLine="408"/>
+        <Caret Line="353" Column="39" TopLine="344"/>
       </Position8>
       <Position9>
         <Filename Value="MakeStack.lpr"/>
+        <Caret Line="355" Column="44" TopLine="344"/>
       </Position9>
       <Position10>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="205" Column="48" TopLine="175"/>
+        <Caret Line="372" Column="58" TopLine="344"/>
       </Position10>
       <Position11>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="206" Column="51" TopLine="176"/>
+        <Caret Line="438" Column="36" TopLine="425"/>
       </Position11>
       <Position12>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="207" Column="62" TopLine="177"/>
+        <Caret Line="74" Column="54" TopLine="55"/>
       </Position12>
       <Position13>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="439" Column="128" TopLine="424"/>
+        <Caret Line="439" TopLine="403"/>
       </Position13>
       <Position14>
         <Filename Value="MakeStack.lpr"/>
       </Position14>
       <Position15>
-        <Filename Value="MakeStack.lpr"/>
-        <Caret Line="114" Column="19" TopLine="83"/>
+        <Filename Value="..\UnitsFits\FITSUtils.inc"/>
+        <Caret Line="5" Column="3"/>
       </Position15>
       <Position16>
-        <Filename Value="MakeStack.lpr"/>
-        <Caret Line="205" Column="48" TopLine="175"/>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <Caret Line="793" TopLine="771"/>
       </Position16>
       <Position17>
-        <Filename Value="MakeStack.lpr"/>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <Caret Line="740" Column="17" TopLine="721"/>
       </Position17>
       <Position18>
-        <Filename Value="MakeStack.lpr"/>
-        <Caret Line="114" Column="19" TopLine="83"/>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <Caret Line="790" Column="17" TopLine="760"/>
       </Position18>
       <Position19>
-        <Filename Value="MakeStack.lpr"/>
-        <Caret Line="205" Column="48" TopLine="175"/>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <Caret Line="791" Column="33" TopLine="761"/>
       </Position19>
       <Position20>
-        <Filename Value="MakeStack.lpr"/>
-        <Caret Line="206" Column="51" TopLine="176"/>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <Caret Line="914" Column="66" TopLine="883"/>
       </Position20>
       <Position21>
-        <Filename Value="MakeStack.lpr"/>
-        <Caret Line="207" Column="62" TopLine="177"/>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <Caret Line="778" Column="17" TopLine="760"/>
       </Position21>
       <Position22>
-        <Filename Value="MakeStack.lpr"/>
-        <Caret Line="351" Column="85" TopLine="336"/>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
       </Position22>
       <Position23>
-        <Filename Value="MakeStack.lpr"/>
-        <Caret Line="352" Column="43" TopLine="336"/>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <Caret Line="100" Column="62" TopLine="69"/>
       </Position23>
       <Position24>
-        <Filename Value="MakeStack.lpr"/>
-        <Caret Line="353" Column="39" TopLine="344"/>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <Caret Line="740" Column="17" TopLine="709"/>
       </Position24>
       <Position25>
-        <Filename Value="MakeStack.lpr"/>
-        <Caret Line="355" Column="44" TopLine="344"/>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <Caret Line="729" Column="133" TopLine="711"/>
       </Position25>
       <Position26>
-        <Filename Value="MakeStack.lpr"/>
-        <Caret Line="372" Column="58" TopLine="344"/>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <Caret Line="101" TopLine="82"/>
       </Position26>
       <Position27>
-        <Filename Value="MakeStack.lpr"/>
-        <Caret Line="438" Column="36" TopLine="425"/>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <Caret Line="792" Column="69" TopLine="768"/>
       </Position27>
       <Position28>
-        <Filename Value="MakeStack.lpr"/>
-        <Caret Line="74" Column="54" TopLine="55"/>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
       </Position28>
       <Position29>
-        <Filename Value="MakeStack.lpr"/>
-        <Caret Line="439" TopLine="403"/>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <Caret Line="35" Column="21" TopLine="3"/>
       </Position29>
       <Position30>
-        <Filename Value="MakeStack.lpr"/>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <Caret Line="796" TopLine="773"/>
       </Position30>
     </JumpHistory>
   </ProjectSession>

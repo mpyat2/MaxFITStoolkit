@@ -97,7 +97,7 @@ function MakeFITSHeader(BitPix: Integer;
                         const Telescope: string;
                         const Instrument: string;
                         const Comments: TStringArray): TFITSRecordArray;
-// ImageMemSize is padded to FITSRecordLen, so NrecordsToRead = ImageMemSize div FITSRecordLen!
+// ImageMemSize is padded to FITSRecordLen (80), so NrecordsToRead = ImageMemSize div FITSRecordLen!
 procedure GetFITSproperties(var FITSfile: FITSRecordfile; out BitPix: Integer; out NaxisN: TIntArray; out StartOfImage: Integer; out ImageMemSize: PtrUInt);
 // physical_value = BZERO + BSCALE * array_value (https://heasarc.gsfc.nasa.gov/docs/fcg/standard_dict.html)
 procedure GetBscaleBzero(var FITSfile: FITSRecordFile; out Bscale, Bzero: Double);
@@ -726,6 +726,7 @@ begin
   end;
 end;
 
+// ImageMemSize is padded to FITSRecordLen (80), so NrecordsToRead = ImageMemSize div FITSRecordLen!
 procedure GetFITSproperties(var FITSfile: FITSRecordfile; out BitPix: Integer; out NaxisN: TIntArray; out StartOfImage: Integer; out ImageMemSize: PtrUInt);
 var
   Value: string;
@@ -738,6 +739,7 @@ var
   EndPosition: Int64;
   NImagePoints: Int64;
   NrecordsToRead: Int64;
+  ImageMemSizePaddedToBlock: Int64;
   BytePix: Integer;
 begin
   BitPix := 0;
@@ -785,9 +787,14 @@ begin
   end;
   for I := 0 to Length(NaxisN) - 1 do
     NImagePoints := NImagePoints * NaxisN[I];
-  if NImagePoints > MaxInt then
-    FITSError('Current version of FitsUtils does not support image with number of points >= ' + IntToStr(MaxInt) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
   NrecordsToRead := (NImagePoints * BytePix - 1) div FITSRecordLen + 1;
+
+  ImageMemSizePaddedToBlock := ((NrecordsToRead * FITSRecordLen - 1) div (FITSRecordLen * RecordsInBlock) + 1) * (FITSRecordLen * RecordsInBlock);
+  if ImageMemSizePaddedToBlock > MaxInt then
+    FITSError('Image too large for the current version of FITS utils.'^M^J +
+              'Image size (padded to 36*80 bytes) = ' + IntToStr(ImageMemSizePaddedToBlock) + ^M^J +
+              'File ' + AnsiQuotedStr(FITSfileName, '"'));
+
   ImageMemSize := NrecordsToRead * FITSRecordLen;
 {$IFNDEF range_check}{$R-}{$ENDIF}
 {$IFNDEF overflow_check}{$Q-}{$ENDIF}
@@ -893,7 +900,6 @@ function GetFITSimage(var FITSfile: FITSRecordFile;
 var
   StartOfImage: Integer;
   ImageMemSize: PtrUInt;
-  I: Integer;
   NaxisN: TIntArray;
 begin
   GetFITSproperties(FITSfile, BitPix, NaxisN, StartOfImage, ImageMemSize);
