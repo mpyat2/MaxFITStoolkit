@@ -19,6 +19,9 @@ unit FITSUtils;
 // https://fits.gsfc.nasa.gov/fits_primer.html
 // https://heasarc.gsfc.nasa.gov/docs/fcg/standard_dict.html
 
+// Note: in this unit: "record" = 80 bytes ("card" in FITS standard)
+//                     "block"  = 80*36 bytes (36 "cards" = "record" in FITS standard)
+
 interface
 
 uses
@@ -58,10 +61,8 @@ type
       1: (B: Byte);
       2: (I: SmallInt);
       3: (L: LongInt);
-      4: (H: Int64);     // Currently unsupported FITS value, used to store result.
-      5: (S: Single);
-      6: (D: Double);
-      7: (E: Extended);  // Currently unsupported FITS value, used to store result.
+      4: (S: Single);
+      5: (D: Double);
   end;
 
 type
@@ -543,29 +544,30 @@ var
   BytePix: Integer;
   NLayers, N: SizeInt;
   NN, Addr: LongInt;
+  E: Extended;
 begin
   BytePix := Abs(BitPix) div 8;
   NLayers := Length(Layers);
   for NN := 0 to Len div BytePix do begin
-    FillChar(Asum, SizeOf(Asum), 0);
+    E := 0;
     Addr := NN * BytePix;
     for N := 0 to NLayers - 1 do begin
       Move(Layers[N][Addr], A1, BytePix);
       RevertBytes(A1, BitPix);
       case BitPix of
-          8: Asum.H := Asum.H + A1.B;
-         16: Asum.H := Asum.H + A1.I;
-         32: Asum.H := Asum.H + A1.L;
-        -32: Asum.E := Asum.E + A1.S;
-        -64: Asum.E := Asum.E + A1.D;
+          8: E := E + A1.B;
+         16: E := E + A1.I;
+         32: E := E + A1.L;
+        -32: E := E + A1.S;
+        -64: E := E + A1.D;
       end;
     end;
     case BitPix of
-        8: Asum.B := Round(Asum.H / NLayers);
-       16: Asum.I := Round(Asum.H / NLayers);
-       32: Asum.L := Round(Asum.H / NLayers);
-      -32: Asum.S := Asum.E / NLayers;
-      -64: Asum.D := Asum.E / NLayers;
+        8: Asum.B := Round(E / NLayers);
+       16: Asum.I := Round(E / NLayers);
+       32: Asum.L := Round(E / NLayers);
+      -32: Asum.S := E / NLayers;
+      -64: Asum.D := E / NLayers;
     end;
     RevertBytes(Asum, BitPix);
     Move(Asum, Layers[0][Addr], BytePix);
