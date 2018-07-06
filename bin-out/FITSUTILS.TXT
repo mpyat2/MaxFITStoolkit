@@ -17,10 +17,10 @@ Where:
                    Example: /TS-10800 shifts DATE-OBS by three hours backwards
                    It is possible to specify /TSa value to attemt to auto-calculate time shift to UT.
   /F               overwrite existing files in output directory
-  /L               do not truncate image (show full RAW image)
-  /R               generate floating-point FITS (could be incompatible with CFA2RGB)
+  /L               do not truncate image (show full RAW image). WARNING: this could affect order of colors in bayer matrix!
+  /R               generate floating-point FITS. WARNING: resulted FITS could be incompatible with CFA2RGB
   /S               generate fits with BZERO = 32768
-  /Y               flip image by Y-axis
+  /Y               flip image by Y-axis. WARNING: this could affect order of colors in bayer matrix!
   /I               print image info only
   /V               print version (including libraw version)
   /H               print help and halt

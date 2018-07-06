@@ -4,7 +4,7 @@
     <PathDelim Value="\"/>
     <Version Value="10"/>
     <BuildModes Active="Default"/>
-    <Units Count="25">
+    <Units Count="26">
       <Unit0>
         <Filename Value="MakeStack.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -172,14 +172,13 @@
       </Unit22>
       <Unit23>
         <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="41"/>
         <CursorPos X="9" Y="64"/>
         <UsageCount Value="11"/>
         <Bookmarks Count="1">
           <Item0 X="3" Y="791" ID="1"/>
         </Bookmarks>
-        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit23>
       <Unit24>
@@ -189,21 +188,16 @@
         <UsageCount Value="10"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit24>
+      <Unit25>
+        <Filename Value="..\Hello\HelloIRISFITS.lpr"/>
+        <UnitName Value="HelloFits"/>
+        <IsVisibleTab Value="True"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit25>
     </Units>
-    <JumpHistory Count="3" HistoryIndex="2">
-      <Position1>
-        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <Caret Line="562" Column="19" TopLine="544"/>
-      </Position1>
-      <Position2>
-        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <Caret Line="531" Column="22" TopLine="511"/>
-      </Position2>
-      <Position3>
-        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <Caret Line="557" Column="18" TopLine="541"/>
-      </Position3>
-    </JumpHistory>
+    <JumpHistory HistoryIndex="-1"/>
   </ProjectSession>
   <Debugging>
     <BreakPoints Count="1">
