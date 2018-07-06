@@ -78,6 +78,8 @@ REN bin-out\makestack.exe makestack32.exe
 IF ERRORLEVEL 1 GOTO :ERROR
 %COMPIL64% makestack\makestack.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
+REN bin-out\makestack.exe makestack64.exe
+IF ERRORLEVEL 1 GOTO :ERROR
 :SKIP3264
 ECHO .
 
