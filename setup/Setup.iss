@@ -50,9 +50,9 @@ Source: "..\bin-out\fitsrgb.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\cfa2rgb.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 ; 1.1.2: only makestack exists in 64 variant.
-Source: "..\bin-out\makestack64.exe" ; DestDir: "{app}"; DestName: "makestack.exe"  ; Check: "IsWin64"
-Source: "..\bin-out\makestack32.exe" ; DestDir: "{app}"; DestName: "makestack32.exe"; Check: "IsWin64"
-Source: "..\bin-out\makestack32.exe" ; DestDir: "{app}"; DestName: "makestack.exe"  ; Check: "not IsWin64"
+Source: "..\bin-out\makestack64.exe" ; DestDir: "{app}"; DestName: "makestack.exe"  ; Check: "IsWin64"     ; Flags: ignoreversion
+Source: "..\bin-out\makestack32.exe" ; DestDir: "{app}"; DestName: "makestack32.exe"; Check: "IsWin64"     ; Flags: ignoreversion
+Source: "..\bin-out\makestack32.exe" ; DestDir: "{app}"; DestName: "makestack.exe"  ; Check: "not IsWin64" ; Flags: ignoreversion
 
 Source: "..\bin-out\fitsstat.exe"; DestDir: "{app}"; Flags: ignoreversion
 
