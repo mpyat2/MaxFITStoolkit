@@ -1,3 +1,6 @@
+https://sourceforge.net/projects/fits-command-line-utilities/?source=typ_redirect
+
+
 Відмінності між FITSUTILS, IRIS та SIRIL
 
 Загальні зауваження
