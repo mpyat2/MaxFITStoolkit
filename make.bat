@@ -101,6 +101,7 @@ ECHO .
 GOTO :END
 :ARCHIVE
 echo FitsHeader2\fihed.*            >  ziplist.txt
+echo FitsHeader2\FihedSwitchChars.pas >>  ziplist.txt
 echo FitsFlip\fflip.*               >> ziplist.txt
 echo IrisDateObs\idobs.*            >> ziplist.txt
 echo IrisRename\iren.*              >> ziplist.txt
@@ -113,8 +114,10 @@ echo FitsRGB\fitsrgb.*              >> ziplist.txt
 echo CFA2RGB\cfa2rgb.*              >> ziplist.txt
 echo FitsStat\fitsstat.*            >> ziplist.txt
 echo iconvraw\iconvraw.*            >> ziplist.txt
+echo iconvraw\ConvUtils.pas         >> ziplist.txt
 echo iconvraw\LibRawMxWrapper*.dll  >> ziplist.txt
 echo makestack\makestack.*          >> ziplist.txt
+echo makestack\CalcThread.pas       >> ziplist.txt
 echo Hello\*.pas                    >> ziplist.txt
 echo UnitsCommon\*.pas              >> ziplist.txt
 echo UnitsFits\*.pas                >> ziplist.txt
