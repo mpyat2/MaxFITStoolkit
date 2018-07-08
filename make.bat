@@ -127,7 +127,7 @@ echo bin-out\dirinfo                >> ziplist.txt
 echo bin-out\fitsutils.ini          >> ziplist.txt
 echo bin-out\fitsutils.txt          >> ziplist.txt
 echo bin-out\unit32\dirinfo         >> ziplist.txt
-echo bin-out\unit32\dirinfo         >> ziplist.txt
+echo bin-out\unit64\dirinfo         >> ziplist.txt
 echo clean.bat                      >> ziplist.txt
 echo clean2.bat                     >> ziplist.txt
 echo make.bat                       >> ziplist.txt
