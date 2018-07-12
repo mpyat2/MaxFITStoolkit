@@ -4,13 +4,16 @@
     <PathDelim Value="\"/>
     <Version Value="10"/>
     <BuildModes Active="Default"/>
-    <Units Count="8">
+    <Units Count="10">
       <Unit0>
         <Filename Value="FITSstat.lpr"/>
         <IsPartOfProject Value="True"/>
-        <TopLine Value="197"/>
-        <CursorPos Y="227"/>
-        <UsageCount Value="30"/>
+        <TopLine Value="183"/>
+        <CursorPos X="17" Y="226"/>
+        <UsageCount Value="32"/>
+        <Bookmarks Count="1">
+          <Item0 X="47" Y="130" ID="1"/>
+        </Bookmarks>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
@@ -58,127 +61,150 @@
       </Unit6>
       <Unit7>
         <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="1"/>
-        <TopLine Value="773"/>
-        <CursorPos Y="794"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="749"/>
+        <CursorPos X="18" Y="786"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit7>
+      <Unit8>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <UnitName Value="FITSstatUtils"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="85"/>
+        <CursorPos X="3" Y="88"/>
+        <UsageCount Value="11"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="..\..\wirth_median.c"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="18"/>
+        <CursorPos X="5" Y="36"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="C++"/>
+      </Unit9>
     </Units>
-    <JumpHistory Count="28" HistoryIndex="27">
+    <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="FITSstat.lpr"/>
-        <Caret Line="150" Column="10" TopLine="130"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="122" TopLine="100"/>
       </Position1>
       <Position2>
-        <Filename Value="FITSstat.lpr"/>
-        <Caret Line="196" Column="12" TopLine="166"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="126" TopLine="100"/>
       </Position2>
       <Position3>
-        <Filename Value="FITSstat.lpr"/>
-        <Caret Line="198" Column="25" TopLine="168"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="127" TopLine="100"/>
       </Position3>
       <Position4>
-        <Filename Value="FITSstat.lpr"/>
-        <Caret Line="199" Column="25" TopLine="169"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="128" TopLine="100"/>
       </Position4>
       <Position5>
-        <Filename Value="FITSstat.lpr"/>
-        <Caret Line="200" Column="25" TopLine="170"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="115" TopLine="100"/>
       </Position5>
       <Position6>
         <Filename Value="FITSstat.lpr"/>
-        <Caret Line="201" Column="25" TopLine="171"/>
+        <Caret Line="139" TopLine="117"/>
       </Position6>
       <Position7>
-        <Filename Value="FITSstat.lpr"/>
-        <Caret Line="202" Column="25" TopLine="172"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="115" TopLine="100"/>
       </Position7>
       <Position8>
-        <Filename Value="FITSstat.lpr"/>
-        <Caret Line="145" Column="26" TopLine="138"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="116" TopLine="100"/>
       </Position8>
       <Position9>
-        <Filename Value="FITSstat.lpr"/>
-        <Caret Line="208" Column="58" TopLine="195"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="117" TopLine="100"/>
       </Position9>
       <Position10>
-        <Filename Value="FITSstat.lpr"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="118" TopLine="100"/>
       </Position10>
       <Position11>
-        <Filename Value="FITSstat.lpr"/>
-        <Caret Line="249" Column="23" TopLine="241"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="122" TopLine="100"/>
       </Position11>
       <Position12>
-        <Filename Value="FITSstat.lpr"/>
-        <Caret Line="21" Column="66" TopLine="10"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="126" TopLine="100"/>
       </Position12>
       <Position13>
-        <Filename Value="FITSstat.lpr"/>
-        <Caret Line="20" Column="33"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="128" TopLine="100"/>
       </Position13>
       <Position14>
-        <Filename Value="FITSstat.lpr"/>
-        <Caret Line="25" Column="46" TopLine="20"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="130" TopLine="100"/>
       </Position14>
       <Position15>
-        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <Caret Line="51" TopLine="49"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="111" Column="42" TopLine="100"/>
       </Position15>
       <Position16>
-        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <Caret Line="730" TopLine="718"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
       </Position16>
       <Position17>
-        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <Caret Line="101" TopLine="82"/>
+        <Filename Value="FITSstat.lpr"/>
+        <Caret Line="139" Column="68" TopLine="117"/>
       </Position17>
       <Position18>
-        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <Caret Line="792" Column="34" TopLine="766"/>
+        <Filename Value="FITSstat.lpr"/>
+        <Caret Line="140" Column="52" TopLine="117"/>
       </Position18>
       <Position19>
-        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <Caret Line="779" TopLine="766"/>
+        <Filename Value="FITSstat.lpr"/>
+        <Caret Line="163" Column="85" TopLine="137"/>
       </Position19>
       <Position20>
-        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <Caret Line="792" Column="46" TopLine="766"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="162" Column="23" TopLine="137"/>
       </Position20>
       <Position21>
-        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <Caret Line="731" TopLine="728"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="25" Column="20"/>
       </Position21>
       <Position22>
-        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <Caret Line="792" TopLine="773"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="43" Column="7" TopLine="24"/>
       </Position22>
       <Position23>
-        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <Caret Line="793" TopLine="773"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="25" Column="29"/>
       </Position23>
       <Position24>
-        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <Caret Line="798" TopLine="773"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="88" Column="40" TopLine="56"/>
       </Position24>
       <Position25>
-        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <Caret Line="791" Column="23" TopLine="773"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
       </Position25>
       <Position26>
-        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <Caret Line="792" Column="64" TopLine="773"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="25" Column="29"/>
       </Position26>
       <Position27>
-        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <Caret Line="793" TopLine="773"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="88" Column="40" TopLine="56"/>
       </Position27>
       <Position28>
-        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <Caret Line="794" TopLine="773"/>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="127" Column="22" TopLine="95"/>
       </Position28>
+      <Position29>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+      </Position29>
+      <Position30>
+        <Filename Value="..\UnitsFits\FITSStatUtils.pas"/>
+        <Caret Line="28" Column="35"/>
+      </Position30>
     </JumpHistory>
   </ProjectSession>
 </CONFIG>

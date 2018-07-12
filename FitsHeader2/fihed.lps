@@ -4,13 +4,12 @@
     <PathDelim Value="\"/>
     <Version Value="10"/>
     <BuildModes Active="Default"/>
-    <Units Count="20">
+    <Units Count="21">
       <Unit0>
         <Filename Value="fihed.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="FIHED"/>
-        <IsVisibleTab Value="True"/>
-        <CursorPos X="20" Y="20"/>
+        <CursorPos X="2" Y="14"/>
         <UsageCount Value="36"/>
         <Bookmarks Count="1">
           <Item0 X="39" Y="163" ID="1"/>
@@ -151,8 +150,18 @@
         <UsageCount Value="10"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit19>
+      <Unit20>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="9"/>
+        <CursorPos X="38" Y="28"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit20>
     </Units>
-    <JumpHistory Count="26" HistoryIndex="25">
+    <JumpHistory Count="27" HistoryIndex="26">
       <Position1>
         <Filename Value="fihed.lpr"/>
         <Caret Line="65" Column="9" TopLine="54"/>
@@ -250,8 +259,12 @@
       </Position25>
       <Position26>
         <Filename Value="fihed.lpr"/>
-        <Caret Line="20" Column="32"/>
+        <Caret Line="20" Column="20"/>
       </Position26>
+      <Position27>
+        <Filename Value="fihed.lpr"/>
+        <Caret Line="14" Column="2"/>
+      </Position27>
     </JumpHistory>
   </ProjectSession>
   <Debugging>

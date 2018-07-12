@@ -1,8 +1,9 @@
 {$MODE DELPHI}
 program CheckTypes;
 
-uses SysUtils, StrUtils, FitsUtils;
+uses SysUtils, StrUtils, FitsUtils, FITSStatUtils;
 
+type TIntegerArray = Array of Integer;
 var
   A, B, C, R, I: Integer;
   A64: Int64;
@@ -11,7 +12,11 @@ var
   ErrorPos: Integer;
   E: Extended;
 
+  TestArray3: TIntegerArray;
+  TestArray4: TIntegerArray;
+
 begin
+(*
   Writeln('SizeOf(Integer):', SizeOf(Integer));
   Writeln('Low(Integer)   :',    Low(Integer));
   Writeln('High(Integer)  :',   High(Integer));
@@ -42,6 +47,7 @@ begin
   WriteLn;
   Writeln('SizeOf(Pointer):', SizeOf(Pointer));
   WriteLn;
+*)
 (*
 {$Q+}{$R+}
   E := 1e+4930;
@@ -89,7 +95,7 @@ begin
   for I := 0 to ParamCount do
     WriteLn(ParamStr(I));
 *)
-
+(*
   A := MaxInt - 100;
   B := MaxInt - 100;
   C := 2;
@@ -112,7 +118,31 @@ begin
   WriteLn('Int64(A)*Int64(B)*Int64(C) : ', Int64(A)*Int64(B)*Int64(C));
   if Int64(A)*Int64(B)*Int64(C) > MaxInt then
     WriteLn('Too large');
+*)
 
-  Write('Press ENTER: ');
-  ReadLn;
+
+  for R := 0 to 10000 do begin
+    SetLength(TestArray3, Random(20));
+    for I := 0 to Length(TestArray3) - 1 do
+      TestArray3[I] := Random(MaxInt);
+    TestArray4 := Copy(TestArray3, 0, Length(TestArray3));
+
+    Write(Length(TestArray3));
+    Write(^I);
+    Write(Length(TestArray4));
+    Write(^I);
+    Write(FloatToStr(TStatHelper<Integer>.WirthMedian(TestArray3)));
+    Write(^I);
+    //Write(FloatToStr(TStatHelper<Integer>.SortAndMedian(TestArray4)));
+    for I := 0 to Length(TestArray4) - 1 do
+      Write(^I, FloatToStr(TestArray4[I]));
+    WriteLn;
+  end;
+
+//  SetLength(TestArray3, 7);
+//  TestArray3 := TIntegerArray.Create(121790187,	585524933,	638950699,	823434396,	939711377,	1915067938,	2069450027);
+//  WriteLn(FloatToStr(TStatHelper<Integer>.WirthMedian(TestArray3)));
+//  WriteLn(FloatToStr(TStatHelper<Integer>.SortAndMedian(TestArray3)));
+  //Write('Press ENTER: ');
+  //ReadLn;
 end.

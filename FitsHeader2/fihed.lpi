@@ -53,8 +53,8 @@
       <Filename Value="fihed"/>
     </Target>
     <SearchPaths>
-      <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="..\Units"/>
+      <IncludeFiles Value="$(ProjOutDir);..\UnitsFITS"/>
+      <OtherUnitFiles Value="..\UnitsCommon;..\UnitsFITS"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

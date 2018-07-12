@@ -125,33 +125,43 @@ begin
         end;
         case BitPix of
             8: begin
-                 MedianV := TStatHelper<Byte>.SortAndMedian(DataB);
-                 MinV := DataB[0];
-                 MaxV := DataB[High(DataB)];
+                 //MedianV := TStatHelper<Byte>.SortAndMedian(DataB);
+                 //MinV := DataB[0];
+                 //MaxV := DataB[High(DataB)];
+                 MedianV := TStatHelper<Byte>.WirthMedian(DataB); // Data changed!
+                 TStatHelper<Byte>.MinMax(DataB, MinV, MaxV);
                  TStatHelper<Byte>.MeanAndStdev(DataB, MeanV, StdevV);
                end;
            16: begin
-                 MedianV := TStatHelper<SmallInt>.SortAndMedian(DataI);
-                 MinV := DataI[0];
-                 MaxV := DataI[High(DataI)];
+                 //MedianV := TStatHelper<SmallInt>.SortAndMedian(DataI);
+                 //MinV := DataI[0];
+                 //MaxV := DataI[High(DataI)];
+                 MedianV := TStatHelper<SmallInt>.WirthMedian(DataI); // Data changed!
+                 TStatHelper<SmallInt>.MinMax(DataI, MinV, MaxV);
                  TStatHelper<SmallInt>.MeanAndStdev(DataI, MeanV, StdevV);
                end;
            32: begin
-                 MedianV := TStatHelper<LongInt>.SortAndMedian(DataL);
-                 MinV := DataL[0];
-                 MaxV := DataL[High(DataL)];
+                 //MedianV := TStatHelper<LongInt>.SortAndMedian(DataL);
+                 //MinV := DataL[0];
+                 //MaxV := DataL[High(DataL)];
+                 MedianV := TStatHelper<LongInt>.WirthMedian(DataL); // Data changed!
+                 TStatHelper<LongInt>.MinMax(DataL, MinV, MaxV);
                  TStatHelper<LongInt>.MeanAndStdev(DataL, MeanV, StdevV);
                end;
           -32: begin
-                 MedianV := TStatHelper<Single>.SortAndMedian(DataS);
-                 MinV := DataS[0];
-                 MaxV := DataS[High(DataS)];
+                 //MedianV := TStatHelper<Single>.SortAndMedian(DataS);
+                 //MinV := DataS[0];
+                 //MaxV := DataS[High(DataS)];
+                 MedianV := TStatHelper<Single>.WirthMedian(DataS); // Data changed!
+                 TStatHelper<Single>.MinMax(DataS, MinV, MaxV);
                  TStatHelper<Single>.MeanAndStdev(DataS, MeanV, StdevV);
                end;
           -64: begin
-                 MedianV := TStatHelper<Double>.SortAndMedian(DataD);
-                 MinV := DataD[0];
-                 MaxV := DataD[High(DataD)];
+                 //MedianV := TStatHelper<Double>.SortAndMedian(DataD);
+                 //MinV := DataD[0];
+                 //MaxV := DataD[High(DataD)];
+                 MedianV := TStatHelper<Double>.WirthMedian(DataD); // Data changed!
+                 TStatHelper<Double>.MinMax(DataD, MinV, MaxV);
                  TStatHelper<Double>.MeanAndStdev(DataD, MeanV, StdevV);
                end;
         end;
@@ -228,7 +238,7 @@ begin
   end;
 
   InputFileName := ExpandFileName(CmdObj.CmdLine.ParamFile(1));
-
+  if ExtractFileExt(InputFileName) = '' then InputFileName := ChangeFileExt(InputFileName, '.fit');
   ProcessInput(InputFileName);
 
 end.

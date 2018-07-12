@@ -231,7 +231,7 @@ begin
         case FStackMode of
           smAdd: StackedResult := TStatHelper<SmallInt>.Sum(StackPixels16bit);
           smAvg: StackedResult := TStatHelper<SmallInt>.Mean(StackPixels16bit);
-          smMed: StackedResult := TStatHelper<SmallInt>.SortAndMedian(StackPixels16bit);
+          smMed: StackedResult := TStatHelper<SmallInt>.WirthMedian(StackPixels16bit); // array is reordered!
           else raise Exception.Create('Internal error: invalid Stack Mode');
         end;
       end
@@ -241,7 +241,7 @@ begin
         case FStackMode of
           smAdd: StackedResult := TStatHelper<Extended>.Sum(StackPixels);
           smAvg: StackedResult := TStatHelper<Extended>.Mean(StackPixels);
-          smMed: StackedResult := TStatHelper<Extended>.SortAndMedian(StackPixels);
+          smMed: StackedResult := TStatHelper<Extended>.WirthMedian(StackPixels); // array is reordered!
           else raise Exception.Create('Internal error: invalid Stack Mode');
         end;
       end;
