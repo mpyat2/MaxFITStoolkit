@@ -133,7 +133,7 @@ begin
   end;
 end;
 
-function CFAtoRGB(var FITSfile: FITSRecordFile; const FITSFileName: string; const OutputDir: string; const Prefix: string; const BayerPattern: TBayerPattern; Overwrite: Boolean; Linear: Boolean): Boolean;
+function CFAtoRGB(var FITSfile: FITSRecordFile; const FITSFileName: string; const OutputDir: string; const Prefix: string; const BayerPattern: TBayerPattern; Overwrite: Boolean; Linear: Boolean; PrintTiming: Boolean): Boolean;
 var
   StartOfImage: Integer;
   Bscale, Bzero: Double;
@@ -164,7 +164,10 @@ var
   S: string;
   I: Integer;
   N: Integer;
+  TimeProcStart: TDateTime;
 begin
+  TimeProcStart := Now();
+
   Result := False;
   GetFITSproperties(FITSfile, BitPix, NaxisN, StartOfImage, ImageMemSize); // ImageMemSize is padded!
   if (Length(NaxisN) <> 2) then
@@ -420,9 +423,14 @@ begin
     Image := nil;
   end;
   Result := True;
+
+  if PrintTiming then begin
+    Write(' [elapsed: ', ((Now() - TimeProcStart) * (24 * 60 * 60)):0:2, ' s] ');
+  end;
+
 end;
 
-procedure ProcessFile(const FileName: string; const OutputDir: string; const Prefix: string; const BayerPattern: TBayerPattern; Overwrite: Boolean; Linear: Boolean);
+procedure ProcessFile(const FileName: string; const OutputDir: string; const Prefix: string; const BayerPattern: TBayerPattern; Overwrite: Boolean; Linear: Boolean; PrintTiming: Boolean);
 var
   FITSfile: FITSRecordFile;
   R: Boolean;
@@ -433,7 +441,7 @@ begin
   try
     if not IsFits(FITSfile) then
       FileError('Not a valid FITS file: ' + AnsiQuotedStr(FileName, '"'));
-    R := CFAtoRGB(FITSfile, FileName, OutputDir, Prefix, BayerPattern, Overwrite, Linear);
+    R := CFAtoRGB(FITSfile, FileName, OutputDir, Prefix, BayerPattern, Overwrite, Linear, PrintTiming);
   finally
     CloseFile(FITSfile);
   end;
@@ -455,7 +463,7 @@ begin
   Result := True;
 end;
 
-procedure ProcessInput(const FileMasks: array of string; const OutputDir: string; const Prefix: string; const BayerPattern: TBayerPattern; Overwrite: Boolean; Linear: Boolean);
+procedure ProcessInput(const FileMasks: array of string; const OutputDir: string; const Prefix: string; const BayerPattern: TBayerPattern; Overwrite: Boolean; Linear: Boolean; PrintTiming: Boolean);
 var
   I, N, Ntotal: Integer;
 begin
@@ -468,7 +476,7 @@ begin
       FileEnum(FileMasks[N], faArchive, False, TFileEnumClass.FileEnumProc);
       FileList.NaturalSort;
       for I := 0 to FileList.Count - 1 do begin
-        ProcessFile(FileList[I], OutputDir, Prefix, BayerPattern, Overwrite, Linear);
+        ProcessFile(FileList[I], OutputDir, Prefix, BayerPattern, Overwrite, Linear, PrintTiming);
         Inc(Ntotal);
       end;
     end;
@@ -494,6 +502,7 @@ var
   Overwrite: Boolean;
   Linear: Boolean;
   PrintVer: Boolean;
+  PrintTiming: Boolean;
   S: string;
   ParamN: Integer;
   I: Integer;
@@ -528,6 +537,7 @@ begin
   BayerPatternStr := '';
   Overwrite := False;
   Linear := False;
+  PrintTiming := False;
 
   for ParamN := 1 to CmdObj.CmdLine.ParamCount do begin
     S := CmdObj.CmdLine.ParamStr(ParamN);
@@ -558,6 +568,9 @@ begin
       else
       if CmdObj.CmdLine.ParamIsKey(S, '2') then
         Linear := True
+      else
+      if CmdObj.CmdLine.ParamIsKey(S, 'TIMING') then
+        PrintTiming := True
       else begin
         WriteLn('**** Invalid command-line parameter: ' + S);
         Halt(1);
@@ -609,7 +622,7 @@ begin
 
   FileList := TStringListNaturalSort.Create;
   try
-    ProcessInput(InputFileMasks, OutputDir, Prefix, BayerPattern, Overwrite, Linear);
+    ProcessInput(InputFileMasks, OutputDir, Prefix, BayerPattern, Overwrite, Linear, PrintTiming);
   finally
     FreeAndNil(FileList);
   end;

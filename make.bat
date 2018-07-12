@@ -2,7 +2,7 @@
 REM
 REM Use FPC [www.freepascal.org] in $DELPHI mode.
 REM 
-SET COMPILE_PARAMS=-MDELPHI -Xg -FuUnitsCommon\;UnitsFits\ -FiUnitsFits\ -FEbin-out\
+SET COMPILE_PARAMS=-MDELPHI -O2 -Xs -FuUnitsCommon\;UnitsFits\ -FiUnitsFits\ -FEbin-out\
 SET COMPILER="c:\personal\lazarus\fpc\3.0.4\bin\i386-win32\fpc.exe"     %COMPILE_PARAMS% -FUbin-out\unit32
 SET COMPIL64="C:\Personal\lazarus64\fpc\3.0.4\bin\x86_64-win64\fpc.exe" %COMPILE_PARAMS% -FUbin-out\unit64
 REM
