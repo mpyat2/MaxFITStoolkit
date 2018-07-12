@@ -2,10 +2,12 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "FITS utils"
-#define MyAppVersion "1.1.2 beta"
+#define MyAppVersion "1.1.2a beta"
 #define MyAppPublisher "mpyat2@gmail.com"
 #define MyAppURL "https://sites.google.com/site/theskyaboveusmp/home"
 #define MyAppExeName "HelloIRISFITS.exe"
+
+#define WIN64ONLY
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -49,10 +51,14 @@ Source: "..\bin-out\fitsrgb.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "..\bin-out\cfa2rgb.exe"; DestDir: "{app}"; Flags: ignoreversion
 
+#ifdef WIN64ONLY
+Source: "..\bin-out\makestack.exe"; DestDir: "{app}"; Flags: ignoreversion
+#else
 ; 1.1.2: only makestack exists in 64 variant.
 Source: "..\bin-out\makestack64.exe" ; DestDir: "{app}"; DestName: "makestack.exe"  ; Check: "IsWin64"     ; Flags: ignoreversion
 Source: "..\bin-out\makestack32.exe" ; DestDir: "{app}"; DestName: "makestack32.exe"; Check: "IsWin64"     ; Flags: ignoreversion
 Source: "..\bin-out\makestack32.exe" ; DestDir: "{app}"; DestName: "makestack.exe"  ; Check: "not IsWin64" ; Flags: ignoreversion
+#endif
 
 Source: "..\bin-out\fitsstat.exe"; DestDir: "{app}"; Flags: ignoreversion
 

@@ -139,7 +139,6 @@ var
   Bscale, Bzero: Double;
   BlackLevel: SmallInt;
   BitPix: Integer;
-  BytePix: Integer;
   NaxisN: TIntArray;
   Naxis1, Naxis2: Integer;
   Naxis1new, Naxis2new: Integer;
@@ -179,7 +178,6 @@ begin
     Write(' Only BITPIX=16 is currently supported.');
     Exit;
   end;
-  BytePix := Abs(BitPix) div 8;
 
   BlackLevel := 0;
   GetBscaleBzero(FITSfile, Bscale, Bzero); // Bzero -- for border pixels
@@ -210,7 +208,7 @@ begin
     FillChar(Image^, ImageMemSize, 0);
     Seek(FITSfile, StartOfImage);
     BlockRead(FITSfile, Image^, ImageMemSize div FITSRecordLen);
-    ImageLayerMemSize := Naxis1new * Naxis2new * BytePix;
+    ImageLayerMemSize := Naxis1new * Naxis2new * 2;
 
     for ColorL := 0 to 3 do ImageC[ColorL] := nil;
     RedL := nil;
@@ -228,17 +226,21 @@ begin
             GetMem(ImageC[ColorL], ImageLayerMemSize);
             FillChar(ImageC[ColorL]^, ImageLayerMemSize, 0);
             for C := 0 to Naxis1 - 1 do begin
-              for R := 0 to Naxis2 - 1 do begin
-                C2 := C + ShiftH;
-                R2 := Naxis2 - 1 - (R + ShiftV); // start from the end of Naxis2, for "correct" order of pixels
-                if (C2 >= 0) and (C2 < Naxis1) and (R2 >= 0) and (R2 < Naxis2) then begin
-                  PixAddr := (R2 * Naxis1 + C2) * BytePix;
-                  if (C mod 2 = 0) and (R mod 2 = 0) then begin
-                    X := C div 2;
-                    Y := R div 2;
-                    if (X >= 0) and (X < Naxis1new) and (Y >= 0) and (Y < Naxis2new) then begin
-                      PixAddr2 := ((Naxis2new - 1 - Y) * Naxis1new + X) * BytePix;
-                      Move(Image[PixAddr], ImageC[ColorL][PixAddr2], BytePix);
+              if not Odd(C) then begin
+                X := C div 2;
+                if (X >= 0) and (X < Naxis1new) then begin
+                  for R := 0 to Naxis2 - 1 do begin
+                    if not Odd(R) then begin
+                      Y := R div 2;
+                      if (Y >= 0) and (Y < Naxis2new) then begin
+                        C2 := C + ShiftH;
+                        R2 := Naxis2 - 1 - (R + ShiftV); // start from the end of Naxis2, for "correct" order of pixels
+                        if (C2 >= 0) and (C2 < Naxis1) and (R2 >= 0) and (R2 < Naxis2) then begin
+                          PixAddr := (R2 * Naxis1 + C2) * 2;
+                          PixAddr2 := ((Naxis2new - 1 - Y) * Naxis1new + X) * 2;
+                          Move(Image[PixAddr], ImageC[ColorL][PixAddr2], 2);
+                        end;
+                      end;
                     end;
                   end;
                 end;
@@ -294,21 +296,27 @@ begin
         Assert(GreenL <> nil);
         Assert(RedL <> nil);
         Assert(BlueL <> nil);
+(*
         // Moving exisiting pixels to color planes
         for C := 0 to Naxis1 - 1 do begin
           for R := Naxis2 - 1 downto 0 do begin // start from the end of Naxis2, for "correct" order of pixels
-            PixAddr := (R * Naxis1 + C) * BytePix;
+            PixAddr := (R * Naxis1 + C) * 2;
             ColorL := C mod 2 + 2 * ((Naxis2 - 1 - R) mod 2);
             if BayerPattern[ColorL] = 'R' then
-              Move(Image[PixAddr], RedL[PixAddr], BytePix)
+              Move(Image[PixAddr], RedL[PixAddr], 2)
             else
             if BayerPattern[ColorL] = 'G' then
-              Move(Image[PixAddr], GreenL[PixAddr], BytePix)
+              Move(Image[PixAddr], GreenL[PixAddr], 2)
             else
             if BayerPattern[ColorL] = 'B' then
-              Move(Image[PixAddr], BlueL[PixAddr], BytePix);
+              Move(Image[PixAddr], BlueL[PixAddr], 2);
           end;
         end;
+*)
+        // Simply tripling plane!
+        Move(Image^, GreenL^, ImageLayerMemSize);
+        Move(Image^, RedL^,   ImageLayerMemSize);
+        Move(Image^, BlueL^,  ImageLayerMemSize);
         // Interpolating
         InterpolateLayer16bit(GreenL, 'G', Naxis1, Naxis2, BayerPattern, BlackLevel);
         InterpolateLayer16bit(RedL,   'R', Naxis1, Naxis2, BayerPattern, BlackLevel);
@@ -354,7 +362,7 @@ begin
         else
         if Buf = recordEND then begin
           // adding comment before END
-          S := PadCh('COMMENT', FITSKeywordLen, ' ') + 'Debayered by CFA2RGB';
+          S := PadCh('COMMENT', FITSKeywordLen, ' ') + 'Debayered by ' + ChangeFileExt(ExtractFileName(ParamStr(0)), '');
           if not Linear then S := S + ' (superpixel mode)' else S := S + ' (linear interpolation)';
           StrToFITSRecord(S, Buf);
           Move(Buf, HeaderNew[Length(HeaderNew) - 1], FITSRecordLen);
