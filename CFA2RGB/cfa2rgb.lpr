@@ -228,11 +228,11 @@ begin
             for C := 0 to Naxis1 - 1 do begin
               if not Odd(C) then begin
                 X := C div 2;
-                if (X >= 0) and (X < Naxis1new) then begin
+                if X < Naxis1new then begin
                   for R := 0 to Naxis2 - 1 do begin
                     if not Odd(R) then begin
                       Y := R div 2;
-                      if (Y >= 0) and (Y < Naxis2new) then begin
+                      if Y < Naxis2new then begin
                         C2 := C + ShiftH;
                         R2 := Naxis2 - 1 - (R + ShiftV); // start from the end of Naxis2, for "correct" order of pixels
                         if (C2 >= 0) and (C2 < Naxis1) and (R2 >= 0) and (R2 < Naxis2) then begin
@@ -271,60 +271,41 @@ begin
       else begin
         // Linear interpolation
         // Reading 4 color planes
-        // Step1: allocating memory
+        // Step1: allocating memory and making three copy of original layer
         for ColorL := 0 to 3 do begin
           if BayerPattern[ColorL] = 'R' then begin
             GetMem(ImageC[ColorL], ImageLayerMemSize);
-            FillChar(ImageC[ColorL]^, ImageLayerMemSize, 0);
+            Move(Image^, ImageC[ColorL]^, ImageLayerMemSize);
             RedL := ImageC[ColorL];
           end
           else
           if BayerPattern[ColorL] = 'G' then begin
             if GreenL = nil then begin
               GetMem(ImageC[ColorL], ImageLayerMemSize);
-              FillChar(ImageC[ColorL]^, ImageLayerMemSize, 0);
+              Move(Image^, ImageC[ColorL]^, ImageLayerMemSize);
               GreenL := ImageC[ColorL];
             end;
           end
           else
           if BayerPattern[ColorL] = 'B' then begin
             GetMem(ImageC[ColorL], ImageLayerMemSize);
-            FillChar(ImageC[ColorL]^, ImageLayerMemSize, 0);
+            Move(Image^, ImageC[ColorL]^, ImageLayerMemSize);
             BlueL := ImageC[ColorL];
           end
         end;
         Assert(GreenL <> nil);
         Assert(RedL <> nil);
         Assert(BlueL <> nil);
-(*
-        // Moving exisiting pixels to color planes
-        for C := 0 to Naxis1 - 1 do begin
-          for R := Naxis2 - 1 downto 0 do begin // start from the end of Naxis2, for "correct" order of pixels
-            PixAddr := (R * Naxis1 + C) * 2;
-            ColorL := C mod 2 + 2 * ((Naxis2 - 1 - R) mod 2);
-            if BayerPattern[ColorL] = 'R' then
-              Move(Image[PixAddr], RedL[PixAddr], 2)
-            else
-            if BayerPattern[ColorL] = 'G' then
-              Move(Image[PixAddr], GreenL[PixAddr], 2)
-            else
-            if BayerPattern[ColorL] = 'B' then
-              Move(Image[PixAddr], BlueL[PixAddr], 2);
-          end;
-        end;
-*)
-        // Simply tripling plane!
-        Move(Image^, GreenL^, ImageLayerMemSize);
-        Move(Image^, RedL^,   ImageLayerMemSize);
-        Move(Image^, BlueL^,  ImageLayerMemSize);
         // Interpolating
         InterpolateLayer16bit(GreenL, 'G', Naxis1, Naxis2, BayerPattern, BlackLevel);
         InterpolateLayer16bit(RedL,   'R', Naxis1, Naxis2, BayerPattern, BlackLevel);
         InterpolateLayer16bit(BlueL,  'B', Naxis1, Naxis2, BayerPattern, BlackLevel);
       end;
 
-      FreeMem(Image);
-      Image := nil;
+      if Image <> nil then begin
+        FreeMem(Image);
+        Image := nil;
+      end;
 
       // Saving file
       EndOfHeaderFound := False;
