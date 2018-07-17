@@ -71,7 +71,9 @@ fihed file_mask1[.fit] [file_mask2[.fit] ...] //SET [/keyword1=value [/keyword2=
   //CSV       prints header values as CSV table.
               COMMENT, HISTORY and similar keywords without '='
               are ignored in this mode.
-              When /CSV parameter exists, at least one keyword must be specified
+              When //CSV parameter exists, at least one keyword should be specified
+
+  //TAB       the same as //CSV, tabs are used instead of semicolons to separate output columns
 
   //SET       edit mode
 
@@ -79,8 +81,7 @@ fihed file_mask1[.fit] [file_mask2[.fit] ...] //SET [/keyword1=value [/keyword2=
 
   //H         print this help and halt
 
-//CSV and //SET or //TAB and //SET parameters are mutually exclusive
-If both //CSV and //TAB specified, //CSV is used
+//CSV, //TAB, and //SET parameters are mutually exclusive
 
 @fitscfa
 
