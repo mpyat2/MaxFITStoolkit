@@ -267,7 +267,7 @@
         <Filename Value="ConvUtils.pas"/>
         <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="103"/>
+        <TopLine Value="102"/>
         <CursorPos X="9" Y="198"/>
         <UsageCount Value="12"/>
         <Bookmarks Count="1">
@@ -282,6 +282,7 @@
         <TopLine Value="285"/>
         <CursorPos X="10" Y="304"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit34>
       <Unit35>
         <Filename Value="..\UnitsFits\FITSUtils.pas"/>

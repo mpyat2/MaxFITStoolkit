@@ -36,6 +36,7 @@
         <EditorIndex Value="-1"/>
         <CursorPos Y="3"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit3>
       <Unit4>
         <Filename Value="..\Units\CommonIni.pas"/>
@@ -73,6 +74,7 @@
         <TopLine Value="688"/>
         <CursorPos X="14" Y="705"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit8>
       <Unit9>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\classes\stringl.inc"/>
@@ -80,6 +82,7 @@
         <TopLine Value="688"/>
         <CursorPos X="3" Y="691"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit9>
     </Units>
     <JumpHistory Count="16" HistoryIndex="15">

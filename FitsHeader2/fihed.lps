@@ -90,11 +90,13 @@
         <UnitName Value="Classes"/>
         <EditorIndex Value="-1"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit10>
       <Unit11>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\systemh.inc"/>
         <EditorIndex Value="-1"/>
         <UsageCount Value="11"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit11>
       <Unit12>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\text.inc"/>
@@ -102,6 +104,7 @@
         <TopLine Value="194"/>
         <CursorPos X="11" Y="189"/>
         <UsageCount Value="11"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit12>
       <Unit13>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\classes\classesh.inc"/>
@@ -109,6 +112,7 @@
         <TopLine Value="60"/>
         <CursorPos X="3" Y="78"/>
         <UsageCount Value="11"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit13>
       <Unit14>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\textrec.inc"/>
@@ -116,6 +120,7 @@
         <TopLine Value="20"/>
         <CursorPos X="5" Y="45"/>
         <UsageCount Value="11"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit14>
       <Unit15>
         <Filename Value="FihedSwitchChars.pas"/>
@@ -130,11 +135,13 @@
         <TopLine Value="257"/>
         <CursorPos X="8" Y="273"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit16>
       <Unit17>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\filerec.inc"/>
         <EditorIndex Value="-1"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit17>
       <Unit18>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\sysutils\filutilh.inc"/>
@@ -142,6 +149,7 @@
         <TopLine Value="70"/>
         <CursorPos X="3" Y="109"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit18>
       <Unit19>
         <Filename Value="..\Units\FITScompatibility.pas"/>

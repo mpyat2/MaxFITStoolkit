@@ -22,6 +22,7 @@
         <TopLine Value="114"/>
         <CursorPos X="126" Y="124"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit1>
       <Unit2>
         <Filename Value="..\Units\CmdObj.pas"/>
@@ -37,6 +38,7 @@
         <TopLine Value="565"/>
         <CursorPos X="26" Y="576"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit3>
       <Unit4>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\win\syswin.inc"/>
@@ -44,6 +46,7 @@
         <TopLine Value="338"/>
         <CursorPos X="5" Y="340"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit4>
       <Unit5>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\generic.inc"/>
@@ -51,6 +54,7 @@
         <TopLine Value="1061"/>
         <CursorPos X="10" Y="1072"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit5>
       <Unit6>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\win32\system.pp"/>
@@ -59,6 +63,7 @@
         <TopLine Value="72"/>
         <CursorPos X="7" Y="83"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit6>
       <Unit7>
         <Filename Value="..\Units\FITSUtils.pas"/>
@@ -74,6 +79,7 @@
         <TopLine Value="24"/>
         <CursorPos X="8" Y="35"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit8>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">

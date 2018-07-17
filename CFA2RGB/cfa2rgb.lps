@@ -55,6 +55,7 @@
         <TopLine Value="15"/>
         <CursorPos X="8" Y="33"/>
         <UsageCount Value="11"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit5>
       <Unit6>
         <Filename Value="..\Units\FITSUtils.inc"/>
@@ -93,7 +94,7 @@
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit10>
     </Units>
-    <JumpHistory Count="28" HistoryIndex="27">
+    <JumpHistory Count="27" HistoryIndex="26">
       <Position1>
         <Filename Value="cfa2rgb.lpr"/>
         <Caret Line="158" Column="19" TopLine="127"/>
@@ -200,12 +201,8 @@
       </Position26>
       <Position27>
         <Filename Value="cfa2rgb.lpr"/>
-        <Caret Line="237" Column="25" TopLine="238"/>
-      </Position27>
-      <Position28>
-        <Filename Value="cfa2rgb.lpr"/>
         <Caret Line="268" Column="18" TopLine="255"/>
-      </Position28>
+      </Position27>
     </JumpHistory>
   </ProjectSession>
   <Debugging>

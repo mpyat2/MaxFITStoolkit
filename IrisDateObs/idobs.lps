@@ -107,6 +107,7 @@
         <TopLine Value="141"/>
         <CursorPos X="10" Y="174"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit12>
       <Unit13>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\sysutils\filutil.inc"/>
@@ -114,6 +115,7 @@
         <TopLine Value="434"/>
         <CursorPos X="10" Y="453"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit13>
       <Unit14>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\win\sysutils.pp"/>
@@ -121,6 +123,7 @@
         <TopLine Value="483"/>
         <CursorPos X="3" Y="485"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit14>
       <Unit15>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\win\wininc\func.inc"/>
@@ -128,6 +131,7 @@
         <TopLine Value="119"/>
         <CursorPos X="10" Y="138"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit15>
       <Unit16>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\sysutils\sysutilh.inc"/>
@@ -135,6 +139,7 @@
         <TopLine Value="128"/>
         <CursorPos X="15" Y="157"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit16>
       <Unit17>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\packages\rtl-objpas\src\inc\strutils.pp"/>
@@ -142,6 +147,7 @@
         <TopLine Value="1903"/>
         <CursorPos X="3" Y="1909"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit17>
       <Unit18>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\sysutils\sysstrh.inc"/>
@@ -149,6 +155,7 @@
         <TopLine Value="82"/>
         <CursorPos X="25" Y="103"/>
         <UsageCount Value="11"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit18>
       <Unit19>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\sysutils\sysstr.inc"/>
@@ -156,6 +163,7 @@
         <TopLine Value="596"/>
         <CursorPos X="23" Y="600"/>
         <UsageCount Value="11"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit19>
       <Unit20>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\systemh.inc"/>
@@ -163,6 +171,7 @@
         <TopLine Value="1377"/>
         <CursorPos X="11" Y="1396"/>
         <UsageCount Value="11"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit20>
     </Units>
     <JumpHistory Count="6" HistoryIndex="5">

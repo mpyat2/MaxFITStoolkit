@@ -56,6 +56,7 @@
         <TopLine Value="64"/>
         <CursorPos X="7" Y="83"/>
         <UsageCount Value="8"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit6>
       <Unit7>
         <Filename Value="..\Units\StringListNaturalSort.pas"/>
@@ -87,6 +88,7 @@
         <TopLine Value="745"/>
         <CursorPos X="15" Y="765"/>
         <UsageCount Value="14"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit10>
       <Unit11>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\classes\classes.inc"/>
@@ -94,12 +96,14 @@
         <TopLine Value="216"/>
         <CursorPos X="3" Y="220"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit11>
       <Unit12>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\win\tthread.inc"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="13" Y="21"/>
         <UsageCount Value="12"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit12>
       <Unit13>
         <Filename Value="CalcThread.pas"/>
@@ -117,11 +121,13 @@
         <TopLine Value="66"/>
         <CursorPos X="7" Y="84"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit14>
       <Unit15>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\packages\rtl-objpas\src\inc\dateutils.pp"/>
         <EditorIndex Value="-1"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit15>
       <Unit16>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\filerec.inc"/>
@@ -129,6 +135,7 @@
         <TopLine Value="3"/>
         <CursorPos X="5" Y="38"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit16>
       <Unit17>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\objpas\classes\stringl.inc"/>
@@ -136,6 +143,7 @@
         <TopLine Value="1072"/>
         <CursorPos X="3" Y="1079"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit17>
       <Unit18>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\heaph.inc"/>
@@ -143,6 +151,7 @@
         <TopLine Value="65"/>
         <CursorPos X="29" Y="92"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit18>
       <Unit19>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\systemh.inc"/>
@@ -150,6 +159,7 @@
         <TopLine Value="307"/>
         <CursorPos X="9" Y="338"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit19>
       <Unit20>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\varianth.inc"/>
@@ -157,6 +167,7 @@
         <TopLine Value="492"/>
         <CursorPos X="10" Y="510"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit20>
       <Unit21>
         <Filename Value="test.pas"/>

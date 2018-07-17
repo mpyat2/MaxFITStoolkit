@@ -9,8 +9,8 @@
         <Filename Value="FitsCfa.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="FITSCFA"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="-1"/>
+        <WindowIndex Value="-1"/>
         <TopLine Value="131"/>
         <CursorPos X="30" Y="162"/>
         <UsageCount Value="25"/>

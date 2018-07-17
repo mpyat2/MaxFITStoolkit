@@ -37,7 +37,7 @@
       </Unit2>
       <Unit3>
         <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="1"/>
         <TopLine Value="599"/>
         <CursorPos X="3" Y="621"/>
         <UsageCount Value="11"/>
@@ -46,19 +46,19 @@
       </Unit3>
       <Unit4>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\heaph.inc"/>
-        <EditorIndex Value="1"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="65"/>
         <CursorPos X="10" Y="92"/>
         <UsageCount Value="11"/>
-        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit4>
       <Unit5>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\systemh.inc"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="332"/>
         <CursorPos X="3" Y="351"/>
         <UsageCount Value="11"/>
-        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit5>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">

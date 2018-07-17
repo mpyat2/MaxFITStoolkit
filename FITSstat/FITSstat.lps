@@ -30,6 +30,7 @@
         <TopLine Value="7"/>
         <CursorPos X="10" Y="29"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit2>
       <Unit3>
         <Filename Value="..\..\..\..\lazarus\fpc\3.0.4\source\rtl\inc\systemh.inc"/>
@@ -37,6 +38,7 @@
         <TopLine Value="329"/>
         <CursorPos X="3" Y="348"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit3>
       <Unit4>
         <Filename Value="..\Units\FITSStat.pas"/>
