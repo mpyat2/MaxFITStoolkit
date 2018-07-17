@@ -84,26 +84,11 @@ var
   PixelAspect: Double;
   ImageFlip: Integer;
   bits: PChar;
-  scanline: PChar;
-  FITSbpp: Integer;
-  BytePerPix: Byte;
-  Pixel: Word;
-  PixelBytes: array[0..1] of Char absolute Pixel;
-  PixelAsSignedInt: SmallInt;
-  PixelAsSignedIntBytes: array[0..1] of Char absolute PixelAsSignedInt;
-  PixelR: Single;
-  PixelRBytes: array[0..3] of Char absolute PixelR;
-  X, Y, Y2: Word;
-  FirstPixel: Boolean;
+  BayerPattern: array[0..16] of Char;
   MinValue, MaxValue: Word;
-  PixelCount: LongWord;
-  SumValue: Double;
-  FITSFile: FITSRecordFile;
-  Image: PChar;
-  ImageSize: LongWord; // including padding
-  ImageSizeInBlocks: LongWord;
   AverageValue: Double;
-  N: LongWord;
+  Image: PChar;
+  ImageSize: PtrUInt; // including padding
   Make, Model, Software, Software2: string;
   Instrument: string;
   ISO: Double;
@@ -118,11 +103,10 @@ var
   Comments: TStringArray;
   Axes: TIntArray;
   Success: Boolean;
+  FITSFile: FITSRecordFile;
+  N, I, P: Integer;
   S: string;
-  I, P: Integer;
   Name, Value, TempValue: string;
-  Bzero: Integer;
-  BayerPattern: array[0..16] of Char;
   TimeProcStart: TDateTime;
 begin
   TimeProcStart := Now();
@@ -224,12 +208,6 @@ begin
     else
       TimeShift := TimeShiftInSecondsV;
 
-    if BzeroShift then begin
-      Bzero := 32768;
-    end
-    else
-      Bzero := 0;
-
     bits := PChar(RawProcessorRawImage(RawProcessor));
 
     if PrintTiming then begin
@@ -237,72 +215,12 @@ begin
       Write('[decoded , elapsed: ', ((Now() - TimeProcStart) * (24 * 60 * 60)):0:2, ' s]');
     end;
 
-    FirstPixel := True;
-    SumValue := 0;
-    MinValue := 0;
-    MaxValue := 0;
-    PixelCount := 0;
-    if PixelRealNumber then begin
-      FITSbpp := -32;
-      BytePerPix := 4;
-    end
-    else begin
-      FITSbpp := 16;
-      BytePerPix := 2;
-    end;
-    // FITS image
-    ImageSize := RawFrameWidth * RawFrameHeight * BytePerPix;
-    ImageSizeInBlocks := ImageSize div (RecordsInBlock * SizeOf(FITSRecordType));
-    if ImageSize mod (RecordsInBlock * SizeOf(FITSRecordType)) > 0 then Inc(ImageSizeInBlocks);
-    ImageSize := ImageSizeInBlocks * RecordsInBlock * SizeOf(FITSRecordType);
-    GetMem(Image, ImageSize);
+    // FITS image: ConvertRawBytes returns FITS image padded to block size!
+    Image :=  ConvertRawBytes(bits, _width,
+                             RawFrameWidth, RawFrameHeight, RawFrameLeft, RawFrameTop,
+                             PixelRealNumber, BzeroShift, DoFlip,
+                             MinValue, MaxValue, AverageValue, ImageSize);
     try
-      FillChar(Image[0], ImageSize, 0);
-      N := 0;
-      for Y := RawFrameTop + RawFrameHeight - 1 downto RawFrameTop do begin
-        if DoFlip then
-          Y2 := (RawFrameTop + RawFrameHeight - 1) - Y + RawFrameTop
-        else
-          Y2 := Y;
-        scanline := @bits[Y2 * _width * 2];
-        for X := RawFrameLeft to RawFrameLeft + RawFrameWidth - 1 do begin
-          Pixel := PWord(@scanline[X * 2])^;
-          if FirstPixel then begin
-            MinValue := Pixel;
-            MaxValue := Pixel;
-            FirstPixel := False;
-          end
-          else begin
-            if Pixel < MinValue then MinValue := Pixel;
-            if Pixel > MaxValue then MaxValue := Pixel;
-          end;
-          SumValue := SumValue + Pixel;
-          Inc(PixelCount);
-
-          if not PixelRealNumber then begin
-            if not BzeroShift then begin
-              Image[N    ] := PixelBytes[1];
-              Image[N + 1] := PixelBytes[0];
-            end
-            else begin
-              PixelAsSignedInt := Pixel - Bzero;
-              Image[N    ] := PixelAsSignedIntBytes[1];
-              Image[N + 1] := PixelAsSignedIntBytes[0];
-            end;
-          end
-          else begin
-            PixelR := Pixel;
-            PixelR := PixelR - Bzero;
-            Image[N    ] := PixelRBytes[3];
-            Image[N + 1] := PixelRBytes[2];
-            Image[N + 2] := PixelRBytes[1];
-            Image[N + 3] := PixelRBytes[0];
-          end;
-
-          Inc(N, BytePerPix);
-        end;
-      end;
-
       if PrintTiming then begin
         WriteLn;
         Write('[prepared, elapsed: ', ((Now() - TimeProcStart) * (24 * 60 * 60)):0:2, ' s]');
@@ -312,13 +230,8 @@ begin
         FileError('UINT pixel value too big: ' + IntToStr(MaxValue) +
                   ^M^J'Use /R option to make floating-point FITS' +
                   ^M^J'or' +
-                  ^M^J'Use /S option to specify BZERO = 32768');
+                  ^M^J'Use /S option to specify BZERO = ' + IntToStr(defBZeroShift[True]));
       end;
-
-      if PixelCount > 0 then
-        AverageValue := SumValue / PixelCount
-      else
-        AverageValue := 0;
 
       Instrument := '';
       if (Make <> '') or (Model <> '') then
@@ -357,12 +270,6 @@ begin
         Inc(N);
       end;
 
-      //ISOstring := '';
-      //if ISO <> 0 then begin
-      //  Str(ISO:0:0, TempS);
-      //  ISOstring := 'ISO ' + TempS;
-      //end;
-
       if not DoFlip and not DontTruncate then begin
         SetLength(Comments, N + 1);
         Comments[N] := 'RAW: Bayer Pattern (8 rows x 2 pixels): ' + BayerPattern;
@@ -395,9 +302,9 @@ begin
       Inc(N);
 
       FITSHeader := MakeFITSHeader(
-        FITSbpp,
+        defFITSbpp[PixelRealNumber],
         Axes,
-        Bzero, 1,
+        defBZeroShift[BzeroShift], 1,
         DateTime, '',
         LocalTimeToUniversal(Now()), '(UTC): RAW->FITS conversion time',
         ExposureTimeFloat, '',

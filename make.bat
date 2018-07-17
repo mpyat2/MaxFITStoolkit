@@ -1,4 +1,5 @@
 @ECHO OFF
+REM USE MAKE.BAT 64 to compile 64-bit version!
 REM
 REM Use FPC [www.freepascal.org] in $DELPHI mode.
 REM 

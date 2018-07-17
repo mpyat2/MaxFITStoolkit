@@ -17,7 +17,11 @@ unit ConvUtils;
 interface
 
 uses
-  SysUtils, DateUtils;
+  SysUtils, DateUtils, FITSUtils;
+
+const
+  defBZeroShift: array[Boolean] of LongInt = (0, 32768);
+  defFITSbpp: array[Boolean] of Integer = (16, -32);
 
 type
   TUnixTimeStr = array[0..25] of Char;
@@ -26,6 +30,17 @@ function GetMonth(D: TDateTime): string;
 function GetDayOfWeek(D: TDateTime): string;
 function MMMtoMonth(const MMM: string): Word;
 function DateTimeFromUnixTimeStringSafe(const TimeStr: TUnixTimeStr): TDateTime;
+
+// Returns FITS image padded to block size!
+function ConvertRawBytes(RawBits: PChar;
+                         RawWidth: Word;
+                         RawFrameWidth, RawFrameHeight, RawFrameLeft, RawFrameTop: Word;
+                         PixelRealNumber: Boolean;
+                         BzeroShift: Boolean;
+                         DoFlip: Boolean;
+                         out MinValue, MaxValue: Word;
+                         out AverageValue: Double;
+                         out ImageSize: PtrUInt): PChar;
 
 implementation
 
@@ -90,6 +105,103 @@ begin
     except
       on E: EConvertError do Result := 0;
     end;
+  end;
+end;
+
+// Returns FITS image padded to block size!
+function ConvertRawBytes(RawBits: PChar;
+                         RawWidth: Word;
+                         RawFrameWidth, RawFrameHeight, RawFrameLeft, RawFrameTop: Word;
+                         PixelRealNumber: Boolean;
+                         BzeroShift: Boolean;
+                         DoFlip: Boolean;
+                         out MinValue, MaxValue: Word;
+                         out AverageValue: Double;
+                         out ImageSize: PtrUInt): PChar;
+var
+  ImageSizeInBlocks: PtrUInt;
+  BytePerPix: Byte;
+  X, Y, Y2: Word;
+  scanline: PChar;
+  Pixel: Word;
+  PixelBytes: array[0..1] of Char absolute Pixel;
+  PixelAsSignedInt: SmallInt;
+  PixelAsSignedIntBytes: array[0..1] of Char absolute PixelAsSignedInt;
+  PixelR: Single;
+  PixelRBytes: array[0..3] of Char absolute PixelR;
+  FirstPixel: Boolean;
+  PixelCount: LongWord;
+  SumValue: Double;
+  N: PtrUInt;
+begin
+  Result := nil;
+  MinValue := 0;
+  MaxValue := 0;
+  AverageValue := 0;
+  if PixelRealNumber then
+    BytePerPix := 4
+  else
+    BytePerPix := 2;
+  ImageSize := RawFrameWidth * RawFrameHeight * BytePerPix;                   // not padded
+  if ImageSize = 0 then Exit;
+
+  ImageSizeInBlocks := (ImageSize - 1) div (RecordsInBlock * SizeOf(FITSRecordType)) + 1;
+  ImageSize := ImageSizeInBlocks * (RecordsInBlock * SizeOf(FITSRecordType)); // padded to block size
+  GetMem(Result, ImageSize);
+  try
+    FillChar(Result[0], ImageSize, 0);
+    N := 0;
+    SumValue := 0;
+    PixelCount := 0;
+    for Y := RawFrameTop + RawFrameHeight - 1 downto RawFrameTop do begin
+      if DoFlip then
+        Y2 := (RawFrameTop + RawFrameHeight - 1) - Y + RawFrameTop
+      else
+        Y2 := Y;
+      scanline := @RawBits[Y2 * Rawwidth * 2];
+      for X := RawFrameLeft to RawFrameLeft + RawFrameWidth - 1 do begin
+        Pixel := PWord(@scanline[X * 2])^;
+        if FirstPixel then begin
+          MinValue := Pixel;
+          MaxValue := Pixel;
+          FirstPixel := False;
+        end
+        else begin
+          if Pixel < MinValue then MinValue := Pixel;
+          if Pixel > MaxValue then MaxValue := Pixel;
+        end;
+        SumValue := SumValue + Pixel;
+        Inc(PixelCount);
+
+        if not PixelRealNumber then begin
+          if not BzeroShift then begin
+            Result[N    ] := PixelBytes[1];
+            Result[N + 1] := PixelBytes[0];
+          end
+          else begin
+            PixelAsSignedInt := Pixel - defBZeroShift[BzeroShift];
+            Result[N    ] := PixelAsSignedIntBytes[1];
+            Result[N + 1] := PixelAsSignedIntBytes[0];
+          end;
+        end
+        else begin
+          PixelR := Pixel;
+          PixelR := PixelR - defBZeroShift[BzeroShift];
+          Result[N    ] := PixelRBytes[3];
+          Result[N + 1] := PixelRBytes[2];
+          Result[N + 2] := PixelRBytes[1];
+          Result[N + 3] := PixelRBytes[0];
+        end;
+
+        Inc(N, BytePerPix);
+      end;
+    end;
+
+    AverageValue := SumValue / PixelCount;
+  except
+    FreeMem(Result);
+    Result := nil;
+    raise;
   end;
 end;
 
