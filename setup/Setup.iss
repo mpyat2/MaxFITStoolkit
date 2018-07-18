@@ -2,9 +2,9 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "FITS utils"
-#define MyAppVersion "1.1.2a beta"
+#define MyAppVersion "1.1.4 beta"
 #define MyAppPublisher "mpyat2@gmail.com"
-#define MyAppURL "https://sites.google.com/site/theskyaboveusmp/home"
+#define MyAppURL "https://sourceforge.net/projects/fits-command-line-utilities/"
 #define MyAppExeName "HelloIRISFITS.exe"
 
 #define WIN64ONLY
@@ -72,6 +72,8 @@ Source: "..\Scripts\*"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Samples\*"; DestDir: "{app}\SAMPLES"; Flags: ignoreversion
 Source: "..\APDAT\TESTDATA\*"; DestDir: "{app}\TESTDATA\APDAT"; Flags: ignoreversion
 Source: "..\IPDAT\TESTDATA\*"; DestDir: "{app}\TESTDATA\IPDAT"; Flags: ignoreversion
+
+Source: "..\bin-out\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 
 ;Source: "..\bin-out\pfh.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files

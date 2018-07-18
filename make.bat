@@ -135,7 +135,7 @@ echo bin-out\unit64\dirinfo         >> ziplist.txt
 echo clean.bat                      >> ziplist.txt
 echo clean2.bat                     >> ziplist.txt
 echo make.bat                       >> ziplist.txt
-echo LICENSE                        >> ziplist.txt
+echo bin-out\LICENSE                >> ziplist.txt
 
 del FITSutils_src.zip
 %A7z% a FITSutils_src.zip @ziplist.txt
