@@ -78,6 +78,7 @@ function GetDouble(const S: string; out V: Double): Boolean; inline;
 function GetInt(const S: string; out V: Integer): Boolean; inline;
 
 //function GetEndPosition(var FITSfile: FITSRecordFile): Int64;
+function FITSRecordTypeFileName(var FITSfile: FITSRecordFile): string; inline;
 function IsFITS(var FITSfile: FITSRecordFile): Boolean;
 function GetKeywordValue(var FITSfile: FITSRecordFile; const Keyword: string; out Value: string; RemoveComment: Boolean; TrimVal: Boolean): Int64;
 function SetKeywordValue(var FITSfile: FITSRecordFile; const Keyword: string; const Value: string; AlignNumeric: Boolean; const Comment: string; CanResize: Boolean): Boolean;

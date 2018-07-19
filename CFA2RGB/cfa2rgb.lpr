@@ -133,7 +133,7 @@ begin
   end;
 end;
 
-function CFAtoRGB(var FITSfile: FITSRecordFile; const FITSFileName: string; const OutputDir: string; const Prefix: string; const BayerPattern: TBayerPattern; Overwrite: Boolean; Linear: Boolean; PrintTiming: Boolean): Boolean;
+procedure CFAtoRGB(var FITSfile: FITSRecordFile; const OutFileName: string; const BayerPattern: TBayerPattern; Overwrite: Boolean; Linear: Boolean; PrintTiming: Boolean);
 var
   StartOfImage: Integer;
   Bscale, Bzero: Double;
@@ -158,7 +158,6 @@ var
   PixAddr, PixAddr2: Integer;
   RedL, GreenL, BlueL: PChar;
   OutFile: FITSRecordfile;
-  OutFileName: string;
   FileModeSaved: Integer;
   S: string;
   I: Integer;
@@ -167,17 +166,14 @@ var
 begin
   TimeProcStart := Now();
 
-  Result := False;
   GetFITSproperties(FITSfile, BitPix, NaxisN, StartOfImage, ImageMemSize); // ImageMemSize is padded!
   if (Length(NaxisN) <> 2) then
-    FileError('Cannot work with NAXIS other than 2, got ' + IntToStr(Length(NaxisN)) + '. File ' + AnsiQuotedStr(FITSfileName, '"'));
+    FileError('Cannot work with NAXIS other than 2, got ' + IntToStr(Length(NaxisN)) + '. File ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
   Naxis1 := NaxisN[0];
   Naxis2 := NaxisN[1];
   Write(' [', Naxis1, 'x', Naxis2, '] [BITPIX=', BitPix, '] -> ');
-  if BitPix <> 16 then begin
-    Write(' Only BITPIX=16 is currently supported.');
-    Exit;
-  end;
+  if BitPix <> 16 then
+    FileError('Only BITPIX=16 is currently supported. File ' + AnsiQuotedStr(FITSRecordTypeFileName(FITSfile), '"'));
 
   BlackLevel := 0;
   GetBscaleBzero(FITSfile, Bscale, Bzero); // Bzero -- for border pixels
@@ -378,11 +374,6 @@ begin
       Move(BlueL[0], Image[ImageLayerMemSize * 2], ImageLayerMemSize);
 
       // Writing file
-      OutFileName := Prefix + ExtractFileName(FITSfileName);
-      if OutputDir = '' then
-        OutFileName := ExtractFilePath(FITSfileName) + OutFileName
-      else
-        OutFileName := IncludeTrailingPathDelimiter(OutputDir) + OutFileName;
       Write(ExtractFileName(OutFileName));
       if not Overwrite and FileExists(OutFileName) then
         FileError('File ' + AnsiQuotedStr(OutFileName, '"') + ' already exists. Use /F switch to overwrite.');
@@ -411,7 +402,6 @@ begin
     FreeMem(Image);
     Image := nil;
   end;
-  Result := True;
 
   if PrintTiming then begin
     Write(' [elapsed: ', ((Now() - TimeProcStart) * (24 * 60 * 60)):0:2, ' s] ');
@@ -419,10 +409,9 @@ begin
 
 end;
 
-procedure ProcessFile(const FileName: string; const OutputDir: string; const Prefix: string; const BayerPattern: TBayerPattern; Overwrite: Boolean; Linear: Boolean; PrintTiming: Boolean);
+procedure ProcessFile(const FileName: string; const OutFileName: string; const BayerPattern: TBayerPattern; Overwrite: Boolean; Linear: Boolean; PrintTiming: Boolean);
 var
   FITSfile: FITSRecordFile;
-  R: Boolean;
 begin
   Write('Processing ', ExtractFileName(FileName));
   AssignFile(FITSfile, FileName);
@@ -430,11 +419,11 @@ begin
   try
     if not IsFits(FITSfile) then
       FileError('Not a valid FITS file: ' + AnsiQuotedStr(FileName, '"'));
-    R := CFAtoRGB(FITSfile, FileName, OutputDir, Prefix, BayerPattern, Overwrite, Linear, PrintTiming);
+    CFAtoRGB(FITSfile, OutFileName, BayerPattern, Overwrite, Linear, PrintTiming);
   finally
     CloseFile(FITSfile);
   end;
-  if R then WriteLn(': done.') else WriteLn(' Skipped.');
+  WriteLn(': done.');
 end;
 
 
@@ -452,9 +441,11 @@ begin
   Result := True;
 end;
 
-procedure ProcessInput(const FileMasks: array of string; const OutputDir: string; const Prefix: string; const BayerPattern: TBayerPattern; Overwrite: Boolean; Linear: Boolean; PrintTiming: Boolean);
+procedure ProcessInput(const FileMasks: array of string; const OutputDir: string; const Prefix: string; const GenericName: string; const BayerPattern: TBayerPattern; Overwrite: Boolean; Linear: Boolean; BaseNumber: Integer; PrintTiming: Boolean);
 var
   I, N, Ntotal: Integer;
+  OutFileName: string;
+  FileNumber: Integer;
 begin
   try
     Ntotal := 0;
@@ -465,7 +456,16 @@ begin
       FileEnum(FileMasks[N], faArchive, False, TFileEnumClass.FileEnumProc);
       FileList.NaturalSort;
       for I := 0 to FileList.Count - 1 do begin
-        ProcessFile(FileList[I], OutputDir, Prefix, BayerPattern, Overwrite, Linear, PrintTiming);
+        FileNumber := BaseNumber + NTotal;
+        if GenericName <> '' then
+          OutFileName := GenericName + IntToStr(FileNumber) + ExtractFileExt(FileList[I])
+        else
+          OutFileName := Prefix + ExtractFileName(FileList[I]);
+        if OutputDir = '' then
+          OutFileName := ExtractFilePath(FileList[I]) + OutFileName
+        else
+          OutFileName := IncludeTrailingPathDelimiter(OutputDir) + OutFileName;
+        ProcessFile(FileList[I], OutFileName, BayerPattern, Overwrite, Linear, PrintTiming);
         Inc(Ntotal);
       end;
     end;
@@ -487,12 +487,14 @@ var
   InputFileMasks: array of string;
   OutputDir: string;
   Prefix: string;
+  GenericName: string;
+  BaseNumber: Integer;
   BayerPatternStr: string;
   Overwrite: Boolean;
   Linear: Boolean;
   PrintVer: Boolean;
   PrintTiming: Boolean;
-  S: string;
+  S, S2: string;
   ParamN: Integer;
   I: Integer;
 
@@ -522,7 +524,9 @@ begin
   // Other options
   InputFileMasks := nil;
   OutputDir := '';
-  Prefix := 'rgb-';
+  Prefix := '';
+  GenericName := '';
+  BaseNumber := 1;
   BayerPatternStr := '';
   Overwrite := False;
   Linear := False;
@@ -549,7 +553,46 @@ begin
       end
       else
       if CmdObj.CmdLine.ExtractParamValue(S, 'P=', Prefix) then begin
-        //
+        if Prefix <> '' then begin
+          // \/:*?
+          if (Pos('\', Prefix) <> 0) or
+             (Pos('/', Prefix) <> 0) or
+             (Pos(':', Prefix) <> 0) or
+             (Pos('*', Prefix) <> 0) or
+             (Pos('?', Prefix) <> 0) or
+             (Pos('<', Prefix) <> 0) or
+             (Pos('>', Prefix) <> 0)
+          then begin
+            WriteLn('**** Output file prefix must not contain \/:*?<>');
+            Halt(1);
+          end;
+        end;
+      end
+      else
+      if CmdObj.CmdLine.ExtractParamValue(S, 'G=', GenericName) then begin
+        if GenericName <> '' then begin
+          // \/:*?
+          if (Pos('\', GenericName) <> 0) or
+             (Pos('/', GenericName) <> 0) or
+             (Pos(':', GenericName) <> 0) or
+             (Pos('*', GenericName) <> 0) or
+             (Pos('?', GenericName) <> 0) or
+             (Pos('<', GenericName) <> 0) or
+             (Pos('>', GenericName) <> 0)
+          then begin
+            WriteLn('**** Generic name must not contain \/:*?<>');
+            Halt(1);
+          end;
+        end;
+      end
+      else
+      if CmdObj.CmdLine.ExtractParamValue(S, 'B=', S2) then begin
+        if S2 <> '' then begin
+          if not GetInt(S2, BaseNumber) or (BaseNumber < 0) then begin
+            WriteLn('**** Base filenumber must be an integer >= 0');
+            Halt(1);
+          end;
+        end;
       end
       else
       if CmdObj.CmdLine.ParamIsKey(S, 'F') then
@@ -590,28 +633,17 @@ begin
   end;
   for I := 0 to 3 do BayerPattern[I] := BayerPatternStr[I + 1];
 
+  if (GenericName = '') and (Prefix = '') then
+    Prefix := 'rgb-';
 
-  if (Prefix = '') then begin
-    WriteLn('**** Output file prefix is not defined: use /P=<prefix> parameter');
+  if not((Prefix <> '') xor (GenericName <> '')) then begin
+    WriteLn('**** You should define output file prefix (/P=<prefix>) or generic name (/G=<name>) but not both.');
     Halt(1);
   end;
-  // \/:*?
-  if (Pos('\', Prefix) <> 0) or
-     (Pos('/', Prefix) <> 0) or
-     (Pos(':', Prefix) <> 0) or
-     (Pos('*', Prefix) <> 0) or
-     (Pos('?', Prefix) <> 0) or
-     (Pos('<', Prefix) <> 0) or
-     (Pos('>', Prefix) <> 0)
-  then begin
-    WriteLn('**** Output file prefix must not contain \/:*?<>');
-    Halt(1);
-  end;
-
 
   FileList := TStringListNaturalSort.Create;
   try
-    ProcessInput(InputFileMasks, OutputDir, Prefix, BayerPattern, Overwrite, Linear, PrintTiming);
+    ProcessInput(InputFileMasks, OutputDir, Prefix, GenericName, BayerPattern, Overwrite, Linear, BaseNumber, PrintTiming);
   finally
     FreeAndNil(FileList);
   end;
