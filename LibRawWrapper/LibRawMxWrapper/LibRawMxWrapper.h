@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 extern "C" {
 	__declspec(dllexport) const char* __stdcall RawProcessorVersion(void);
 	__declspec(dllexport) LibRaw* __stdcall RawProcessorCreate(void);
