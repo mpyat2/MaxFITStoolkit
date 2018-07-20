@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <PathDelim Value="\"/>
+    <Version Value="10"/>
+    <BuildModes Active="Default"/>
+    <Units Count="2">
+      <Unit0>
+        <Filename Value="Template.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="128"/>
+        <CursorPos X="32" Y="159"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="53"/>
+        <CursorPos X="32" Y="81"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit1>
+    </Units>
+    <JumpHistory Count="4" HistoryIndex="3">
+      <Position1>
+        <Filename Value="Template.lpr"/>
+        <Caret Line="2" Column="4"/>
+      </Position1>
+      <Position2>
+        <Filename Value="Template.lpr"/>
+        <Caret Line="6" Column="75"/>
+      </Position2>
+      <Position3>
+        <Filename Value="Template.lpr"/>
+        <Caret Line="15"/>
+      </Position3>
+      <Position4>
+        <Filename Value="Template.lpr"/>
+        <Caret Line="41" Column="13" TopLine="8"/>
+      </Position4>
+    </JumpHistory>
+  </ProjectSession>
+</CONFIG>
