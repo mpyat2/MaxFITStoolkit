@@ -4,28 +4,40 @@
     <PathDelim Value="\"/>
     <Version Value="10"/>
     <BuildModes Active="Default"/>
-    <Units Count="2">
+    <Units Count="4">
       <Unit0>
         <Filename Value="Template.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="128"/>
-        <CursorPos X="32" Y="159"/>
+        <TopLine Value="13"/>
+        <CursorPos Y="3"/>
         <UsageCount Value="20"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
       <Unit1>
         <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <EditorIndex Value="1"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="53"/>
         <CursorPos X="32" Y="81"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit1>
+      <Unit2>
+        <Filename Value="..\UnitsFits\FITSUtils.inc"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos Y="8"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="PrintVersion.inc"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit3>
     </Units>
-    <JumpHistory Count="4" HistoryIndex="3">
+    <JumpHistory Count="9" HistoryIndex="8">
       <Position1>
         <Filename Value="Template.lpr"/>
         <Caret Line="2" Column="4"/>
@@ -42,6 +54,26 @@
         <Filename Value="Template.lpr"/>
         <Caret Line="41" Column="13" TopLine="8"/>
       </Position4>
+      <Position5>
+        <Filename Value="Template.lpr"/>
+        <Caret Line="144" Column="35" TopLine="128"/>
+      </Position5>
+      <Position6>
+        <Filename Value="Template.lpr"/>
+        <Caret Line="14" Column="15"/>
+      </Position6>
+      <Position7>
+        <Filename Value="Template.lpr"/>
+        <Caret Line="25"/>
+      </Position7>
+      <Position8>
+        <Filename Value="Template.lpr"/>
+        <Caret Line="109" Column="3" TopLine="98"/>
+      </Position8>
+      <Position9>
+        <Filename Value="Template.lpr"/>
+        <Caret Line="3" TopLine="13"/>
+      </Position9>
     </JumpHistory>
   </ProjectSession>
 </CONFIG>

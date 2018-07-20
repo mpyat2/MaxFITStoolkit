@@ -1,6 +1,6 @@
 {*****************************************************************************}
 {                                                                             }
-{                                                                             }
+{ <Template program>                                                          }
 { (c) 2018 Maksym Pyatnytskyy                                                 }
 {                                                                             }
 { This program is distributed                                                 }
@@ -21,12 +21,7 @@ uses
 
 //{$R *.res} // include version info!
 
-procedure PrintVersion;
-begin
-  WriteLn(ChangeFileExt({$I %FILE%}, ''), '  Maksym Pyatnytskyy  2018');
-  WriteLn(GetVersionString(AnsiUpperCase(ParamStr(0))), ' ', {$I %FPCTARGETOS%}, ' ', {$I %DATE%}, ' ', {$I %TIME%});
-  WriteLn;
-end;
+{$INCLUDE PrintVersion.inc}
 
 var
   FileList: TStringListNaturalSort;
@@ -38,8 +33,10 @@ end;
 
 procedure ProcessFITSfile(var FITSfile: FITSRecordfile);
 begin
+  // =========================================================================//
   WriteLn;
   WriteLn(FITSRecordTypeFileName(FITSfile));
+  // =========================================================================//
 end;
 
 procedure ProcessFile(const FileName: string);
@@ -111,7 +108,7 @@ begin
   FileMode := fmOpenReadWrite;
 
   PrintVer := (CmdObj.CmdLine.IsCmdOption('V') or CmdObj.CmdLine.IsCmdOption('version'));
-  if PrintVer then PrintVersion;
+  if PrintVer then PrintVersion({$I %FILE%});
 
   if (CmdObj.CmdLine.IsCmdOption('?') or CmdObj.CmdLine.IsCmdOption('H') or CmdObj.CmdLine.IsCmdOption('help')) then begin
     PrintHelp;
