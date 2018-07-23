@@ -16,3 +16,4 @@
 14) DATE of creation???
 15) CFA2RGB 64-bit works slower then CFA2RGB 32-bit.
 15) iconvraw 64-bit works slower then iconvraw 32-bit.
+16) VAL -> GetInt/GetDouble

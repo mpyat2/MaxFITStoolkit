@@ -17,7 +17,7 @@ program MakeStack;
 
 uses
   SysUtils, Classes, Math, DateUtils, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles, 
-  FITScompatibility, FITSUtils, FITSTimeUtils, StringListNaturalSort,
+  FITScompatibility, FITSUtils, FITSStatUtils, FITSTimeUtils, StringListNaturalSort,
   FitsUtilsHelp, CalcThread, CommonIni;
 
 {$R *.res}
@@ -65,25 +65,25 @@ var
 type
   TProgressProcWrapper = class(TObject)
     private
-      FPixels: Integer;
+      FItems: Integer;
       FThreadCounters: array of Integer;
       FInfo: string;
     public
-      function ThreadProgressProc(ThreadNo, Counter, FStartIndex, FNumberOfPixels: Integer): Boolean;
-      constructor Create(NumberOfThreads: Integer; Pixels: Integer; const Info: string);
+      function ThreadProgressProc(ThreadNo, Counter, FStartIndex, FNumberOfItems: Integer): Boolean;
+      constructor Create(NumberOfThreads: Integer; Items: Integer; const Info: string);
   end;
 
   { TProgressProcWrapper }
 
-  constructor TProgressProcWrapper.Create(NumberOfThreads: Integer; Pixels: Integer; const Info: string);
+  constructor TProgressProcWrapper.Create(NumberOfThreads: Integer; Items: Integer; const Info: string);
   begin
     inherited Create;
     SetLength(FThreadCounters, NumberOfThreads);
-    FPixels := Pixels;
+    FItems := Items;
     FInfo := Info;
   end;
 
-  function TProgressProcWrapper.ThreadProgressProc(ThreadNo, Counter, FStartIndex, FNumberOfPixels: Integer): Boolean;
+  function TProgressProcWrapper.ThreadProgressProc(ThreadNo, Counter, FStartIndex, FNumberOfItems: Integer): Boolean;
   var
     N, I: Integer;
   begin
@@ -95,19 +95,20 @@ type
         FThreadCounters[ThreadNo] := Counter;
       for I := 0 to Length(FThreadCounters) - 1 do
         N := N + FThreadCounters[I];
-      ShowProgress(FInfo, N, FPixels);
+      ShowProgress(FInfo, N, FItems);
     finally
       LeaveCriticalSection(ProgressProcCriticalSection);
     end;
   end;
 
-procedure DoStackProc(StackMode: TStackMode; OutFITSbitpix: TOutFITSbitpix; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; StackNumber: Integer; const StackList: TStringList; CmdLineNumberOfThreads: Integer);
+procedure DoStackProc(StackMode: TStackMode; NormalizeMVal: Double; OutFITSbitpix: TOutFITSbitpix; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; StackNumber: Integer; const StackList: TStringList; CmdLineNumberOfThreads: Integer);
 var
   FileName: string;
   OutFileName: string;
   FileInfo: TFITSFileInfo;
   FITSfile: FITSRecordFile;
   Images: TPCharArray;
+  NormalizationFactors: TExtendedArray;
   DestImage: PChar;
   DestImageMemSize: PtrUInt;
   MinBitPix, MaxBitPix: Integer;
@@ -116,6 +117,7 @@ var
   DestNaxis: TIntArray;
   DestHeader: TFITSRecordArray;
   DestPixelArray: TDoubleArray;
+  NormalizeRangeErrorCount: Integer;
   ScaledOrShifted: Boolean;
   UseFast16bitProcs: Boolean;
   TotalExposure: Double;
@@ -127,13 +129,13 @@ var
   Pixels: Integer;
   I, II: Integer;
   Comments: TStringArray;
-  StackThreads: array of TCalcThread;
+  Threads: array of TPrimitiveThread;
   StackedResultMax, StackedResultMin: Extended;
   MaxNumberOfThreads: Integer;
   NumberOfThreads: Integer;
   StartIndex: Integer;
-  PixelsToStackInThread: Integer;
-  PixelRemained: Integer;
+  ItemsToProcessInThread: Integer;
+  ItemsRemained: Integer;
   InitialValuesSet: Boolean;
   ProgressProcWrapper: TProgressProcWrapper;
   InfoStr: string;
@@ -141,10 +143,13 @@ var
   OutOfRangeErrorCount: Integer;
 begin
   if StackList.Count < 1 then Exit;
+  NormalizationFactors := nil;
   OutFileName := IncludeTrailingPathDelimiter(OutputDir) + GenericName;
   if StackNumber >= 0 then OutFileName := OutFileName + IntToStr(StackNumber);
   OutFileName := OutFileName + OutputExt;
   WriteLn('Stacking ', StackList.Count, ' files. Output file: ' + ExtractFileName(OutFileName));
+  if not Overwrite and FileExists(OutFileName) then
+    FileError('File ' + AnsiQuotedStr(OutFileName, '"') + ' already exists. Use /F switch to overwrite.');
   FileInfo := TFITSFileInfo(StackList.Objects[0]);
   MinBitPix := FileInfo.BitPix;
   MaxBitPix := FileInfo.BitPix;
@@ -175,12 +180,11 @@ begin
     Str(TotalExposure:0:2, S);
     Comments[Length(Comments) - 1] := 'Total Exposure = ' + S;
 
-    ShowProgress('Reading', 0, StackList.Count);
+    InfoStr := 'Reading';
+    ShowProgress(InfoStr, 0, StackList.Count);
     ScaledOrShifted := False;
     UseFast16bitProcs := False;
     for I := 0 to StackList.Count - 1 do begin
-      if not Overwrite and FileExists(OutFileName) then
-        FileError('File ' + AnsiQuotedStr(OutFileName, '"') + ' already exists. Use /F switch to overwrite.');
       FileName := StackList[I];
       FileInfo := TFITSFileInfo(StackList.Objects[I]);
       if Length(FileInfo.Naxis) <> Length(DestNaxis) then
@@ -207,9 +211,9 @@ begin
       finally
         CloseFile(FitsFile);
       end;
-      ShowProgress('Reading', I + 1, StackList.Count);
+      ShowProgress(InfoStr, I + 1, StackList.Count);
     end;
-    ShowProgress('Reading', StackList.Count, StackList.Count);
+    ShowProgress(InfoStr, StackList.Count, StackList.Count);
 
     UseFast16bitProcs := (not ScaledOrShifted) and (MinBitPix = 16) and (MaxBitPix = 16);
 
@@ -224,69 +228,153 @@ begin
 {$IFNDEF range_check}{$R-}{$ENDIF}
 {$IFNDEF overflow_check}{$Q-}{$ENDIF}
 
+    if NormalizeMVal > 0 then begin
+      SetLength(NormalizationFactors, StackList.Count);
+      InitCriticalSection(ProgressProcCriticalSection);
+      try
+        GlobalTerminateAllThreads := False;
+        if CmdLineNumberOfThreads <= 0 then begin
+          MaxNumberOfThreads := Min(GetLogicalCpuCount, MAX_THREADS);
+          ItemsToProcessInThread := Max(1, StackList.Count div MaxNumberOfThreads);
+          NumberOfThreads := Max(1, Round(StackList.Count / ItemsToProcessInThread));
+        end
+        else begin
+          NumberOfThreads := CmdLineNumberOfThreads;
+          ItemsToProcessInThread := Max(1, StackList.Count div NumberOfThreads);
+        end;
+        SetLength(Threads, NumberOfThreads);
+        for I := 0 to Length(Threads) - 1 do Threads[I] := nil; // not nesessary, already initialized
+        try
+          InfoStr := 'N:' + LeftPadCh(IntToStr(NumberOfThreads), 2, ' ') + ' threads';
+          ShowProgress(InfoStr, 0, Pixels);
+          ProgressProcWrapper := TProgressProcWrapper.Create(NumberOfThreads, StackList.Count, InfoStr);
+          try
+            StartIndex := 0;
+            ItemsRemained := StackList.Count;
+            for I := 0 to NumberOfThreads - 1 do begin
+              if I = NumberOfThreads - 1 then
+                ItemsToProcessInThread := ItemsRemained;
+              Threads[I] := TNormThread.Create(I,
+                                               StartIndex,
+                                               ItemsToProcessInThread,
+                                               Pixels,
+                                               StackList,
+                                               Images,
+                                               @NormalizationFactors,
+                                               NormalizeMVal,
+                                               UseFast16bitProcs,
+                                               ProgressProcWrapper.ThreadProgressProc);
+              // check for exception while creation (see FPC docs)
+              if Assigned(Threads[I].FatalException) then begin
+                if Assigned(Threads[I].FatalException) then begin
+                  if Threads[I].FatalException is Exception then
+                    FileError(Exception(Threads[I].FatalException).Message)
+                  else
+                    FileError('Unknown Exception');
+                end;
+              end;
+
+              ItemsRemained := ItemsRemained - ItemsToProcessInThread;
+              StartIndex := StartIndex + ItemsToProcessInThread;
+            end;
+
+            if ItemsRemained <> 0 then FileError('Internal error while creating normalization threads');
+
+            for I := 0 to NumberOfThreads - 1 do
+              Threads[I].Start;
+
+            for I := 0 to NumberOfThreads - 1 do
+              Threads[I].WaitFor;
+
+            for I := 0 to NumberOfThreads - 1 do begin
+              if Assigned(Threads[I].FatalException) then begin
+                if Threads[I].FatalException is Exception then
+                  FileError(Exception(Threads[I].FatalException).Message)
+                else
+                  FileError('Unknown Exception');
+              end;
+            end;
+          finally
+            FreeAndNil(ProgressProcWrapper);
+          end;
+        finally
+          for I := Length(Threads) - 1 downto 0 do
+            FreeAndNil(Threads[I]);
+          Threads := nil;
+        end;
+      finally
+        DoneCriticalSection(ProgressProcCriticalSection);
+      end;
+    end;
+
+    // Stacking
+
     // DestNaxis[*] cannot be zero, see FITSUtils.GetBitPixAndNaxis
     SetLength(DestPixelArray, Pixels);
+    NormalizeRangeErrorCount := 0;
 
     InitCriticalSection(ProgressProcCriticalSection);
     try
       GlobalTerminateAllThreads := False;
       if CmdLineNumberOfThreads <= 0 then begin
         MaxNumberOfThreads := Min(GetLogicalCpuCount, MAX_THREADS);
-        PixelsToStackInThread := Max(MIN_PIXELS_PER_THREAD, Pixels div MaxNumberOfThreads);
-        NumberOfThreads := Round(Pixels / PixelsToStackInThread);
+        ItemsToProcessInThread := Max(MIN_PIXELS_PER_THREAD, Pixels div MaxNumberOfThreads);
+        NumberOfThreads := Max(1, Round(Pixels / ItemsToProcessInThread));
       end
       else begin
         NumberOfThreads := CmdLineNumberOfThreads;
-        PixelsToStackInThread := Pixels div NumberOfThreads;
+        ItemsToProcessInThread := Max(MIN_PIXELS_PER_THREAD, Pixels div NumberOfThreads);
       end;
-      if NumberOfThreads < 1 then NumberOfThreads := 1;
-      SetLength(StackThreads, NumberOfThreads);
-      for I := 0 to Length(StackThreads) - 1 do StackThreads[I] := nil; // not nesessare, already initialized
+      if ItemsToProcessInThread > Pixels then ItemsToProcessInThread := Pixels;
+      SetLength(Threads, NumberOfThreads);
+      for I := 0 to Length(Threads) - 1 do Threads[I] := nil; // not nesessary, already initialized
       try
-        InfoStr := LeftPadCh(IntToStr(NumberOfThreads), 2, ' ') + ' thread(s)';
+        InfoStr := 'S:' + LeftPadCh(IntToStr(NumberOfThreads), 2, ' ') + ' threads';
         ShowProgress(InfoStr, 0, Pixels);
         ProgressProcWrapper := TProgressProcWrapper.Create(NumberOfThreads, Pixels, InfoStr);
         try
           StartIndex := 0;
-          PixelRemained := Pixels;
+          ItemsRemained := Pixels;
           for I := 0 to NumberOfThreads - 1 do begin
             if I = NumberOfThreads - 1 then
-              PixelsToStackInThread := PixelRemained;
-            StackThreads[I] := TCalcThread.Create(I,
-                                                  StartIndex,
-                                                  PixelsToStackInThread,
-                                                  StackMode,
-                                                  StackList,
-                                                  Images,
-                                                  @DestPixelArray,
-                                                  UseFast16bitProcs,
-                                                  ProgressProcWrapper.ThreadProgressProc);
+              ItemsToProcessInThread := ItemsRemained;
+            Threads[I] := TCalcThread.Create(I,
+                                             StartIndex,
+                                             ItemsToProcessInThread,
+                                             StackMode,
+                                             StackList,
+                                             Images,
+                                             NormalizationFactors,
+                                             @DestPixelArray,
+                                             @NormalizeRangeErrorCount,
+                                             UseFast16bitProcs,
+                                             ProgressProcWrapper.ThreadProgressProc);
             // check for exception while creation (see FPC docs)
-            if Assigned(StackThreads[I].FatalException) then begin
-              if Assigned(StackThreads[I].FatalException) then begin
-                if StackThreads[I].FatalException is Exception then
-                  FileError(Exception(StackThreads[I].FatalException).Message)
+            if Assigned(Threads[I].FatalException) then begin
+              if Assigned(Threads[I].FatalException) then begin
+                if Threads[I].FatalException is Exception then
+                  FileError(Exception(Threads[I].FatalException).Message)
                 else
                   FileError('Unknown Exception');
               end;
             end;
 
-            PixelRemained := PixelRemained - PixelsToStackInThread;
-            StartIndex := StartIndex + PixelsToStackInThread;
+            ItemsRemained := ItemsRemained - ItemsToProcessInThread;
+            StartIndex := StartIndex + ItemsToProcessInThread;
           end;
 
-          if PixelRemained <> 0 then FileError('Internal error: not all or extra pixels were processed');
+          if ItemsRemained <> 0 then FileError('Internal error whle creating stacking threads');
 
           for I := 0 to NumberOfThreads - 1 do
-            StackThreads[I].Start;
+            Threads[I].Start;
 
           for I := 0 to NumberOfThreads - 1 do
-            StackThreads[I].WaitFor;
+            Threads[I].WaitFor;
 
           for I := 0 to NumberOfThreads - 1 do begin
-            if Assigned(StackThreads[I].FatalException) then begin
-              if StackThreads[I].FatalException is Exception then
-                FileError(Exception(StackThreads[I].FatalException).Message)
+            if Assigned(Threads[I].FatalException) then begin
+              if Threads[I].FatalException is Exception then
+                FileError(Exception(Threads[I].FatalException).Message)
               else
                 FileError('Unknown Exception');
             end;
@@ -294,34 +382,37 @@ begin
         finally
           FreeAndNil(ProgressProcWrapper);
         end;
-      finally
-        DoneCriticalSection(ProgressProcCriticalSection);
-      end;
 
-      StackedResultMin := 0;
-      StackedResultMax := 0;
-      InitialValuesSet := False;
-      for I := 0 to NumberOfThreads - 1 do begin
-        if StackThreads[I].ExecuteCompleted then begin // ExecuteCompleted is not set if PixelsToStackInThread was 0, however this should never occur
-          if not InitialValuesSet then begin
-            StackedResultMin := StackThreads[I].StackedResultMin;
-            StackedResultMax := StackThreads[I].StackedResultMax;
-            InitialValuesSet := True;
-          end
-          else begin
-            if StackThreads[I].StackedResultMin < StackedResultMin then StackedResultMin := StackThreads[I].StackedResultMin;
-            if StackThreads[I].StackedResultMax > StackedResultMax then StackedResultMax := StackThreads[I].StackedResultMax;
+        StackedResultMin := 0;
+        StackedResultMax := 0;
+        InitialValuesSet := False;
+        for I := 0 to NumberOfThreads - 1 do begin
+          if Threads[I].ExecuteCompleted then begin // ExecuteCompleted is not set if PixelsToStackInThread was 0, however this should never occur
+            if not InitialValuesSet then begin
+              StackedResultMin := (Threads[I] as TCalcThread).StackedResultMin;
+              StackedResultMax := (Threads[I] as TCalcThread).StackedResultMax;
+              InitialValuesSet := True;
+            end
+            else begin
+              if (Threads[I] as TCalcThread).StackedResultMin < StackedResultMin then StackedResultMin := (Threads[I] as TCalcThread).StackedResultMin;
+              if (Threads[I] as TCalcThread).StackedResultMax > StackedResultMax then StackedResultMax := (Threads[I] as TCalcThread).StackedResultMax;
+            end;
           end;
         end;
+      finally
+        for I := Length(Threads) - 1 downto 0 do
+          FreeAndNil(Threads[I]);
+        Threads := nil;
       end;
     finally
-      for I := Length(StackThreads) - 1 downto 0 do
-        FreeAndNil(StackThreads[I]);
+      DoneCriticalSection(ProgressProcCriticalSection);
     end;
 
     ShowProgress(InfoStr, Pixels, Pixels);
     WriteLn;
     WriteLn('Done. Calculation time: ', (Now() - TimeStart)*24*60*60:0:1, 's');
+    if NormalizeRangeErrorCount > 0 then
+      WriteLn('**** WARNING: overflow for ', NormalizeRangeErrorCount, ' pixels while normalization of ', StackList.Count, ' images');
 
     for I := Length(Images) - 1 downto 0 do begin
       if Images[I] <> nil then begin
@@ -367,7 +458,7 @@ begin
       for I := 0 to Length(DestPixelArray) - 1 do
         SetFITSpixel(DestImage, I, DestBitPix, DestPixelArray[I], OutOfRangeErrorCount);
       if OutOfRangeErrorCount > 0 then
-        WriteLn('**** WARNING: overflow detected for ', OutOfRangeErrorCount, ' pixels (output BITPIX=', DestBitPix, ')');
+        WriteLn('**** WARNING: overflow for ', OutOfRangeErrorCount, ' pixels (output BITPIX=', DestBitPix, ')');
 
       DestHeader := MakeFITSHeader(DestBitPix, DestNaxis, 0, 1,
                                    DestDateObs, 'Stack Mid Time, fixed by Exposure Time',
@@ -401,7 +492,7 @@ begin
   WriteLn;
 end;
 
-procedure DoStacking(StackMode: TStackMode; OutFITSbitpix: TOutFITSbitpix; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; BaseNumber: Integer; StackSize: Integer; CmdLineNumberOfThreads: Integer; DontAddNumberIfStackAll: Boolean);
+procedure DoStacking(StackMode: TStackMode; NormalizeMVal: Double; OutFITSbitpix: TOutFITSbitpix; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; BaseNumber: Integer; StackSize: Integer; CmdLineNumberOfThreads: Integer; DontAddNumberIfStackAll: Boolean);
 var
   StackList: TStringList;
   StackNumber: Integer;
@@ -414,13 +505,13 @@ begin
     for I := 0 to FileListAllFiles.Count - 1 do begin
       StackList.AddObject(FileListAllFiles[I], FileListAllFiles.Objects[I]);
       if (StackSize > 0) and (StackList.Count = StackSize) then begin
-        DoStackProc(StackMode, OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, StackNumber, StackList, CmdLineNumberOfThreads);
+        DoStackProc(StackMode, NormalizeMVal, OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, StackNumber, StackList, CmdLineNumberOfThreads);
         StackList.Clear;
         Inc(StackNumber);
       end;
     end;
     if StackList.Count > 0 then begin
-      DoStackProc(StackMode, OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, StackNumber, StackList, CmdLineNumberOfThreads);
+      DoStackProc(StackMode, NormalizeMVal, OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, StackNumber, StackList, CmdLineNumberOfThreads);
       StackList.Clear;
       Inc(StackNumber);
     end;
@@ -473,7 +564,7 @@ begin
   Result := True;
 end;
 
-procedure ProcessInput(const FileMasks: array of string; StackMode: TStackMode; OutFITSbitpix: TOutFITSbitpix; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; BaseNumber: Integer; StackSize: Integer; CmdLineNumberOfThreads: Integer; DontAddNumberIfStackAll: Boolean);
+procedure ProcessInput(const FileMasks: array of string; StackMode: TStackMode; NormalizeMVal: Double; OutFITSbitpix: TOutFITSbitpix; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; BaseNumber: Integer; StackSize: Integer; CmdLineNumberOfThreads: Integer; DontAddNumberIfStackAll: Boolean);
 var
   I, N, Ntotal: Integer;
 begin
@@ -496,9 +587,11 @@ begin
       WriteLn('**** No files found.');
     end
     else begin
-      WriteLn(Ntotal, ' files to process. Mode: ', StackModeToString(StackMode));
+      Write(Ntotal, ' files to process. Mode: ', StackModeToString(StackMode));
+      if NormalizeMVal > 0 then Write(' with Normalization');
       WriteLn;
-      DoStacking(StackMode, OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, BaseNumber, StackSize, CmdLineNumberOfThreads, DontAddNumberIfStackAll);
+      WriteLn;
+      DoStacking(StackMode, NormalizeMVal, OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, BaseNumber, StackSize, CmdLineNumberOfThreads, DontAddNumberIfStackAll);
     end;
   except
     on E: Exception do begin
@@ -523,8 +616,8 @@ var
   OutFITSbitpix: TOutFITSbitpix;
   CmdLineNumberOfThreads: Integer;
   DontAddNumberIfStackAll: Boolean;
+  NormalizeMVal: Double;
   S, S2: string;
-  ErrorPos: Integer;
   ParamN: Integer;
   I: Integer;
 
@@ -560,6 +653,7 @@ begin
   StackSize := 0; // default value: all files to stack
   CmdLineNumberOfThreads := 0;
   DontAddNumberIfStackAll := False;
+  NormalizeMVal := 0;
 
   for ParamN := 1 to CmdObj.CmdLine.ParamCount do begin
     S := CmdObj.CmdLine.ParamStr(ParamN);
@@ -632,10 +726,18 @@ begin
         end;
       end
       else
+      if CmdObj.CmdLine.ExtractParamValue(S, 'NORM=', S2) then begin
+        if S2 <> '' then begin
+          if (not GetDouble(S2, NormalizeMVal)) or (NormalizeMVal <= 0) then begin
+            WriteLn('**** Normalization value be > 0');
+            Halt(1);
+          end;
+        end;
+      end
+      else
       if CmdObj.CmdLine.ExtractParamValue(S, 'B=', S2) then begin
         if S2 <> '' then begin
-          Val(S2, BaseNumber, ErrorPos);
-          if (ErrorPos <> 0) or (BaseNumber < 0) then begin
+          if (not GetInt(S2, BaseNumber)) or (BaseNumber < 0) then begin
             WriteLn('**** Base filenumber must be an integer >= 0');
             Halt(1);
           end;
@@ -646,8 +748,7 @@ begin
         Overwrite := True
       else
       if CmdObj.CmdLine.ExtractParamValue(S, 'N=', S2) then begin
-        Val(S2, StackSize, ErrorPos);
-        if (ErrorPos <> 0) or (StackSize < 0) then begin
+        if (not GetInt(S2, StackSize)) or (StackSize < 0) then begin
           WriteLn('**** Stack size must be integer number >= 0 (0 stands for "all files")');
           Halt(1);
         end;
@@ -657,8 +758,7 @@ begin
         DontAddNumberIfStackAll := True
       else
       if CmdObj.CmdLine.ExtractParamValue(S, 'T=', S2) then begin
-        Val(S2, CmdLineNumberOfThreads, ErrorPos);
-        if (ErrorPos <> 0) or (CmdLineNumberOfThreads <= 0) or (CmdLineNumberOfThreads > MAX_THREADS) then begin
+        if (not GetInt(S2, CmdLineNumberOfThreads)) or (CmdLineNumberOfThreads <= 0) or (CmdLineNumberOfThreads > MAX_THREADS) then begin
           WriteLn('**** Number of threads must be in a range [1..' + IntToStr(MAX_THREADS) + ']');
           Halt(1);
         end;
@@ -691,7 +791,7 @@ begin
   try
     FileList := TStringListNaturalSort.Create;
     try
-      ProcessInput(InputFileMasks, StackMode, OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, BaseNumber, StackSize, CmdLineNumberOfThreads, DontAddNumberIfStackAll);
+      ProcessInput(InputFileMasks, StackMode, NormalizeMVal, OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, BaseNumber, StackSize, CmdLineNumberOfThreads, DontAddNumberIfStackAll);
     finally
       FreeAndNil(FileList);
     end;
