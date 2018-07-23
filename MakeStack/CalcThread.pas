@@ -16,7 +16,7 @@ unit CalcThread;
 interface
 
 uses 
-  Windows, SysUtils, Classes, FITScompatibility, FitsStatUtils, FitsUtils;
+  Windows, SysUtils, Classes, FITScompatibility, FitsStatUtils, FitsUtils, Math;
 
 type
   TStackMode = ( smAdd, smAvg, smMed );
@@ -74,7 +74,7 @@ type
   end;
 
 function GetLogicalCpuCount: integer;
-procedure SetFITSpixel(FITSdata: PChar; N, BitPix: Integer; Value: Double);
+procedure SetFITSpixel(FITSdata: PChar; N, BitPix: Integer; Value: Double; var ErrorCount: Integer);
 
 var
   GlobalTerminateAllThreads: Boolean = False;
@@ -141,7 +141,7 @@ begin
   Result := BScale * Result + BZero;
 end;
 
-procedure SetFITSpixel(FITSdata: PChar; N, BitPix: Integer; Value: Double);
+procedure SetFITSpixel(FITSdata: PChar; N, BitPix: Integer; Value: Double; var ErrorCount: Integer);
 var
   FITSValue: TFITSValue;
   BytePix: Integer;
@@ -149,10 +149,58 @@ var
   I: Integer;
 begin
   case BitPix of
-      8: FITSValue.B := Round(Value);
-     16: FITSValue.I := Round(Value);
-     32: FITSValue.L := Round(Value);
-    -32: FITSValue.S := Value;
+      8: begin
+           if Value < Low(Byte) then begin
+             FITSValue.B := Low(Byte);
+             Inc(ErrorCount);
+           end
+           else
+           if Value > High(Byte) then begin
+             FITSValue.B := High(Byte);
+             Inc(ErrorCount);
+           end
+           else
+             FITSValue.B := Round(Value);
+         end;
+     16: begin
+           if Value < Low(SmallInt) then begin
+             FITSValue.I := Low(SmallInt);
+             Inc(ErrorCount);
+           end
+           else
+           if Value > High(SmallInt) then begin
+             FITSValue.I := High(SmallInt);
+             Inc(ErrorCount);
+           end
+           else
+             FITSValue.I := Round(Value);
+         end;
+     32: begin
+           if Value < Low(LongInt) then begin
+             FITSValue.L := Low(LongInt);
+             Inc(ErrorCount);
+           end
+           else
+           if Value > High(LongInt) then begin
+             FITSValue.L := High(LongInt);
+             Inc(ErrorCount);
+           end
+           else
+             FITSValue.L := Round(Value);
+         end;
+    -32: begin
+           if Value < -MaxSingle then begin
+             FITSValue.S := -MaxSingle;
+             Inc(ErrorCount);
+           end
+           else
+           if Value > MaxSingle then begin
+             FITSValue.S := MaxSingle;
+             Inc(ErrorCount);
+           end
+           else
+             FITSValue.S := Value;
+         end;
     -64: FITSValue.D := Value;
     else raise Exception.Create('Internal error: Unsupported BITPIX');
   end;

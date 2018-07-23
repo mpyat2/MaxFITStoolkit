@@ -22,17 +22,15 @@ uses
 
 {$R *.res}
 
-procedure PrintVersion;
-begin
-  WriteLn('FITS stack (multithreaded)  Maksym Pyatnytskyy  2018');
-  WriteLn(GetVersionString(AnsiUpperCase(ParamStr(0))){$IFDEF WIN64}, ' WIN64'{$ENDIF}, ' ', {$I %DATE%}, ' ', {$I %TIME%});
-  WriteLn;
-end;
+{$INCLUDE PrintVersion.inc}
 
 procedure FileError(const S: string);
 begin
   raise Exception.Create(S);
 end;
+
+type
+  TOutFITSbitpix = (bitpixDefault, bitpixU8, bitpixI16, bitpixI32, bitpixF32, bitpixF64);
 
 const
   MIN_PIXELS_PER_THREAD = 1024;
@@ -103,7 +101,7 @@ type
     end;
   end;
 
-procedure DoStackProc(StackMode: TStackMode; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; StackNumber: Integer; const StackList: TStringList; CmdLineNumberOfThreads: Integer);
+procedure DoStackProc(StackMode: TStackMode; OutFITSbitpix: TOutFITSbitpix; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; StackNumber: Integer; const StackList: TStringList; CmdLineNumberOfThreads: Integer);
 var
   FileName: string;
   OutFileName: string;
@@ -140,6 +138,7 @@ var
   ProgressProcWrapper: TProgressProcWrapper;
   InfoStr: string;
   TimeStart: TDateTime;
+  OutOfRangeErrorCount: Integer;
 begin
   if StackList.Count < 1 then Exit;
   OutFileName := IncludeTrailingPathDelimiter(OutputDir) + GenericName;
@@ -331,6 +330,7 @@ begin
       end;
     end;
 
+    // Default output bitpix
     if (MaxBitPix = MinBitPix) and (StackMode <> smAdd) and not ScaledOrShifted then
       DestBitPix := MaxBitPix
     else
@@ -346,6 +346,15 @@ begin
     else
       DestBitPix := -32;
 
+    case OutFITSbitpix of
+      bitpixU8:  DestBitPix := 8;
+      bitpixI16: DestBitPix := 16;
+      bitpixI32: DestBitPix := 32;
+      bitpixF32: DestBitPix := -32;
+      bitpixF64: DestBitPix := -64;
+      else ; // default value.
+    end;
+
     DestBytePix := Abs(DestBitPix) div 8;
     DestImageMemSize := Pixels * DestBytePix;
     // Align DestImageMemSize to FITSRecordLen * RecordsInBlock to simpliry writing.
@@ -354,8 +363,11 @@ begin
     try
       FillChar(DestImage^, DestImageMemSize, 0);
 
+      OutOfRangeErrorCount := 0;
       for I := 0 to Length(DestPixelArray) - 1 do
-        SetFITSpixel(DestImage, I, DestBitPix, DestPixelArray[I]);
+        SetFITSpixel(DestImage, I, DestBitPix, DestPixelArray[I], OutOfRangeErrorCount);
+      if OutOfRangeErrorCount > 0 then
+        WriteLn('**** WARNING: overflow detected for ', OutOfRangeErrorCount, ' pixels (output BITPIX=', DestBitPix, ')');
 
       DestHeader := MakeFITSHeader(DestBitPix, DestNaxis, 0, 1,
                                    DestDateObs, 'Stack Mid Time, fixed by Exposure Time',
@@ -389,7 +401,7 @@ begin
   WriteLn;
 end;
 
-procedure DoStacking(StackMode: TStackMode; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; BaseNumber: Integer; StackSize: Integer; CmdLineNumberOfThreads: Integer; DontAddNumberIfStackAll: Boolean);
+procedure DoStacking(StackMode: TStackMode; OutFITSbitpix: TOutFITSbitpix; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; BaseNumber: Integer; StackSize: Integer; CmdLineNumberOfThreads: Integer; DontAddNumberIfStackAll: Boolean);
 var
   StackList: TStringList;
   StackNumber: Integer;
@@ -402,13 +414,13 @@ begin
     for I := 0 to FileListAllFiles.Count - 1 do begin
       StackList.AddObject(FileListAllFiles[I], FileListAllFiles.Objects[I]);
       if (StackSize > 0) and (StackList.Count = StackSize) then begin
-        DoStackProc(StackMode, GenericName, OutputDir, OutputExt, Overwrite, StackNumber, StackList, CmdLineNumberOfThreads);
+        DoStackProc(StackMode, OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, StackNumber, StackList, CmdLineNumberOfThreads);
         StackList.Clear;
         Inc(StackNumber);
       end;
     end;
     if StackList.Count > 0 then begin
-      DoStackProc(StackMode, GenericName, OutputDir, OutputExt, Overwrite, StackNumber, StackList, CmdLineNumberOfThreads);
+      DoStackProc(StackMode, OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, StackNumber, StackList, CmdLineNumberOfThreads);
       StackList.Clear;
       Inc(StackNumber);
     end;
@@ -461,7 +473,7 @@ begin
   Result := True;
 end;
 
-procedure ProcessInput(const FileMasks: array of string; StackMode: TStackMode; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; BaseNumber: Integer; StackSize: Integer; CmdLineNumberOfThreads: Integer; DontAddNumberIfStackAll: Boolean);
+procedure ProcessInput(const FileMasks: array of string; StackMode: TStackMode; OutFITSbitpix: TOutFITSbitpix; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; BaseNumber: Integer; StackSize: Integer; CmdLineNumberOfThreads: Integer; DontAddNumberIfStackAll: Boolean);
 var
   I, N, Ntotal: Integer;
 begin
@@ -486,7 +498,7 @@ begin
     else begin
       WriteLn(Ntotal, ' files to process. Mode: ', StackModeToString(StackMode));
       WriteLn;
-      DoStacking(StackMode, GenericName, OutputDir, OutputExt, Overwrite, BaseNumber, StackSize, CmdLineNumberOfThreads, DontAddNumberIfStackAll);
+      DoStacking(StackMode, OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, BaseNumber, StackSize, CmdLineNumberOfThreads, DontAddNumberIfStackAll);
     end;
   except
     on E: Exception do begin
@@ -508,6 +520,7 @@ var
   BaseNumber: Integer;
   StackSize: Integer;
   StackMode: TStackMode;
+  OutFITSbitpix: TOutFITSbitpix;
   CmdLineNumberOfThreads: Integer;
   DontAddNumberIfStackAll: Boolean;
   S, S2: string;
@@ -519,7 +532,7 @@ begin
   FileMode := fmOpenRead;
 
   PrintVer := (CmdObj.CmdLine.IsCmdOption('V') or CmdObj.CmdLine.IsCmdOption('version'));
-  if PrintVer then PrintVersion;
+  if PrintVer then PrintVersion('FITS stack (multithreaded)');
 
   if (CmdObj.CmdLine.IsCmdOption('?') or CmdObj.CmdLine.IsCmdOption('H') or CmdObj.CmdLine.IsCmdOption('help')) then begin
     PrintHelp;
@@ -541,6 +554,7 @@ begin
   GenericName := '';
   OutputExt := '.fit';
   StackMode := smAdd;
+  OutFITSbitpix := bitpixDefault;
   Overwrite := False;
   BaseNumber := 1;
   StackSize := 0; // default value: all files to stack
@@ -594,6 +608,25 @@ begin
           if S2 = 'M' then StackMode := smMed
           else begin
             WriteLn('**** Invalid stack mode. Can be S, A or M');
+            Halt(1);
+          end;
+        end;
+      end
+      else
+      if CmdObj.CmdLine.ExtractParamValue(S, 'BITPIX=', S2) then begin
+        if S2 <> '' then begin
+          S2 := AnsiUpperCase(S2);
+          if S2 = 'U8'  then OutFITSbitpix := bitpixU8
+          else
+          if S2 = 'I16' then OutFITSbitpix := bitpixI16
+          else
+          if S2 = 'I32' then OutFITSbitpix := bitpixI32
+          else
+          if S2 = 'F32' then OutFITSbitpix := bitpixF32
+          else
+          if S2 = 'F64' then OutFITSbitpix := bitpixF64
+          else begin
+            WriteLn('**** Invalid output bitpix. Allowed values: U8, I16, I32, F32, F64');
             Halt(1);
           end;
         end;
@@ -658,7 +691,7 @@ begin
   try
     FileList := TStringListNaturalSort.Create;
     try
-      ProcessInput(InputFileMasks, StackMode, GenericName, OutputDir, OutputExt, Overwrite, BaseNumber, StackSize, CmdLineNumberOfThreads, DontAddNumberIfStackAll);
+      ProcessInput(InputFileMasks, StackMode, OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, BaseNumber, StackSize, CmdLineNumberOfThreads, DontAddNumberIfStackAll);
     finally
       FreeAndNil(FileList);
     end;
