@@ -35,7 +35,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="c:\personal\SKY2\pp_flat_000??.fit /g=pp_flat_stacked_with_norm_10000_MY /a /m=m /NORM=10000 /f"/>
+        <CommandLineParams Value="c:\personal\SKY2\flat* /g=flat_sub_offset_stacked_with_norm_10000_MY /a /m=m /NORM=10000 /f /sub=_offset"/>
       </local>
     </RunParams>
     <Units Count="1">

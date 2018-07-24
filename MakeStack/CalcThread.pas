@@ -49,6 +49,7 @@ type
       FStackMode: TStackMode;
       FStackList: TStringList;
       FImages: TPCharArray;
+      FFileToSubractDataPtr: PExtendedArray;
       FNormalizationFactors: TExtendedArray;
       FDestPixelArrayPtr: PDoubleArray;
       FUseFast16bitProcs: Boolean;
@@ -63,6 +64,7 @@ type
                          StackMode: TStackMode;
                          const StackList: TStringList;
                          const Images: TPCharArray;
+                         const FileToSubtractData: TExtendedArray;
                          const NormalizationFactors: TExtendedArray;
                          DestPixelArrayPtr: PDoubleArray;
                          NormalizeRangeErrorCountPtr: PInteger; // obsolete, not used now
@@ -81,6 +83,7 @@ type
     FNumberOfPixelsInImage: Integer;
     FStackList: TStringList;
     FImages: TPCharArray;
+    FFileToSubractDataPtr: PExtendedArray;
     FDestNormalizationFactorsPtr: PExtendedArray;
     FNormalizeMVal: Extended;
     FUseFast16bitProcs: Boolean;
@@ -91,6 +94,7 @@ type
                        StartIndex, NumberOfImages, NumberOfPixelsInImage: Integer;
                        const StackList: TStringList;
                        const Images: TPCharArray;
+                       const FileToSubtractData: TExtendedArray;
                        DestNormalizationFactorsPtr: PExtendedArray;
                        NormalizeMVal: Extended;
                        UseFast16bitProcs: Boolean;
@@ -114,6 +118,8 @@ type
   end;
 
 function GetLogicalCpuCount: integer;
+
+procedure CopyFitsValues(Image: PChar; var PixelArray: TExtendedArray; Pixels: Integer; BitPix: Integer; BScale, BZero: Double);
 
 procedure SetFITSpixel(FITSdata: PChar; N, BitPix: Integer; Value: Double; var ErrorCount: Integer);
 
@@ -287,6 +293,7 @@ constructor TCalcThread.Create(ThreadNo: Integer;
                                StackMode: TStackMode;
                                const StackList: TStringList;
                                const Images: TPCharArray;
+                               const FileToSubtractData: TExtendedArray;
                                const NormalizationFactors: TExtendedArray;
                                DestPixelArrayPtr: PDoubleArray;
                                NormalizeRangeErrorCountPtr: PInteger;
@@ -301,6 +308,7 @@ begin
   FStackMode := StackMode;
   FStackList := StackList;
   FImages := Images;
+  FFileToSubractDataPtr := @FileToSubtractData;
   FNormalizationFactors := NormalizationFactors;
   FDestPixelArrayPtr := DestPixelArrayPtr;
   FNormalizeRangeErrorCountPtr := NormalizeRangeErrorCountPtr;
@@ -419,6 +427,7 @@ constructor TNormThread.Create(ThreadNo: Integer;
                                StartIndex, NumberOfImages, NumberOfPixelsInImage: Integer;
                                const StackList: TStringList;
                                const Images: TPCharArray;
+                               const FileToSubtractData: TExtendedArray;
                                DestNormalizationFactorsPtr: PExtendedArray;
                                NormalizeMVal: Extended;
                                UseFast16bitProcs: Boolean;
@@ -432,6 +441,7 @@ begin
   FNumberOfPixelsInImage := NumberOfPixelsInImage;
   FStackList := StackList;
   FImages := Images;
+  FFileToSubractDataPtr := @FileToSubtractData;
   FDestNormalizationFactorsPtr := DestNormalizationFactorsPtr;
   FNormalizeMVal := NormalizeMVal;
   FUseFast16bitProcs := UseFast16bitProcs;
