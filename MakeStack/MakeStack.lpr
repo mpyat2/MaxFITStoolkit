@@ -13,6 +13,8 @@
 {$MODE DELPHI}
 {$INCLUDE FITSUtils.inc}
 
+{.ASSERTIONS ON}
+
 program MakeStack;
 
 uses
@@ -101,7 +103,29 @@ type
     end;
   end;
 
-procedure DoStackProc(StackMode: TStackMode; NormalizeMVal: Double; OutFITSbitpix: TOutFITSbitpix; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; StackNumber: Integer; const StackList: TStringList; CmdLineNumberOfThreads: Integer);
+procedure GetNumberOfThreadsAndItemsInFirstThread(ItemCount: Integer; CmdLineNumberOfThreads: Integer; MinItemsPerThread: Integer; out NumberOfThreads: Integer; out ItemsToProcessInFirstThread: Integer);
+begin
+  if CmdLineNumberOfThreads <= 0 then
+    NumberOfThreads := Min(Max(1, GetLogicalCpuCount), MAX_THREADS)
+  else
+    NumberOfThreads := CmdLineNumberOfThreads;
+  if NumberOfThreads = 1 then
+    ItemsToProcessInFirstThread := ItemCount
+  else
+    ItemsToProcessInFirstThread := Min(ItemCount, Max(MinItemsPerThread, ItemCount div NumberOfThreads));
+end;
+
+procedure DoStackProc(StackMode: TStackMode;
+                      NormalizeMVal: Double;
+                      OutFITSbitpix: TOutFITSbitpix;
+                      const GenericName: string;
+                      const OutputDir: string;
+                      const OutputExt: string;
+                      Overwrite: Boolean;
+                      StackNumber: Integer;
+                      const StackList: TStringList;
+                      CmdLineNumberOfThreads: Integer;
+                      const NormalizeFactorsFileName: string);
 var
   FileName: string;
   OutFileName: string;
@@ -131,7 +155,6 @@ var
   Comments: TStringArray;
   Threads: array of TPrimitiveThread;
   StackedResultMax, StackedResultMin: Extended;
-  MaxNumberOfThreads: Integer;
   NumberOfThreads: Integer;
   StartIndex: Integer;
   ItemsToProcessInThread: Integer;
@@ -141,6 +164,7 @@ var
   InfoStr: string;
   TimeStart: TDateTime;
   OutOfRangeErrorCount: Integer;
+  FactorsFile: TextFile;
 begin
   if StackList.Count < 1 then Exit;
   NormalizationFactors := nil;
@@ -163,6 +187,11 @@ begin
     Comments[Length(Comments) - 1] := 'Stack of ' + IntToStr(StackList.Count) + ' images';
     SetLength(Comments, Length(Comments) + 1);
     Comments[Length(Comments) - 1] := 'Stacking mode: ' + StackModeToString(StackMode);
+    if NormalizeMVal > 0 then begin
+      SetLength(Comments, Length(Comments) + 1);
+      Str(NormalizeMVal:0:2, S);
+      Comments[Length(Comments) - 1] := 'Normalization value: ' + S;
+    end;
     DestObject := TFITSFileInfo(StackList.Objects[0]).ObjectName;
     DestTelescope := TFITSFileInfo(StackList.Objects[0]).Telescope;
     DestInstrument := TFITSFileInfo(StackList.Objects[0]).Instrument;
@@ -233,15 +262,7 @@ begin
       InitCriticalSection(ProgressProcCriticalSection);
       try
         GlobalTerminateAllThreads := False;
-        if CmdLineNumberOfThreads <= 0 then begin
-          MaxNumberOfThreads := Min(GetLogicalCpuCount, MAX_THREADS);
-          ItemsToProcessInThread := Max(1, StackList.Count div MaxNumberOfThreads);
-          NumberOfThreads := Max(1, Round(StackList.Count / ItemsToProcessInThread));
-        end
-        else begin
-          NumberOfThreads := CmdLineNumberOfThreads;
-          ItemsToProcessInThread := Max(1, StackList.Count div NumberOfThreads);
-        end;
+        GetNumberOfThreadsAndItemsInFirstThread(StackList.Count, CmdLineNumberOfThreads, 1, NumberOfThreads, ItemsToProcessInThread);
         SetLength(Threads, NumberOfThreads);
         for I := 0 to Length(Threads) - 1 do Threads[I] := nil; // not nesessary, already initialized
         try
@@ -305,6 +326,22 @@ begin
       finally
         DoneCriticalSection(ProgressProcCriticalSection);
       end;
+
+      if NormalizeFactorsFileName <> '' then begin
+        Assign(FactorsFile, NormalizeFactorsFileName);
+        try
+          if FileExists(NormalizeFactorsFileName) then begin
+            Append(FactorsFile);
+            WriteLn(FactorsFile);
+          end
+          else
+            Rewrite(FactorsFile);
+          for I := 0 to StackList.Count - 1 do
+            WriteLn(FactorsFile, NormalizationFactors[I]);
+        finally
+          CloseFile(FactorsFile);
+        end;
+      end;
     end;
 
     // Stacking
@@ -316,16 +353,7 @@ begin
     InitCriticalSection(ProgressProcCriticalSection);
     try
       GlobalTerminateAllThreads := False;
-      if CmdLineNumberOfThreads <= 0 then begin
-        MaxNumberOfThreads := Min(GetLogicalCpuCount, MAX_THREADS);
-        ItemsToProcessInThread := Max(MIN_PIXELS_PER_THREAD, Pixels div MaxNumberOfThreads);
-        NumberOfThreads := Max(1, Round(Pixels / ItemsToProcessInThread));
-      end
-      else begin
-        NumberOfThreads := CmdLineNumberOfThreads;
-        ItemsToProcessInThread := Max(MIN_PIXELS_PER_THREAD, Pixels div NumberOfThreads);
-      end;
-      if ItemsToProcessInThread > Pixels then ItemsToProcessInThread := Pixels;
+      GetNumberOfThreadsAndItemsInFirstThread(Pixels, CmdLineNumberOfThreads, MIN_PIXELS_PER_THREAD, NumberOfThreads, ItemsToProcessInThread);
       SetLength(Threads, NumberOfThreads);
       for I := 0 to Length(Threads) - 1 do Threads[I] := nil; // not nesessary, already initialized
       try
@@ -492,7 +520,18 @@ begin
   WriteLn;
 end;
 
-procedure DoStacking(StackMode: TStackMode; NormalizeMVal: Double; OutFITSbitpix: TOutFITSbitpix; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; BaseNumber: Integer; StackSize: Integer; CmdLineNumberOfThreads: Integer; DontAddNumberIfStackAll: Boolean);
+procedure DoStacking(StackMode: TStackMode;
+                     NormalizeMVal: Double;
+                     OutFITSbitpix: TOutFITSbitpix;
+                     const GenericName: string;
+                     const OutputDir: string;
+                     const OutputExt: string;
+                     Overwrite: Boolean;
+                     BaseNumber: Integer;
+                     StackSize: Integer;
+                     CmdLineNumberOfThreads: Integer;
+                     DontAddNumberIfStackAll: Boolean;
+                     const NormalizeFactorsFileName: string);
 var
   StackList: TStringList;
   StackNumber: Integer;
@@ -505,13 +544,13 @@ begin
     for I := 0 to FileListAllFiles.Count - 1 do begin
       StackList.AddObject(FileListAllFiles[I], FileListAllFiles.Objects[I]);
       if (StackSize > 0) and (StackList.Count = StackSize) then begin
-        DoStackProc(StackMode, NormalizeMVal, OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, StackNumber, StackList, CmdLineNumberOfThreads);
+        DoStackProc(StackMode, NormalizeMVal, OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, StackNumber, StackList, CmdLineNumberOfThreads, NormalizeFactorsFileName);
         StackList.Clear;
         Inc(StackNumber);
       end;
     end;
     if StackList.Count > 0 then begin
-      DoStackProc(StackMode, NormalizeMVal, OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, StackNumber, StackList, CmdLineNumberOfThreads);
+      DoStackProc(StackMode, NormalizeMVal, OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, StackNumber, StackList, CmdLineNumberOfThreads, NormalizeFactorsFileName);
       StackList.Clear;
       Inc(StackNumber);
     end;
@@ -564,7 +603,19 @@ begin
   Result := True;
 end;
 
-procedure ProcessInput(const FileMasks: array of string; StackMode: TStackMode; NormalizeMVal: Double; OutFITSbitpix: TOutFITSbitpix; const GenericName: string; const OutputDir: string; const OutputExt: string; Overwrite: Boolean; BaseNumber: Integer; StackSize: Integer; CmdLineNumberOfThreads: Integer; DontAddNumberIfStackAll: Boolean);
+procedure ProcessInput(const FileMasks: array of string;
+                       StackMode: TStackMode;
+                       NormalizeMVal: Double;
+                       OutFITSbitpix: TOutFITSbitpix;
+                       const GenericName: string;
+                       const OutputDir: string;
+                       const OutputExt: string;
+                       Overwrite: Boolean;
+                       BaseNumber: Integer;
+                       StackSize: Integer;
+                       CmdLineNumberOfThreads: Integer;
+                       DontAddNumberIfStackAll: Boolean;
+                       const NormalizeFactorsFileName: string);
 var
   I, N, Ntotal: Integer;
 begin
@@ -591,7 +642,7 @@ begin
       if NormalizeMVal > 0 then Write(' with Normalization');
       WriteLn;
       WriteLn;
-      DoStacking(StackMode, NormalizeMVal, OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, BaseNumber, StackSize, CmdLineNumberOfThreads, DontAddNumberIfStackAll);
+      DoStacking(StackMode, NormalizeMVal, OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, BaseNumber, StackSize, CmdLineNumberOfThreads, DontAddNumberIfStackAll, NormalizeFactorsFileName);
     end;
   except
     on E: Exception do begin
@@ -617,6 +668,7 @@ var
   CmdLineNumberOfThreads: Integer;
   DontAddNumberIfStackAll: Boolean;
   NormalizeMVal: Double;
+  NormalizeFactorsFileName: string;
   S, S2: string;
   ParamN: Integer;
   I: Integer;
@@ -654,6 +706,7 @@ begin
   CmdLineNumberOfThreads := 0;
   DontAddNumberIfStackAll := False;
   NormalizeMVal := 0;
+  NormalizeFactorsFileName := '';
 
   for ParamN := 1 to CmdObj.CmdLine.ParamCount do begin
     S := CmdObj.CmdLine.ParamStr(ParamN);
@@ -707,7 +760,7 @@ begin
         end;
       end
       else
-      if CmdObj.CmdLine.ExtractParamValue(S, 'BITPIX=', S2) then begin
+      if CmdObj.CmdLine.ExtractParamValue(S, 'FORMAT=', S2) then begin
         if S2 <> '' then begin
           S2 := AnsiUpperCase(S2);
           if S2 = 'U8'  then OutFITSbitpix := bitpixU8
@@ -720,7 +773,7 @@ begin
           else
           if S2 = 'F64' then OutFITSbitpix := bitpixF64
           else begin
-            WriteLn('**** Invalid output bitpix. Allowed values: U8, I16, I32, F32, F64');
+            WriteLn('**** Invalid output FORMAT. Allowed values: U8, I16, I32, F32, F64');
             Halt(1);
           end;
         end;
@@ -763,6 +816,10 @@ begin
           Halt(1);
         end;
       end
+      else
+      if CmdObj.CmdLine.ExtractParamValue(S, 'NORMFACTORS=', NormalizeFactorsFileName) then begin
+        //
+      end
       else begin
         WriteLn('**** Invalid command-line parameter: ' + S);
         Halt(1);
@@ -791,7 +848,7 @@ begin
   try
     FileList := TStringListNaturalSort.Create;
     try
-      ProcessInput(InputFileMasks, StackMode, NormalizeMVal, OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, BaseNumber, StackSize, CmdLineNumberOfThreads, DontAddNumberIfStackAll);
+      ProcessInput(InputFileMasks, StackMode, NormalizeMVal, OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, BaseNumber, StackSize, CmdLineNumberOfThreads, DontAddNumberIfStackAll, NormalizeFactorsFileName);
     finally
       FreeAndNil(FileList);
     end;

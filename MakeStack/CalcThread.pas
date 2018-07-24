@@ -31,19 +31,21 @@ type
   TPrimitiveThread = class(TThread)
   private
     FThreadNo: Integer;
+    FStartIndex: Integer;
+    FNumberOfItems: Integer;
     FExecuteCompleted: Boolean;
     FProgressProc: TProgressProc;
     procedure Progress(Counter, StartIndex, NumberOfPixels: Integer);
   public
     property ThreadNo: Integer read FThreadNo;
+    property StartIndex: Integer read FStartIndex;
+    property NumberOfItems: Integer read FNumberOfItems;
     property ExecuteCompleted: Boolean read FExecuteCompleted;
   end;
 
 type
   TCalcThread = class(TPrimitiveThread)
     private
-      FStartIndex: Integer;
-      FNumberOfPixels: Integer;
       FStackMode: TStackMode;
       FStackList: TStringList;
       FImages: TPCharArray;
@@ -63,13 +65,11 @@ type
                          const Images: TPCharArray;
                          const NormalizationFactors: TExtendedArray;
                          DestPixelArrayPtr: PDoubleArray;
-                         NormalizeRangeErrorCountPtr: PInteger;
+                         NormalizeRangeErrorCountPtr: PInteger; // obsolete, not used now
                          UseFast16bitProcs: Boolean;
                          ProgressProc: TProgressProc);
       property StackedResultMin: Extended read FStackedResultMin;
       property StackedResultMax: Extended read FStackedResultMax;
-      property StartIndex: Integer read FStartIndex;
-      property NumberOfPixels: Integer read FNumberOfPixels;
     end;
 
 type
@@ -78,8 +78,6 @@ type
 
   TNormThread = class(TPrimitiveThread)
   private
-    FStartIndex: Integer;
-    FNumberOfImages: Integer;
     FNumberOfPixelsInImage: Integer;
     FStackList: TStringList;
     FImages: TPCharArray;
@@ -97,8 +95,6 @@ type
                        NormalizeMVal: Extended;
                        UseFast16bitProcs: Boolean;
                        ProgressProc: TProgressProc);
-    property StartIndex: Integer read FStartIndex;
-    property NumberOfImages: Integer read FNumberOfImages;
     property NumberOfPixelsInImage: Integer read FNumberOfPixelsInImage;
   end;
 
@@ -118,12 +114,6 @@ type
   end;
 
 function GetLogicalCpuCount: integer;
-
-// Special quick procedure for IRIS FITS (no scale, BITPIX=16)
-function GetFITSpixel16bitNoScale(FITSdata: PChar; N: Integer): SmallInt; inline;
-
-// Universal procesure for all FITS
-function GetFITSpixelAsExtended(FITSdata: PChar; N, BitPix: Integer; BScale: Double; BZero: Double): Extended;
 
 procedure SetFITSpixel(FITSdata: PChar; N, BitPix: Integer; Value: Double; var ErrorCount: Integer);
 
@@ -307,7 +297,7 @@ begin
   FreeOnTerminate := False;  // after inherited Create!
   FThreadNo := ThreadNo;
   FStartIndex := StartIndex;
-  FNumberOfPixels := NumberOfPixels;
+  FNumberOfItems := NumberOfPixels;
   FStackMode := StackMode;
   FStackList := StackList;
   FImages := Images;
@@ -325,7 +315,6 @@ procedure TCalcThread.Execute;
 var
   StackPixels: TExtendedArray;
   StackPixels16bit: TSmallIntArray;
-  NormalizedVal: Extended;
   StackedResult: Extended;
   I, II, Counter: Integer;
 begin
@@ -336,14 +325,16 @@ begin
 {$ENDIF}
   try
     Counter := 0;
-    if FNumberOfPixels <= 0 then Exit; // FExecuteComplete is not set!
+    if FNumberOfItems <= 0 then Exit; // FExecuteComplete is not set!
     StackPixels := nil;
     StackPixels16bit := nil;
     if FUseFast16bitProcs then
       SetLength(StackPixels16bit, FStackList.Count)
     else
       SetLength(StackPixels, FStackList.Count);
-    for II := FStartIndex to FStartIndex + FNumberOfPixels - 1 do begin
+    if FNormalizationFactors <> nil then
+      SetLength(StackPixels, FStackList.Count);
+    for II := FStartIndex to FStartIndex + FNumberOfItems - 1 do begin
       if Terminated or GlobalTerminateAllThreads then begin
 {$IFDEF DEBUG_OUTPUT}
         if GlobalTerminateAllThreads then begin WriteLn; WriteLn('ThreadNo: ', FThreadNo, ' GlobalTerminateAllThreads is TRUE'); end;
@@ -355,30 +346,30 @@ begin
         for I := 0 to FStackList.Count - 1 do
           StackPixels16bit[I] := GetFITSpixel16bitNoScale(FImages[I], II);
         if FNormalizationFactors <> nil then begin
-          NormalizedVal := StackPixels16bit[I] * FNormalizationFactors[I];
-          if NormalizedVal < Low(SmallInt) then begin
-            NormalizedVal := Low(SmallInt);
-            Inc(FNormalizeRangeErrorCountPtr^);
-          end
-          else
-          if NormalizedVal > High(SmallInt) then begin
-            NormalizedVal := High(SmallInt);
-            Inc(FNormalizeRangeErrorCountPtr^);
+          for I := 0 to FStackList.Count - 1 do
+            StackPixels[I] := StackPixels16bit[I] * FNormalizationFactors[I];
+          case FStackMode of
+            smAdd: StackedResult := TStatHelper<Extended>.Sum(StackPixels);
+            smAvg: StackedResult := TStatHelper<Extended>.Mean(StackPixels);
+            smMed: StackedResult := TStatHelper<Extended>.WirthMedian(StackPixels); // array is reordered!
+            else raise Exception.Create('Internal error: invalid Stack Mode');
           end;
-          StackPixels16bit[I] := Round(NormalizedVal);
-        end;
-        case FStackMode of
-          smAdd: StackedResult := TStatHelper<SmallInt>.Sum(StackPixels16bit);
-          smAvg: StackedResult := TStatHelper<SmallInt>.Mean(StackPixels16bit);
-          smMed: StackedResult := TStatHelper<SmallInt>.WirthMedian(StackPixels16bit); // array is reordered!
-          else raise Exception.Create('Internal error: invalid Stack Mode');
+        end
+        else begin
+          case FStackMode of
+            smAdd: StackedResult := TStatHelper<SmallInt>.Sum(StackPixels16bit);
+            smAvg: StackedResult := TStatHelper<SmallInt>.Mean(StackPixels16bit);
+            smMed: StackedResult := TStatHelper<SmallInt>.WirthMedian(StackPixels16bit); // array is reordered!
+            else raise Exception.Create('Internal error: invalid Stack Mode');
+          end;
         end;
       end
       else begin
         for I := 0 to FStackList.Count - 1 do
           StackPixels[I] := GetFITSpixelAsExtended(FImages[I], II, TFITSFileInfo(FStackList.Objects[I]).BitPix, TFITSFileInfo(FStackList.Objects[I]).BScale, TFITSFileInfo(FStackList.Objects[I]).BZero);
         if FNormalizationFactors <> nil then
-          StackPixels[I] := StackPixels[I] * FNormalizationFactors[I];
+          for I := 0 to FStackList.Count - 1 do
+            StackPixels[I] := StackPixels[I] * FNormalizationFactors[I];
         case FStackMode of
           smAdd: StackedResult := TStatHelper<Extended>.Sum(StackPixels);
           smAvg: StackedResult := TStatHelper<Extended>.Mean(StackPixels);
@@ -402,10 +393,10 @@ begin
 {$IFNDEF overflow_check}{$Q-}{$ENDIF}
 
       Inc(Counter);
-      if ((Counter + 1) mod (FNumberOfPixels div 128) = 0) then
-        Progress(Counter, FStartIndex, FNumberOfPixels);
+      if ((Counter + 1) mod (FNumberOfItems div 128) = 0) then
+        Progress(Counter, FStartIndex, FNumberOfItems);
     end;
-    Progress(Counter, FStartIndex, FNumberOfPixels);
+    Progress(Counter, FStartIndex, FNumberOfItems);
     FExecuteCompleted := True;
 {$IFDEF DEBUG_OUTPUT}
     WriteLn;
@@ -437,7 +428,7 @@ begin
   FreeOnTerminate := False;  // after inherited Create!
   FThreadNo := ThreadNo;
   FStartIndex := StartIndex;
-  FNumberOfImages := NumberOfImages;
+  FNumberOfItems := NumberOfImages;
   FNumberOfPixelsInImage := NumberOfPixelsInImage;
   FStackList := StackList;
   FImages := Images;
@@ -458,13 +449,13 @@ var
 begin
   try
     Counter := 0;
-    if FNumberOfImages <= 0 then Exit; // FExecuteComplete is not set!
+    if FNumberOfItems <= 0 then Exit; // FExecuteComplete is not set!
     // Temp array, will be permutated.
     if FUseFast16bitProcs then
       SetLength(TempPixelArray16bit, FNumberOfPixelsInImage)
     else
       SetLength(TempPixelArrayExtended, FNumberOfPixelsInImage);
-    for I := FStartIndex to FStartIndex + FNumberOfImages - 1 do begin
+    for I := FStartIndex to FStartIndex + FNumberOfItems - 1 do begin
       if Terminated or GlobalTerminateAllThreads then begin
         Exit;
       end;
@@ -481,9 +472,9 @@ begin
         raise Exception.Create('When normalization is active, each file must have median value > 0');
       FDestNormalizationFactorsPtr^[I] := FNormalizeMVal / MedianValue;
       Inc(Counter);
-      Progress(Counter, FStartIndex, FNumberOfImages);
+      Progress(Counter, FStartIndex, FNumberOfItems);
     end;
-    Progress(Counter, FStartIndex, FNumberOfImages);
+    Progress(Counter, FStartIndex, FNumberOfItems);
     FExecuteCompleted := True;
   except
     on E: Exception do begin
