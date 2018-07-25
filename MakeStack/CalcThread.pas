@@ -55,7 +55,6 @@ type
       FUseFast16bitProcs: Boolean;
       FStackedResultMin: Extended;
       FStackedResultMax: Extended;
-      FNormalizeRangeErrorCountPtr: PInteger;
     protected
       procedure Execute; override;
     public
@@ -64,10 +63,9 @@ type
                          StackMode: TStackMode;
                          const StackList: TStringList;
                          const Images: TPCharArray;
-                         const FileToSubtractData: TExtendedArray;
+                         FileToSubtractDataPtr: PExtendedArray;
                          const NormalizationFactors: TExtendedArray;
                          DestPixelArrayPtr: PDoubleArray;
-                         NormalizeRangeErrorCountPtr: PInteger; // obsolete, not used now
                          UseFast16bitProcs: Boolean;
                          ProgressProc: TProgressProc);
       property StackedResultMin: Extended read FStackedResultMin;
@@ -94,7 +92,7 @@ type
                        StartIndex, NumberOfImages, NumberOfPixelsInImage: Integer;
                        const StackList: TStringList;
                        const Images: TPCharArray;
-                       const FileToSubtractData: TExtendedArray;
+                       FileToSubtractDataPtr: PExtendedArray;
                        DestNormalizationFactorsPtr: PExtendedArray;
                        NormalizeMVal: Extended;
                        UseFast16bitProcs: Boolean;
@@ -293,10 +291,9 @@ constructor TCalcThread.Create(ThreadNo: Integer;
                                StackMode: TStackMode;
                                const StackList: TStringList;
                                const Images: TPCharArray;
-                               const FileToSubtractData: TExtendedArray;
+                               FileToSubtractDataPtr: PExtendedArray;
                                const NormalizationFactors: TExtendedArray;
                                DestPixelArrayPtr: PDoubleArray;
-                               NormalizeRangeErrorCountPtr: PInteger;
                                UseFast16bitProcs: Boolean;
                                ProgressProc: TProgressProc);
 begin
@@ -308,10 +305,9 @@ begin
   FStackMode := StackMode;
   FStackList := StackList;
   FImages := Images;
-  FFileToSubractDataPtr := @FileToSubtractData;
+  FFileToSubractDataPtr := FileToSubtractDataPtr;
   FNormalizationFactors := NormalizationFactors;
   FDestPixelArrayPtr := DestPixelArrayPtr;
-  FNormalizeRangeErrorCountPtr := NormalizeRangeErrorCountPtr;
   FUseFast16bitProcs := UseFast16bitProcs;
   FProgressProc := ProgressProc;
   FStackedResultMax := 0; // not nesessary
@@ -336,11 +332,12 @@ begin
     if FNumberOfItems <= 0 then Exit; // FExecuteComplete is not set!
     StackPixels := nil;
     StackPixels16bit := nil;
-    if FUseFast16bitProcs then
-      SetLength(StackPixels16bit, FStackList.Count)
+    if FUseFast16bitProcs then begin
+      SetLength(StackPixels16bit, FStackList.Count);
+      if (FNormalizationFactors <> nil) or (FFileToSubractDataPtr <> nil) then
+        SetLength(StackPixels, FStackList.Count);
+    end
     else
-      SetLength(StackPixels, FStackList.Count);
-    if FNormalizationFactors <> nil then
       SetLength(StackPixels, FStackList.Count);
     for II := FStartIndex to FStartIndex + FNumberOfItems - 1 do begin
       if Terminated or GlobalTerminateAllThreads then begin
@@ -353,9 +350,17 @@ begin
       if FUseFast16bitProcs then begin
         for I := 0 to FStackList.Count - 1 do
           StackPixels16bit[I] := GetFITSpixel16bitNoScale(FImages[I], II);
-        if FNormalizationFactors <> nil then begin
+        if (FNormalizationFactors <> nil) or (FFileToSubractDataPtr <> nil) then begin
           for I := 0 to FStackList.Count - 1 do
-            StackPixels[I] := StackPixels16bit[I] * FNormalizationFactors[I];
+            StackPixels[I] := StackPixels16bit[I];
+          if FFileToSubractDataPtr <> nil then begin
+            for I := 0 to FStackList.Count - 1 do
+              StackPixels[I] := StackPixels[I] - FFileToSubractDataPtr^[II];
+          end;
+          if FNormalizationFactors <> nil then begin
+            for I := 0 to FStackList.Count - 1 do
+              StackPixels[I] := StackPixels[I] * FNormalizationFactors[I];
+          end;
           case FStackMode of
             smAdd: StackedResult := TStatHelper<Extended>.Sum(StackPixels);
             smAvg: StackedResult := TStatHelper<Extended>.Mean(StackPixels);
@@ -388,10 +393,10 @@ begin
       if Counter = 0 then begin
         FStackedResultMax := StackedResult;
         FStackedResultMin := StackedResult;
-       end
-       else begin
-        if StackedResult > FStackedResultMax then FStackedResultMax := StackedResult;
-        if StackedResult < FStackedResultMin then FStackedResultMin := StackedResult;
+      end
+      else begin
+       if StackedResult > FStackedResultMax then FStackedResultMax := StackedResult;
+       if StackedResult < FStackedResultMin then FStackedResultMin := StackedResult;
       end;
 
 {$IFNDEF range_check}{$R+}{$ENDIF}
@@ -427,7 +432,7 @@ constructor TNormThread.Create(ThreadNo: Integer;
                                StartIndex, NumberOfImages, NumberOfPixelsInImage: Integer;
                                const StackList: TStringList;
                                const Images: TPCharArray;
-                               const FileToSubtractData: TExtendedArray;
+                               FileToSubtractDataPtr: PExtendedArray;
                                DestNormalizationFactorsPtr: PExtendedArray;
                                NormalizeMVal: Extended;
                                UseFast16bitProcs: Boolean;
@@ -441,7 +446,7 @@ begin
   FNumberOfPixelsInImage := NumberOfPixelsInImage;
   FStackList := StackList;
   FImages := Images;
-  FFileToSubractDataPtr := @FileToSubtractData;
+  FFileToSubractDataPtr := FileToSubtractDataPtr;
   FDestNormalizationFactorsPtr := DestNormalizationFactorsPtr;
   FNormalizeMVal := NormalizeMVal;
   FUseFast16bitProcs := UseFast16bitProcs;
@@ -455,13 +460,13 @@ var
   TempPixelArray16bit: TSmallIntArray;    // for normalization only
   TempPixelArrayExtended: TExtendedArray; // for normalization only
   MedianValue: Extended;                  // for normalization only
-  I, Counter: Integer;
+  I, II, Counter: Integer;
 begin
   try
     Counter := 0;
     if FNumberOfItems <= 0 then Exit; // FExecuteComplete is not set!
     // Temp array, will be permutated.
-    if FUseFast16bitProcs then
+    if FUseFast16bitProcs and (FFileToSubractDataPtr = nil) then
       SetLength(TempPixelArray16bit, FNumberOfPixelsInImage)
     else
       SetLength(TempPixelArrayExtended, FNumberOfPixelsInImage);
@@ -470,12 +475,16 @@ begin
         Exit;
       end;
       FileInfo := TFITSFileInfo(FStackList.Objects[I]);
-      if FUseFast16bitProcs then begin
+      if FUseFast16bitProcs and (FFileToSubractDataPtr = nil) then begin
         CopyFitsValues16bit(FImages[I], TempPixelArray16bit, FNumberOfPixelsInImage);
         MedianValue := TStatHelper<SmallInt>.WirthMedian(TempPixelArray16bit);
       end
       else begin
         CopyFitsValues(FImages[I], TempPixelArrayExtended, FNumberOfPixelsInImage, FileInfo.BitPix, FileInfo.BScale, FileInfo.BZero);
+        if FFileToSubractDataPtr <> nil then begin
+          for II := 0 to FNumberOfPixelsInImage - 1 do
+            TempPixelArrayExtended[II] := TempPixelArrayExtended[II] - FFileToSubractDataPtr^[II];
+        end;
         MedianValue := TStatHelper<Extended>.WirthMedian(TempPixelArrayExtended);
       end;
       if MedianValue <= 0 then

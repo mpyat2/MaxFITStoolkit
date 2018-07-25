@@ -209,18 +209,32 @@ fitsstat file
 @makestack
 
 Usage:
-makestack file_mask1[.fit] [file_mask2[.fit] ...] /G=generic_name [/N=mm] [/M=<mode>] [/O=out_dir] [/B=nn] [/X=<ext>] [/F]
+makestack file_mask1[.fit] [file_mask2[.fit] ...] /G=generic_name [options]
 
 Where:
-  file_maskX       masks of input files to be processed
-  /G=generic_name  prefix to be used to construct new file name
-  /N=mm            number of files in stacking group. If not specified, all files will be stacked
-  /A               if ALL files are to be stacked, do not append number to single output file
-  /M=<mode>        stacking mode: /M=S (sum, default value); /M=A (average); /M=M (median)
-  /O=out_dir       directory for output files
-                   (current directory will be used if not specified)
-  /B=nn            base file number (default = 1); must be >= 0
-  /X=<ext>         extension for output files (.fit by default)
-  /F               overwrite existing files in output directory
-  /V               print version
-  /H               print help and halt
+  maskX              masks of input files to be processed (required)
+  /G=<generic_name>  prefix to be used to construct new file name (required)
+
+additional options:
+  /N=mm              number of files in stacking group. If not specified, 
+                     all files will be stacked
+  /A                 if ALL files are to be stacked, do not append number to
+                     single output file
+  /M=<mode>          stacking mode: 
+                       /M=S (sum, default value); 
+                       /M=A (average); 
+                       /M=M (median)
+  /O=out_dir         directory for output files
+                     (current directory will be used if not specified)
+  /B=nn              base file number (default = 1); must be >= 0
+  /X=<ext>           extension for output files (.fit by default)
+  /FORMAT=<format>   Format of output FITS files. Can be U8, I16, I32, F32, F64
+  /NORM=<value>      If specified, medians of files to be stacked will be 
+                     normalized using this value
+  /SUB=<file[.fit]>  subtract an offset file before normalization and stacking
+  /F                 overwrite existing files in output directory
+  /V                 print version
+  /H                 print help and halt
+
+There ia also "debug" option  /NORMFACTORS=<file>. If specified, normalization
+factors will be printed to this file.

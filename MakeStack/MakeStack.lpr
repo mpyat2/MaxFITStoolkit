@@ -174,6 +174,32 @@ begin
   end;
 end;
 
+procedure DeleteFactorsTextFile(const NormalizeFactorsFileName: string);
+begin
+  if FileExists(NormalizeFactorsFileName) then
+    DeleteFile(NormalizeFactorsFileName);
+end;
+
+procedure WriteFactorsToTextFile(const NormalizeFactorsFileName: string; const NormalizationFactors: TExtendedArray);
+var
+  FactorsFile: TextFile;
+  I: Integer;
+begin
+  Assign(FactorsFile, NormalizeFactorsFileName);
+  try
+    if FileExists(NormalizeFactorsFileName) then begin
+      Append(FactorsFile);
+      WriteLn(FactorsFile);
+    end
+    else
+      Rewrite(FactorsFile);
+    for I := 0 to Length(NormalizationFactors) - 1 do
+      WriteLn(FactorsFile, NormalizationFactors[I]);
+  finally
+    CloseFile(FactorsFile);
+  end;
+end;
+
 procedure GetNumberOfThreadsAndItemsInFirstThread(ItemCount: Integer; CmdLineNumberOfThreads: Integer; MinItemsPerThread: Integer; out NumberOfThreads: Integer; out ItemsToProcessInFirstThread: Integer);
 begin
   if CmdLineNumberOfThreads <= 0 then
@@ -235,10 +261,9 @@ var
   InfoStr: string;
   TimeStart: TDateTime;
   OutOfRangeErrorCount: Integer;
-  FactorsFile: TextFile;
-  FileToSubtractFitsInfo: TFITSFileInfo;
-  FileToSubtractData: TExtendedArray;
-  FileToSubtractImage: PChar;
+  FileImageTemp: PChar;
+  FileDataToSubtract, FileDataTemp: TExtendedArray;
+  FileToSubtractDataPtr: PExtendedArray;
 begin
   if StackList.Count < 1 then Exit;
   NormalizationFactors := nil;
@@ -252,6 +277,63 @@ begin
   MinBitPix := FileInfo.BitPix;
   MaxBitPix := FileInfo.BitPix;
   DestNaxis := Copy(FileInfo.Naxis, 0, MaxInt);
+
+  FileImageTemp := nil;
+  FileDataTemp := nil;
+  FileToSubtractDataPtr := nil;
+  FileDataToSubtract := nil;
+
+  Pixels := 1;
+{$IFNDEF range_check}{$R+}{$ENDIF}
+{$IFNDEF overflow_check}{$Q+}{$ENDIF}
+  for I := 0 to Length(DestNaxis) - 1 do
+    Pixels := Pixels * DestNaxis[I];
+{$IFNDEF range_check}{$R-}{$ENDIF}
+{$IFNDEF overflow_check}{$Q-}{$ENDIF}
+
+  if FileToSubtract <> '' then begin
+    FileInfo := ReadFileInfo(FileToSubtract);
+    try
+      // check dimensions
+      if Length(FileInfo.Naxis) <> Length(DestNaxis) then
+        FileError('File to subtract must have the same number of axes as files to stack');
+      for I := 0 to Length(DestNaxis) - 1 do
+        if DestNaxis[I] <> FileInfo.Naxis[I] then
+          FileError('File to subtract must have axes identical to ones in files to stack');
+
+      // read data to subtract
+      FileImageTemp := ReadFITSImage(FileToSubtract, FileInfo);
+      try
+        SetLength(FileDataToSubtract, Pixels);
+        CopyFitsValues(FileImageTemp, FileDataToSubtract, Pixels, FileInfo.BitPix, FileInfo.BScale, FileInfo.BZero);
+        FileToSubtractDataPtr := @FileDataToSubtract;
+      finally
+        FreeMem(FileImageTemp);
+        FileImageTemp := nil;
+      end;
+    finally
+      FreeAndNil(FileInfo);
+    end;
+  end;
+
+  if NormalizeMVal < 0 then begin
+    // autodetect
+    FileInfo := TFITSFileInfo(StackList.Objects[0]);
+    FileImageTemp := ReadFITSImage(StackList[0], FileInfo);
+    try
+      SetLength(FileDataTemp, Pixels);
+      CopyFitsValues(FileImageTemp, FileDataTemp, Pixels, FileInfo.BitPix, FileInfo.BScale, FileInfo.BZero);
+    finally
+      FreeMem(FileImageTemp);
+      FileImageTemp := nil;
+    end;
+    if FileDataToSubtract <> nil then
+      for I := 0 to Pixels - 1 do
+        FileDataTemp[I] := FileDataTemp[I] - FileDataToSubtract[I];
+    NormalizeMVal := TStatHelper<Extended>.WirthMedian(FileDataTemp);
+    FileDataTemp := nil;
+  end;
+
   Comments := nil;
   SetLength(Images, StackList.Count);
   for I := 0 to Length(Images) - 1 do
@@ -261,6 +343,10 @@ begin
     Comments[Length(Comments) - 1] := 'Stack of ' + IntToStr(StackList.Count) + ' images';
     SetLength(Comments, Length(Comments) + 1);
     Comments[Length(Comments) - 1] := 'Stacking mode: ' + StackModeToString(StackMode);
+    if FileToSubtract <> '' then begin
+      SetLength(Comments, Length(Comments) + 1);
+      Comments[Length(Comments) - 1] := 'File to subract: ' + ExtractFileName(FileToSubtract);
+    end;
     if NormalizeMVal > 0 then begin
       SetLength(Comments, Length(Comments) + 1);
       Str(NormalizeMVal:0:2, S);
@@ -311,162 +397,35 @@ begin
 
     UseFast16bitProcs := (not ScaledOrShifted) and (MinBitPix = 16) and (MaxBitPix = 16);
 
-    FileToSubtractImage := nil;
-    FileToSubtractData := nil;
-    FileToSubtractFitsInfo := nil;
-    if FileToSubtract <> '' then
-      FileToSubtractFitsInfo := ReadFileInfo(FileToSubtract);
-    try
+    TimeStart := Now(); // calculation time
 
-      // check dimensions
-      if Length(FileToSubtractFitsInfo.Naxis) <> Length(DestNaxis) then
-        FileError('File to subtract must have the same number of axes as files to stack');
-      for I := 0 to Length(DestNaxis) - 1 do
-        if DestNaxis[I] <> FileToSubtractFitsInfo.Naxis[I] then
-          FileError('File to subtract must have axes identical to ones in files to stack');
-
-      Pixels := 1;
-  {$IFNDEF range_check}{$R+}{$ENDIF}
-  {$IFNDEF overflow_check}{$Q+}{$ENDIF}
-      for I := 0 to Length(DestNaxis) - 1 do
-        Pixels := Pixels * DestNaxis[I];
-  {$IFNDEF range_check}{$R-}{$ENDIF}
-  {$IFNDEF overflow_check}{$Q-}{$ENDIF}
-
-      // read data to subtract
-      FileToSubtractImage := ReadFITSImage(FileToSubtract, FileToSubtractFitsInfo);
-      try
-        SetLength(FileToSubtractData, Pixels);
-        CopyFitsValues(FileToSubtractImage, FileToSubtractData, Pixels, FileToSubtractFitsInfo.BitPix, FileToSubtractFitsInfo.BScale, FileToSubtractFitsInfo.BZero);
-      finally
-        FreeMem(FileToSubtractImage);
-        FileToSubtractImage := nil
-      end;
-
-      FileError('><><><>< Data subtraction is not implemented yet, sorry!');
-
-      TimeStart := Now(); // calculation time
-
-      if NormalizeMVal > 0 then begin
-        SetLength(NormalizationFactors, StackList.Count);
-        InitCriticalSection(ProgressProcCriticalSection);
-        try
-          GlobalTerminateAllThreads := False;
-          GetNumberOfThreadsAndItemsInFirstThread(StackList.Count, CmdLineNumberOfThreads, 1, NumberOfThreads, ItemsToProcessInThread);
-          SetLength(Threads, NumberOfThreads);
-          for I := 0 to Length(Threads) - 1 do Threads[I] := nil; // not nesessary, already initialized
-          try
-            InfoStr := 'N:' + LeftPadCh(IntToStr(NumberOfThreads), 2, ' ') + ' threads';
-            ShowProgress(InfoStr, 0, Pixels);
-            ProgressProcWrapper := TProgressProcWrapper.Create(NumberOfThreads, StackList.Count, InfoStr);
-            try
-              StartIndex := 0;
-              ItemsRemained := StackList.Count;
-              for I := 0 to NumberOfThreads - 1 do begin
-                if I = NumberOfThreads - 1 then
-                  ItemsToProcessInThread := ItemsRemained;
-                Threads[I] := TNormThread.Create(I,
-                                                 StartIndex,
-                                                 ItemsToProcessInThread,
-                                                 Pixels,
-                                                 StackList,
-                                                 Images,
-                                                 FileToSubtractData,
-                                                 @NormalizationFactors,
-                                                 NormalizeMVal,
-                                                 UseFast16bitProcs,
-                                                 ProgressProcWrapper.ThreadProgressProc);
-                // check for exception while creation (see FPC docs)
-                if Assigned(Threads[I].FatalException) then begin
-                  if Assigned(Threads[I].FatalException) then begin
-                    if Threads[I].FatalException is Exception then
-                      FileError(Exception(Threads[I].FatalException).Message)
-                    else
-                      FileError('Unknown Exception');
-                  end;
-                end;
-
-                ItemsRemained := ItemsRemained - ItemsToProcessInThread;
-                StartIndex := StartIndex + ItemsToProcessInThread;
-              end;
-
-              if ItemsRemained <> 0 then FileError('Internal error while creating normalization threads');
-
-              for I := 0 to NumberOfThreads - 1 do
-                Threads[I].Start;
-
-              for I := 0 to NumberOfThreads - 1 do
-                Threads[I].WaitFor;
-
-              for I := 0 to NumberOfThreads - 1 do begin
-                if Assigned(Threads[I].FatalException) then begin
-                  if Threads[I].FatalException is Exception then
-                    FileError(Exception(Threads[I].FatalException).Message)
-                  else
-                    FileError('Unknown Exception');
-                end;
-              end;
-            finally
-              FreeAndNil(ProgressProcWrapper);
-            end;
-          finally
-            for I := Length(Threads) - 1 downto 0 do
-              FreeAndNil(Threads[I]);
-            Threads := nil;
-          end;
-        finally
-          DoneCriticalSection(ProgressProcCriticalSection);
-        end;
-
-        if NormalizeFactorsFileName <> '' then begin
-          Assign(FactorsFile, NormalizeFactorsFileName);
-          try
-            if FileExists(NormalizeFactorsFileName) then begin
-              Append(FactorsFile);
-              WriteLn(FactorsFile);
-            end
-            else
-              Rewrite(FactorsFile);
-            for I := 0 to StackList.Count - 1 do
-              WriteLn(FactorsFile, NormalizationFactors[I]);
-          finally
-            CloseFile(FactorsFile);
-          end;
-        end;
-      end;
-
-      // Stacking
-
-      // DestNaxis[*] cannot be zero, see FITSUtils.GetBitPixAndNaxis
-      SetLength(DestPixelArray, Pixels);
-      NormalizeRangeErrorCount := 0;
-
+    if NormalizeMVal > 0 then begin
+      SetLength(NormalizationFactors, StackList.Count);
       InitCriticalSection(ProgressProcCriticalSection);
       try
         GlobalTerminateAllThreads := False;
-        GetNumberOfThreadsAndItemsInFirstThread(Pixels, CmdLineNumberOfThreads, MIN_PIXELS_PER_THREAD, NumberOfThreads, ItemsToProcessInThread);
+        GetNumberOfThreadsAndItemsInFirstThread(StackList.Count, CmdLineNumberOfThreads, 1, NumberOfThreads, ItemsToProcessInThread);
         SetLength(Threads, NumberOfThreads);
         for I := 0 to Length(Threads) - 1 do Threads[I] := nil; // not nesessary, already initialized
         try
-          InfoStr := 'S:' + LeftPadCh(IntToStr(NumberOfThreads), 2, ' ') + ' threads';
+          InfoStr := 'N:' + LeftPadCh(IntToStr(NumberOfThreads), 2, ' ') + ' threads';
           ShowProgress(InfoStr, 0, Pixels);
-          ProgressProcWrapper := TProgressProcWrapper.Create(NumberOfThreads, Pixels, InfoStr);
+          ProgressProcWrapper := TProgressProcWrapper.Create(NumberOfThreads, StackList.Count, InfoStr);
           try
             StartIndex := 0;
-            ItemsRemained := Pixels;
+            ItemsRemained := StackList.Count;
             for I := 0 to NumberOfThreads - 1 do begin
               if I = NumberOfThreads - 1 then
                 ItemsToProcessInThread := ItemsRemained;
-              Threads[I] := TCalcThread.Create(I,
+              Threads[I] := TNormThread.Create(I,
                                                StartIndex,
                                                ItemsToProcessInThread,
-                                               StackMode,
+                                               Pixels,
                                                StackList,
                                                Images,
-                                               FileToSubtractData,
-                                               NormalizationFactors,
-                                               @DestPixelArray,
-                                               @NormalizeRangeErrorCount,
+                                               FileToSubtractDataPtr,
+                                               @NormalizationFactors,
+                                               NormalizeMVal,
                                                UseFast16bitProcs,
                                                ProgressProcWrapper.ThreadProgressProc);
               // check for exception while creation (see FPC docs)
@@ -483,7 +442,7 @@ begin
               StartIndex := StartIndex + ItemsToProcessInThread;
             end;
 
-            if ItemsRemained <> 0 then FileError('Internal error whle creating stacking threads');
+            if ItemsRemained <> 0 then FileError('Internal error while creating normalization threads');
 
             for I := 0 to NumberOfThreads - 1 do
               Threads[I].Start;
@@ -502,23 +461,6 @@ begin
           finally
             FreeAndNil(ProgressProcWrapper);
           end;
-
-          StackedResultMin := 0;
-          StackedResultMax := 0;
-          InitialValuesSet := False;
-          for I := 0 to NumberOfThreads - 1 do begin
-            if Threads[I].ExecuteCompleted then begin // ExecuteCompleted is not set if PixelsToStackInThread was 0, however this should never occur
-              if not InitialValuesSet then begin
-                StackedResultMin := (Threads[I] as TCalcThread).StackedResultMin;
-                StackedResultMax := (Threads[I] as TCalcThread).StackedResultMax;
-                InitialValuesSet := True;
-              end
-              else begin
-                if (Threads[I] as TCalcThread).StackedResultMin < StackedResultMin then StackedResultMin := (Threads[I] as TCalcThread).StackedResultMin;
-                if (Threads[I] as TCalcThread).StackedResultMax > StackedResultMax then StackedResultMax := (Threads[I] as TCalcThread).StackedResultMax;
-              end;
-            end;
-          end;
         finally
           for I := Length(Threads) - 1 downto 0 do
             FreeAndNil(Threads[I]);
@@ -528,16 +470,110 @@ begin
         DoneCriticalSection(ProgressProcCriticalSection);
       end;
 
-      ShowProgress(InfoStr, Pixels, Pixels);
-      WriteLn;
-      WriteLn('Done. Calculation time: ', (Now() - TimeStart)*24*60*60:0:1, 's');
-      if NormalizeRangeErrorCount > 0 then
-        WriteLn('**** WARNING: overflow for ', NormalizeRangeErrorCount, ' pixels while normalization of ', StackList.Count, ' images');
+      if (NormalizeMVal > 0) and (NormalizeFactorsFileName <> '') then
+        WriteFactorsToTextFile(NormalizeFactorsFileName, NormalizationFactors);
+
+    end;
+    // Stacking
+
+    // DestNaxis[*] cannot be zero, see FITSUtils.GetBitPixAndNaxis
+    SetLength(DestPixelArray, Pixels);
+    NormalizeRangeErrorCount := 0;
+
+    InitCriticalSection(ProgressProcCriticalSection);
+    try
+      GlobalTerminateAllThreads := False;
+      GetNumberOfThreadsAndItemsInFirstThread(Pixels, CmdLineNumberOfThreads, MIN_PIXELS_PER_THREAD, NumberOfThreads, ItemsToProcessInThread);
+      SetLength(Threads, NumberOfThreads);
+      for I := 0 to Length(Threads) - 1 do Threads[I] := nil; // not nesessary, already initialized
+      try
+        InfoStr := 'S:' + LeftPadCh(IntToStr(NumberOfThreads), 2, ' ') + ' threads';
+        ShowProgress(InfoStr, 0, Pixels);
+        ProgressProcWrapper := TProgressProcWrapper.Create(NumberOfThreads, Pixels, InfoStr);
+        try
+          StartIndex := 0;
+          ItemsRemained := Pixels;
+          for I := 0 to NumberOfThreads - 1 do begin
+            if I = NumberOfThreads - 1 then
+              ItemsToProcessInThread := ItemsRemained;
+            Threads[I] := TCalcThread.Create(I,
+                                             StartIndex,
+                                             ItemsToProcessInThread,
+                                             StackMode,
+                                             StackList,
+                                             Images,
+                                             FileToSubtractDataPtr,
+                                             NormalizationFactors,
+                                             @DestPixelArray,
+                                             UseFast16bitProcs,
+                                             ProgressProcWrapper.ThreadProgressProc);
+            // check for exception while creation (see FPC docs)
+            if Assigned(Threads[I].FatalException) then begin
+              if Assigned(Threads[I].FatalException) then begin
+                if Threads[I].FatalException is Exception then
+                  FileError(Exception(Threads[I].FatalException).Message)
+                else
+                  FileError('Unknown Exception');
+              end;
+            end;
+
+            ItemsRemained := ItemsRemained - ItemsToProcessInThread;
+            StartIndex := StartIndex + ItemsToProcessInThread;
+          end;
+
+          if ItemsRemained <> 0 then FileError('Internal error whle creating stacking threads');
+
+          for I := 0 to NumberOfThreads - 1 do
+            Threads[I].Start;
+
+          for I := 0 to NumberOfThreads - 1 do
+            Threads[I].WaitFor;
+
+          for I := 0 to NumberOfThreads - 1 do begin
+            if Assigned(Threads[I].FatalException) then begin
+              if Threads[I].FatalException is Exception then
+                FileError(Exception(Threads[I].FatalException).Message)
+              else
+                FileError('Unknown Exception');
+            end;
+          end;
+        finally
+          FreeAndNil(ProgressProcWrapper);
+        end;
+
+        StackedResultMin := 0;
+        StackedResultMax := 0;
+        InitialValuesSet := False;
+        for I := 0 to NumberOfThreads - 1 do begin
+          if Threads[I].ExecuteCompleted then begin // ExecuteCompleted is not set if PixelsToStackInThread was 0, however this should never occur
+            if not InitialValuesSet then begin
+              StackedResultMin := (Threads[I] as TCalcThread).StackedResultMin;
+              StackedResultMax := (Threads[I] as TCalcThread).StackedResultMax;
+              InitialValuesSet := True;
+            end
+            else begin
+              if (Threads[I] as TCalcThread).StackedResultMin < StackedResultMin then StackedResultMin := (Threads[I] as TCalcThread).StackedResultMin;
+              if (Threads[I] as TCalcThread).StackedResultMax > StackedResultMax then StackedResultMax := (Threads[I] as TCalcThread).StackedResultMax;
+            end;
+          end;
+        end;
+      finally
+        for I := Length(Threads) - 1 downto 0 do
+          FreeAndNil(Threads[I]);
+        Threads := nil;
+      end;
     finally
-      FreeAndNil(FileToSubtractFitsInfo);
+      DoneCriticalSection(ProgressProcCriticalSection);
     end;
 
-    FileToSubtractData := nil;
+    ShowProgress(InfoStr, Pixels, Pixels);
+    WriteLn;
+    WriteLn('Done. Calculation time: ', (Now() - TimeStart)*24*60*60:0:1, 's');
+    if NormalizeRangeErrorCount > 0 then
+      WriteLn('**** WARNING: overflow for ', NormalizeRangeErrorCount, ' pixels while normalization of ', StackList.Count, ' images');
+
+    FileToSubtractDataPtr := nil;
+    FileDataToSubtract := nil;
 
     for I := Length(Images) - 1 downto 0 do begin
       if Images[I] <> nil then begin
@@ -628,6 +664,8 @@ var
   StackNumber: Integer;
   I: Integer;
 begin
+  if NormalizeFactorsFileName <> '' then
+    DeleteFactorsTextFile(NormalizeFactorsFileName);
   StackNumber := BaseNumber;
   if (StackSize = 0) and DontAddNumberIfStackAll then StackNumber := -1;
   StackList := TStringList.Create;
@@ -709,9 +747,9 @@ begin
       WriteLn('**** No files found.');
     end
     else begin
-      Write(Ntotal, ' files to process. Mode: ', StackModeToString(StackMode));
-      if NormalizeMVal > 0 then Write(' with Normalization');
-      WriteLn;
+      WriteLn(Ntotal, ' files to process. Mode: ', StackModeToString(StackMode));
+      if FileToSubtract <> '' then WriteLn(ExtractFileName(FileToSubtract), ' will be subtracted first.');
+      if NormalizeMVal <> 0 then WriteLn('Stacking with Normalization.'); // if < 0, auto determined
       WriteLn;
       DoStacking(StackMode, NormalizeMVal, FileToSubtract,
                  OutFITSbitpix, GenericName, OutputDir, OutputExt,
@@ -857,8 +895,11 @@ begin
       else
       if CmdObj.CmdLine.ExtractParamValue(S, 'NORM=', S2) then begin
         if S2 <> '' then begin
+          if AnsiSameText(S2, 'A') then
+            NormalizeMVal := -1
+          else
           if (not GetDouble(S2, NormalizeMVal)) or (NormalizeMVal <= 0) then begin
-            WriteLn('**** Normalization value be > 0');
+            WriteLn('**** Normalization value must be > 0');
             Halt(1);
           end;
         end;
