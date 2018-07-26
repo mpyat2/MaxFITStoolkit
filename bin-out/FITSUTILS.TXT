@@ -238,3 +238,15 @@ additional options:
 
 There ia also "debug" option  /NORMFACTORS=<file>. If specified, normalization
 factors will be printed to this file.
+
+
+@find_hot
+
+Usage:
+find_hot master-dark-file[.fit] /N=list[.lst] /L=<threshold> [/M=<max_pixels>]
+
+where:
+  master-dark-file   master dark
+  /N=list[.lst]      text file containing list of bad pixels (IRIS format)
+  /L=<threshold>     all pixels above this level will be considered bad
+  /M=<max_pixels>    maximum number of pixel to print

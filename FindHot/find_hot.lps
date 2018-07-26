@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <PathDelim Value="\"/>
+    <Version Value="10"/>
+    <BuildModes Active="Default"/>
+    <Units Count="1">
+      <Unit0>
+        <Filename Value="find_hot.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="156"/>
+        <CursorPos X="60" Y="189"/>
+        <UsageCount Value="21"/>
+        <Bookmarks Count="1">
+          <Item0 X="73" Y="174" ID="1"/>
+        </Bookmarks>
+        <Loaded Value="True"/>
+      </Unit0>
+    </Units>
+    <JumpHistory Count="30" HistoryIndex="29">
+      <Position1>
+        <Filename Value="find_hot.lpr"/>
+      </Position1>
+      <Position2>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="164" TopLine="127"/>
+      </Position2>
+      <Position3>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="71" Column="35" TopLine="45"/>
+      </Position3>
+      <Position4>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="55" Column="20" TopLine="29"/>
+      </Position4>
+      <Position5>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="31" Column="57"/>
+      </Position5>
+      <Position6>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="125" TopLine="88"/>
+      </Position6>
+      <Position7>
+        <Filename Value="find_hot.lpr"/>
+      </Position7>
+      <Position8>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="59" Column="50" TopLine="40"/>
+      </Position8>
+      <Position9>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="69" Column="3" TopLine="27"/>
+      </Position9>
+      <Position10>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="48" Column="24" TopLine="39"/>
+      </Position10>
+      <Position11>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="16"/>
+      </Position11>
+      <Position12>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="79" TopLine="79"/>
+      </Position12>
+      <Position13>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="101" Column="3" TopLine="71"/>
+      </Position13>
+      <Position14>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="78" Column="28" TopLine="51"/>
+      </Position14>
+      <Position15>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="81" Column="28" TopLine="61"/>
+      </Position15>
+      <Position16>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="45" TopLine="38"/>
+      </Position16>
+      <Position17>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="46" TopLine="38"/>
+      </Position17>
+      <Position18>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="47" TopLine="38"/>
+      </Position18>
+      <Position19>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="48" TopLine="38"/>
+      </Position19>
+      <Position20>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="49" TopLine="38"/>
+      </Position20>
+      <Position21>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="50" TopLine="38"/>
+      </Position21>
+      <Position22>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="52" TopLine="38"/>
+      </Position22>
+      <Position23>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="33" Column="22" TopLine="29"/>
+      </Position23>
+      <Position24>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="114" Column="49" TopLine="104"/>
+      </Position24>
+      <Position25>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="182" Column="21" TopLine="152"/>
+      </Position25>
+      <Position26>
+        <Filename Value="find_hot.lpr"/>
+      </Position26>
+      <Position27>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="82" Column="150" TopLine="52"/>
+      </Position27>
+      <Position28>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="31" TopLine="20"/>
+      </Position28>
+      <Position29>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="109" TopLine="91"/>
+      </Position29>
+      <Position30>
+        <Filename Value="find_hot.lpr"/>
+        <Caret Line="87" Column="7" TopLine="71"/>
+      </Position30>
+    </JumpHistory>
+  </ProjectSession>
+</CONFIG>

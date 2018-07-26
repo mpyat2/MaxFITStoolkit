@@ -109,7 +109,7 @@ begin
   Result := Trim(StripQuotes(Result));
 end;
 
-function ReadFileInfo(const FileName: string): TFITSFileInfo;
+function ReadFileInfo(const FileName: string; ExtendedData: Boolean): TFITSFileInfo;
 var
   FITSfile: FITSRecordFile;
 begin
@@ -125,11 +125,13 @@ begin
       if (Result.BitPix <> 8) and (Result.BitPix <> 16) and (Result.BitPix <> 32) and (Result.BitPix <> -32) and (Result.BitPix <> -64) then
         FileError('Nonstandard BitPix = ' + IntToStr(Result.BitPix) + ' in file ' + AnsiQuotedStr(FileName, '"'));
       GetBscaleBzero(FITSfile, Result.BScale, Result.BZero);
-      Result.DateObs := GetDateObs(FITSfile);
-      Result.Exposure := GetExposureTime(FITSfile);
-      Result.ObjectName := GetFITSstringValue(FITSfile, 'OBJECT');
-      Result.Telescope  := GetFITSstringValue(FITSfile, 'TELESCOP');
-      Result.Instrument := GetFITSstringValue(FITSfile, 'INSTRUME');
+      if ExtendedData then begin
+        Result.DateObs := GetDateObs(FITSfile);
+        Result.Exposure := GetExposureTime(FITSfile);
+        Result.ObjectName := GetFITSstringValue(FITSfile, 'OBJECT');
+        Result.Telescope  := GetFITSstringValue(FITSfile, 'TELESCOP');
+        Result.Instrument := GetFITSstringValue(FITSfile, 'INSTRUME');
+      end;
     except
       FreeAndNil(Result);
       raise;
@@ -294,7 +296,7 @@ begin
 
   if FileToSubtract <> '' then begin
     NormalizedOrSubtracted := True;
-    FileInfo := ReadFileInfo(FileToSubtract);
+    FileInfo := ReadFileInfo(FileToSubtract, False);
     try
       // check dimensions
       if Length(FileInfo.Naxis) <> Length(DestNaxis) then
@@ -698,7 +700,7 @@ procedure ProcessFile(const FileName: string);
 var
   FitsInfo: TFITSFileInfo;
 begin
-  FitsInfo := ReadFileInfo(FileName);
+  FitsInfo := ReadFileInfo(FileName, True);
   FileListAllFiles.AddObject(FileName, FitsInfo);
 end;
 

@@ -25,9 +25,6 @@ type
   TProgressProc = function (ThreadNo, Counter, FStartIndex, FNumberOfItems: Integer): Boolean of object;
 
 type
-
-  { TPrimitiveThread }
-
   TPrimitiveThread = class(TThread)
   private
     FThreadNo: Integer;
@@ -73,9 +70,6 @@ type
     end;
 
 type
-
-  { TNormThread }
-
   TNormThread = class(TPrimitiveThread)
   private
     FNumberOfPixelsInImage: Integer;
@@ -102,6 +96,7 @@ type
 
 type
   TFITSFileInfo = class(TObject)
+  public
     DateObs: TDateTime;
     BitPix: Integer;
     Naxis: TIntArray;
@@ -113,11 +108,10 @@ type
     Telescope: string;
     Instrument: string;
     Exposure: Double;
+    constructor Create;
   end;
 
 function GetLogicalCpuCount: integer;
-
-procedure CopyFitsValues(Image: PChar; var PixelArray: TExtendedArray; Pixels: Integer; BitPix: Integer; BScale, BZero: Double);
 
 procedure SetFITSpixel(FITSdata: PChar; N, BitPix: Integer; Value: Double; var ErrorCount: Integer);
 
@@ -161,29 +155,6 @@ var
 begin
   ResultBytes[0] :=  Byte(FITSdata[N * 2 + 1]);
   ResultBytes[1] :=  Byte(FITSdata[N * 2]);
-end;
-
-// Universal procesure for all FITS
-function GetFITSpixelAsExtended(FITSdata: PChar; N, BitPix: Integer; BScale: Double; BZero: Double): Extended;
-var
-  FITSValue: TFITSValue;
-  BytePix: Integer;
-  Addr: Integer;
-  I: Integer;
-begin
-  BytePix := Abs(BitPix) div 8;
-  Addr := N * BytePix;
-  for I := 0 to BytePix - 1 do
-    FITSValue.A[BytePix - 1 - I] := Byte(FITSdata[Addr + I]);
-  case BitPix of
-      8: Result := FITSValue.B;
-     16: Result := FITSValue.I;
-     32: Result := FITSValue.L;
-    -32: Result := FITSValue.S;
-    -64: Result := FITSValue.D;
-    else raise Exception.Create('Internal error: Unsupported BITPIX');
-  end;
-  Result := BScale * Result + BZero;
 end;
 
 procedure SetFITSpixel(FITSdata: PChar; N, BitPix: Integer; Value: Double; var ErrorCount: Integer);
@@ -261,14 +232,6 @@ var
 begin
   for I := 0 to Pixels - 1 do
     PixelArray16bit[I] := GetFITSpixel16bitNoScale(Image, I);
-end;
-
-procedure CopyFitsValues(Image: PChar; var PixelArray: TExtendedArray; Pixels: Integer; BitPix: Integer; BScale, BZero: Double);
-var
-  I: Integer;
-begin
-  for I := 0 to Pixels - 1 do
-    PixelArray[I] := GetFITSpixelAsExtended(Image, I, BitPix, BScale, BZero);
 end;
 
 { TPrimitiveThread }
@@ -501,6 +464,24 @@ begin
       raise;
     end;
   end;
+end;
+
+{ TFITSFileInfo }
+
+constructor TFITSFileInfo.Create;
+begin
+  inherited Create;
+  DateObs := 0;
+  BitPix := 0;
+  Naxis := nil;
+  BScale := 0;
+  BZero := 0;
+  StartOfImage := 0;
+  ImageMemSize := 0;
+  ObjectName := '';;
+  Telescope := '';
+  Instrument := '';
+  Exposure := 0;
 end;
 
 end.

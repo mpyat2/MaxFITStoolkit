@@ -105,6 +105,10 @@ procedure GetFITSproperties(var FITSfile: FITSRecordfile; out BitPix: Integer; o
 procedure GetBscaleBzero(var FITSfile: FITSRecordFile; out Bscale, Bzero: Double);
 function GetDateObs(var FITSfile: FITSRecordFile): TDateTime;
 function GetExposureTime(var FITSfile: FITSRecordFile): Double;
+// Universal procesure for all FITS
+function GetFITSpixelAsExtended(FITSdata: PChar; N, BitPix: Integer; BScale: Double; BZero: Double): Extended;
+// PixelArray should be allocated before call
+procedure CopyFitsValues(Image: PChar; var PixelArray: TExtendedArray; Pixels: Integer; BitPix: Integer; BScale, BZero: Double);
 // Returns padded 2D or 3D image.
 function GetFITSimage(var FITSfile: FITSRecordFile;
                       out Width, Height, Layers, BitPix: Integer;
@@ -894,6 +898,38 @@ begin
   else
   if FilePos2 >= 0 then
      Result := Exp2;
+end;
+
+// Universal procesure for all FITS
+function GetFITSpixelAsExtended(FITSdata: PChar; N, BitPix: Integer; BScale: Double; BZero: Double): Extended;
+var
+  FITSValue: TFITSValue;
+  BytePix: Integer;
+  Addr: Integer;
+  I: Integer;
+begin
+  BytePix := Abs(BitPix) div 8;
+  Addr := N * BytePix;
+  for I := 0 to BytePix - 1 do
+    FITSValue.A[BytePix - 1 - I] := Byte(FITSdata[Addr + I]);
+  case BitPix of
+      8: Result := FITSValue.B;
+     16: Result := FITSValue.I;
+     32: Result := FITSValue.L;
+    -32: Result := FITSValue.S;
+    -64: Result := FITSValue.D;
+    else raise Exception.Create('Internal error: Unsupported BITPIX');
+  end;
+  Result := BScale * Result + BZero;
+end;
+
+// PixelArray should be allocated before call
+procedure CopyFitsValues(Image: PChar; var PixelArray: TExtendedArray; Pixels: Integer; BitPix: Integer; BScale, BZero: Double);
+var
+  I: Integer;
+begin
+  for I := 0 to Pixels - 1 do
+    PixelArray[I] := GetFITSpixelAsExtended(Image, I, BitPix, BScale, BZero);
 end;
 
 // Returns padded 2D or 3D image.

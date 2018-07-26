@@ -4,7 +4,7 @@ REM
 REM Use FPC [www.freepascal.org] in $DELPHI mode.
 REM 
 SET COMPILE_PARAMS=-MDELPHI -O2 -Xs -FuUnitsCommon\;UnitsFits\ -FiUnitsFits\ -FEbin-out\
-SET COMPILER="c:\personal\lazarus\fpc\3.0.4\bin\i386-win32\fpc.exe"     %COMPILE_PARAMS% -FUbin-out\unit32
+SET COMPILER="c:\personal\lazarus32\fpc\3.0.4\bin\i386-win32\fpc.exe"   %COMPILE_PARAMS% -FUbin-out\unit32
 SET COMPIL64="C:\Personal\lazarus64\fpc\3.0.4\bin\x86_64-win64\fpc.exe" %COMPILE_PARAMS% -FUbin-out\unit64
 REM
 REM To make source-code ZIP, run this script with "AA" command-line option: make.bat AA
@@ -84,6 +84,11 @@ IF ERRORLEVEL 1 GOTO :ERROR
 :SKIP3264
 ECHO .
 
+REM find_hot
+%COMPILER% FINDHOT\find_hot.lpr
+IF ERRORLEVEL 1 GOTO :ERROR
+ECHO .
+
 REM CFA2RGB
 %COMPILER% CFA2RGB\cfa2rgb.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
@@ -119,6 +124,7 @@ echo iconvraw\ConvUtils.pas         >> ziplist.txt
 echo iconvraw\LibRawMxWrapper*.dll  >> ziplist.txt
 echo makestack\makestack.*          >> ziplist.txt
 echo makestack\CalcThread.pas       >> ziplist.txt
+echo FindHot\find_hot.*             >> ziplist.txt
 echo Hello\*.pas                    >> ziplist.txt
 echo UnitsCommon\*.pas              >> ziplist.txt
 echo UnitsFits\*.pas                >> ziplist.txt

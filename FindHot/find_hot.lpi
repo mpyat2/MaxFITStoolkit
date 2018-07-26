@@ -7,23 +7,21 @@
       <Flags>
         <MainUnitHasCreateFormStatements Value="False"/>
         <MainUnitHasTitleStatement Value="False"/>
+        <MainUnitHasScaledStatement Value="False"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
-      <Title Value="MakeStack"/>
+      <Title Value="find_hot"/>
       <UseAppBundle Value="False"/>
       <ResourceType Value="res"/>
     </General>
-    <i18n>
-      <EnableI18N LFM="False"/>
-    </i18n>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="1"/>
       <RevisionNr Value="5"/>
-      <BuildNr Value="25"/>
+      <BuildNr Value="2"/>
       <StringTable ProductVersion="0.0.0.0"/>
     </VersionInfo>
     <BuildModes Count="1">
@@ -35,12 +33,12 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="/m=m c:\personal\sky2\flat* /a /g=_flat_test /norm=a /sub=_offset /f /t=4"/>
+        <CommandLineParams Value="_dark.fit"/>
       </local>
     </RunParams>
     <Units Count="1">
       <Unit0>
-        <Filename Value="MakeStack.lpr"/>
+        <Filename Value="find_hot.lpr"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
     </Units>
@@ -49,18 +47,13 @@
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="MakeStack"/>
+      <Filename Value="find_hot"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);..\UnitsFits"/>
       <OtherUnitFiles Value="..\UnitsCommon;..\UnitsFits"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
-    <Parsing>
-      <SyntaxOptions>
-        <SyntaxMode Value="Delphi"/>
-      </SyntaxOptions>
-    </Parsing>
   </CompilerOptions>
   <Debugging>
     <Exceptions Count="3">
