@@ -21,7 +21,7 @@ var
   I: Integer;
   
 const  
-  Programs: array [0..11] of string = 
+  Programs: array [0..12] of string = 
   (
     'fihed',
     'fflip',
