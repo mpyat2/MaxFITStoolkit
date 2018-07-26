@@ -8,9 +8,12 @@
       <Unit0>
         <Filename Value="MakeStack.lpr"/>
         <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="581"/>
+        <CursorPos X="112" Y="588"/>
         <UsageCount Value="82"/>
         <Bookmarks Count="1">
-          <Item0 Y="333" ID="1"/>
+          <Item0 Y="241" ID="1"/>
         </Bookmarks>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -195,7 +198,6 @@
       </Unit23>
       <Unit24>
         <Filename Value="..\UnitsFits\FITSUtils.inc"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
         <UsageCount Value="11"/>
         <Loaded Value="True"/>
@@ -257,127 +259,126 @@
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="333" TopLine="305"/>
+        <Caret Line="242" Column="18" TopLine="214"/>
       </Position1>
       <Position2>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="334" TopLine="305"/>
+        <Caret Line="321" Column="19" TopLine="312"/>
       </Position2>
       <Position3>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="333" TopLine="319"/>
+        <Caret Line="335" Column="18" TopLine="312"/>
       </Position3>
       <Position4>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="338" TopLine="331"/>
+        <Caret Line="352" Column="21" TopLine="322"/>
       </Position4>
       <Position5>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="339" TopLine="331"/>
+        <Caret Line="354" Column="24" TopLine="324"/>
       </Position5>
       <Position6>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="340" TopLine="331"/>
+        <Caret Line="404" Column="21" TopLine="374"/>
       </Position6>
       <Position7>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="339" TopLine="331"/>
+        <Caret Line="430" Column="61" TopLine="400"/>
       </Position7>
       <Position8>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="340" TopLine="331"/>
+        <Caret Line="475" Column="24" TopLine="445"/>
       </Position8>
       <Position9>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="339" TopLine="331"/>
+        <Caret Line="649" Column="35" TopLine="618"/>
       </Position9>
       <Position10>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="340" TopLine="331"/>
+        <Caret Line="675" Column="45" TopLine="644"/>
       </Position10>
       <Position11>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="339" TopLine="331"/>
+        <Caret Line="683" Column="43" TopLine="653"/>
       </Position11>
       <Position12>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="340" TopLine="331"/>
+        <Caret Line="715" Column="37" TopLine="684"/>
       </Position12>
       <Position13>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="339" TopLine="331"/>
+        <Caret Line="751" Column="23" TopLine="721"/>
       </Position13>
       <Position14>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="340" TopLine="331"/>
       </Position14>
       <Position15>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="339" TopLine="331"/>
+        <Caret Line="216" Column="36" TopLine="185"/>
       </Position15>
       <Position16>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="340" TopLine="331"/>
+        <Caret Line="321" Column="19" TopLine="291"/>
       </Position16>
       <Position17>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="339" TopLine="331"/>
+        <Caret Line="335" Column="18" TopLine="305"/>
       </Position17>
       <Position18>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="340" TopLine="331"/>
+        <Caret Line="352" Column="21" TopLine="322"/>
       </Position18>
       <Position19>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="339" TopLine="331"/>
+        <Caret Line="354" Column="24" TopLine="324"/>
       </Position19>
       <Position20>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="340" TopLine="331"/>
+        <Caret Line="404" Column="21" TopLine="374"/>
       </Position20>
       <Position21>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="339" TopLine="331"/>
+        <Caret Line="430" Column="61" TopLine="400"/>
       </Position21>
       <Position22>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="372" TopLine="355"/>
+        <Caret Line="475" Column="24" TopLine="445"/>
       </Position22>
       <Position23>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="373" TopLine="355"/>
+        <Caret Line="649" Column="35" TopLine="618"/>
       </Position23>
       <Position24>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="374" TopLine="355"/>
+        <Caret Line="675" Column="45" TopLine="644"/>
       </Position24>
       <Position25>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="375" TopLine="355"/>
+        <Caret Line="683" Column="43" TopLine="653"/>
       </Position25>
       <Position26>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="376" TopLine="355"/>
+        <Caret Line="715" Column="37" TopLine="684"/>
       </Position26>
       <Position27>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="377" TopLine="355"/>
+        <Caret Line="751" Column="23" TopLine="721"/>
       </Position27>
       <Position28>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="378" TopLine="355"/>
+        <Caret Line="753" Column="42" TopLine="723"/>
       </Position28>
       <Position29>
         <Filename Value="MakeStack.lpr"/>
-        <Caret Line="393" Column="23" TopLine="378"/>
       </Position29>
       <Position30>
         <Filename Value="MakeStack.lpr"/>
+        <Caret Line="216" Column="36" TopLine="185"/>
       </Position30>
     </JumpHistory>
   </ProjectSession>
   <Debugging>
-    <BreakPoints Count="2">
+    <BreakPoints Count="1">
       <Item1>
         <Kind Value="bpkSource"/>
         <WatchScope Value="wpsLocal"/>
@@ -385,13 +386,6 @@
         <Source Value="MakeStack.lpr"/>
         <Line Value="268"/>
       </Item1>
-      <Item2>
-        <Kind Value="bpkSource"/>
-        <WatchScope Value="wpsLocal"/>
-        <WatchKind Value="wpkWrite"/>
-        <Source Value="MakeStack.lpr"/>
-        <Line Value="294"/>
-      </Item2>
     </BreakPoints>
     <Watches Count="5">
       <Item1>

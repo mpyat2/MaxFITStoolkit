@@ -238,7 +238,7 @@ var
   DestNaxis: TIntArray;
   DestHeader: TFITSRecordArray;
   DestPixelArray: TDoubleArray;
-  NormalizeRangeErrorCount: Integer;
+  NormalizedOrSubtracted: Boolean;
   ScaledOrShifted: Boolean;
   UseFast16bitProcs: Boolean;
   TotalExposure: Double;
@@ -267,6 +267,7 @@ var
 begin
   if StackList.Count < 1 then Exit;
   NormalizationFactors := nil;
+  NormalizedOrSubtracted := False;
   OutFileName := IncludeTrailingPathDelimiter(OutputDir) + GenericName;
   if StackNumber >= 0 then OutFileName := OutFileName + IntToStr(StackNumber);
   OutFileName := OutFileName + OutputExt;
@@ -292,6 +293,7 @@ begin
 {$IFNDEF overflow_check}{$Q-}{$ENDIF}
 
   if FileToSubtract <> '' then begin
+    NormalizedOrSubtracted := True;
     FileInfo := ReadFileInfo(FileToSubtract);
     try
       // check dimensions
@@ -315,6 +317,9 @@ begin
       FreeAndNil(FileInfo);
     end;
   end;
+
+  if NormalizeMVal <> 0 then
+    NormalizedOrSubtracted := True;
 
   if NormalizeMVal < 0 then begin
     // autodetect
@@ -478,7 +483,6 @@ begin
 
     // DestNaxis[*] cannot be zero, see FITSUtils.GetBitPixAndNaxis
     SetLength(DestPixelArray, Pixels);
-    NormalizeRangeErrorCount := 0;
 
     InitCriticalSection(ProgressProcCriticalSection);
     try
@@ -569,8 +573,6 @@ begin
     ShowProgress(InfoStr, Pixels, Pixels);
     WriteLn;
     WriteLn('Done. Calculation time: ', (Now() - TimeStart)*24*60*60:0:1, 's');
-    if NormalizeRangeErrorCount > 0 then
-      WriteLn('**** WARNING: overflow for ', NormalizeRangeErrorCount, ' pixels while normalization of ', StackList.Count, ' images');
 
     FileToSubtractDataPtr := nil;
     FileDataToSubtract := nil;
@@ -583,7 +585,7 @@ begin
     end;
 
     // Default output bitpix
-    if (MaxBitPix = MinBitPix) and (StackMode <> smAdd) and not ScaledOrShifted then
+    if (MaxBitPix = MinBitPix) and (StackMode <> smAdd) and not ScaledOrShifted and not NormalizedOrSubtracted then
       DestBitPix := MaxBitPix
     else
     if MinBitPix = -64 then
