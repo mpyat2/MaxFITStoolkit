@@ -130,7 +130,7 @@ begin
 
   Level := 0;
   LevelSet := False;
-  MaxNumber := 1000;
+  MaxNumber := 10000;
   OutFileName := '';
 
   // Other options
