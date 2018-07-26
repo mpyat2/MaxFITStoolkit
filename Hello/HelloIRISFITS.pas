@@ -34,6 +34,7 @@ const
     'apdat',
     'fitsstat',
     'makestack',
+    'find_hot',
     'iconvraw'
   );
 
