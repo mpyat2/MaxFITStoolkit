@@ -191,7 +191,6 @@ additional options:
   /P=prefix       if specified, output file name will be prefixed
   /G=generic_name prefix to be used to construct new file name
                   (cannot be specified if /P=prefix is specified)
-                  (original directory will be used if not specified)
   /B=nn           base file number (default = 1); must be >= 0 
                   (only when generic_name is specified)
   /F              overwrite existing files in output directory
