@@ -35,7 +35,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="/m=m c:\personal\sky2\flat* /a /g=_flat_test /norm=a /sub=_offset /f /t=4"/>
+        <CommandLineParams Value="/m=m c:\personal\sky2\flat1 /a /g=_flat_test /norm=10000 /sub=c:\personal\sky2\_offset /f"/>
       </local>
     </RunParams>
     <Units Count="1">

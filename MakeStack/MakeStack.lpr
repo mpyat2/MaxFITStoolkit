@@ -208,6 +208,7 @@ begin
     NumberOfThreads := Min(Max(1, GetLogicalCpuCount), MAX_THREADS)
   else
     NumberOfThreads := CmdLineNumberOfThreads;
+  if NumberOfThreads > ItemCount then NumberOfThreads := ItemCount;
   if NumberOfThreads = 1 then
     ItemsToProcessInFirstThread := ItemCount
   else
@@ -295,6 +296,8 @@ begin
 {$IFNDEF overflow_check}{$Q-}{$ENDIF}
 
   if FileToSubtract <> '' then begin
+    if not FileExists(FileToSubtract) then
+      FileError(FileToSubtract + ' does not exist');
     NormalizedOrSubtracted := True;
     FileInfo := ReadFileInfo(FileToSubtract, False);
     try
