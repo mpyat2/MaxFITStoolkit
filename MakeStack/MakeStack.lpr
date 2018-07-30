@@ -216,7 +216,7 @@ begin
 end;
 
 procedure DoStackProc(StackMode: TStackMode;
-                      NormalizeMVal: Double;
+                      NormalizeMVal: Extended;
                       const FileToSubtract: string;
                       OutFITSbitpix: TOutFITSbitpix;
                       const GenericName: string;
@@ -654,7 +654,7 @@ begin
 end;
 
 procedure DoStacking(StackMode: TStackMode;
-                     NormalizeMVal: Double;
+                     NormalizeMVal: Extended;
                      const FileToSubtract: string;
                      OutFITSbitpix: TOutFITSbitpix;
                      const GenericName: string;
@@ -720,7 +720,7 @@ end;
 
 procedure ProcessInput(const FileMasks: array of string;
                        StackMode: TStackMode;
-                       NormalizeMVal: Double;
+                       NormalizeMVal: Extended;
                        const FileToSubtract: string;
                        OutFITSbitpix: TOutFITSbitpix;
                        const GenericName: string;
