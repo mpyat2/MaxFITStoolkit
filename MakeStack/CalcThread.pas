@@ -78,6 +78,7 @@ type
     FFileToSubractDataPtr: PExtendedArray;
     FDestNormalizationFactorsPtr: PExtendedArray;
     FNormalizeMVal: Extended;
+    FNormalizeMedian: Boolean;
     FUseFast16bitProcs: Boolean;
   protected
     procedure Execute; override;
@@ -89,6 +90,7 @@ type
                        FileToSubtractDataPtr: PExtendedArray;
                        DestNormalizationFactorsPtr: PExtendedArray;
                        NormalizeMVal: Extended;
+                       NormalizeMedian: Boolean;
                        UseFast16bitProcs: Boolean;
                        ProgressProc: TProgressProc);
     property NumberOfPixelsInImage: Integer read FNumberOfPixelsInImage;
@@ -398,6 +400,7 @@ constructor TNormThread.Create(ThreadNo: Integer;
                                FileToSubtractDataPtr: PExtendedArray;
                                DestNormalizationFactorsPtr: PExtendedArray;
                                NormalizeMVal: Extended;
+                               NormalizeMedian: Boolean;
                                UseFast16bitProcs: Boolean;
                                ProgressProc: TProgressProc);
 begin
@@ -412,6 +415,7 @@ begin
   FFileToSubractDataPtr := FileToSubtractDataPtr;
   FDestNormalizationFactorsPtr := DestNormalizationFactorsPtr;
   FNormalizeMVal := NormalizeMVal;
+  FNormalizeMedian := NormalizeMedian;
   FUseFast16bitProcs := UseFast16bitProcs;
   FProgressProc := ProgressProc;
   FExecuteCompleted := False;
@@ -422,7 +426,7 @@ var
   FileInfo: TFITSFileInfo;
   TempPixelArray16bit: TSmallIntArray;    // for normalization only
   TempPixelArrayExtended: TExtendedArray; // for normalization only
-  MedianValue: Extended;                  // for normalization only
+  LocationValue: Extended;                  // for normalization only
   I, II, Counter: Integer;
 begin
   try
@@ -440,7 +444,10 @@ begin
       FileInfo := TFITSFileInfo(FStackList.Objects[I]);
       if FUseFast16bitProcs and (FFileToSubractDataPtr = nil) then begin
         CopyFitsValues16bit(FImages[I], TempPixelArray16bit, FNumberOfPixelsInImage);
-        MedianValue := TStatHelper<SmallInt>.WirthMedian(TempPixelArray16bit);
+        if FNormalizeMedian then
+          LocationValue := TStatHelper<SmallInt>.WirthMedian(TempPixelArray16bit)
+        else
+          LocationValue := TStatHelper<SmallInt>.Mean(TempPixelArray16bit);
       end
       else begin
         CopyFitsValues(FImages[I], TempPixelArrayExtended, FNumberOfPixelsInImage, FileInfo.BitPix, FileInfo.BScale, FileInfo.BZero);
@@ -448,11 +455,18 @@ begin
           for II := 0 to FNumberOfPixelsInImage - 1 do
             TempPixelArrayExtended[II] := TempPixelArrayExtended[II] - FFileToSubractDataPtr^[II];
         end;
-        MedianValue := TStatHelper<Extended>.WirthMedian(TempPixelArrayExtended);
+        if FNormalizeMedian then
+          LocationValue := TStatHelper<Extended>.WirthMedian(TempPixelArrayExtended)
+        else
+          LocationValue := TStatHelper<Extended>.Mean(TempPixelArrayExtended);
       end;
-      if MedianValue <= 0 then
-        raise Exception.Create('When normalization is active, each file must have median value > 0');
-      FDestNormalizationFactorsPtr^[I] := FNormalizeMVal / MedianValue;
+      if LocationValue <= 0 then begin
+        if FNormalizeMedian then
+          raise Exception.Create('When normalization is active, each file must have median value > 0')
+        else
+          raise Exception.Create('When normalization is active, each file must have mean value > 0')
+      end;
+      FDestNormalizationFactorsPtr^[I] := FNormalizeMVal / LocationValue;
       Inc(Counter);
       Progress(Counter, FStartIndex, FNumberOfItems);
     end;

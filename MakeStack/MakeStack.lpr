@@ -217,6 +217,7 @@ end;
 
 procedure DoStackProc(StackMode: TStackMode;
                       NormalizeMVal: Extended;
+                      NormalizeMedian: Boolean;
                       const FileToSubtract: string;
                       OutFITSbitpix: TOutFITSbitpix;
                       const GenericName: string;
@@ -340,7 +341,10 @@ begin
     if FileDataToSubtract <> nil then
       for I := 0 to Pixels - 1 do
         FileDataTemp[I] := FileDataTemp[I] - FileDataToSubtract[I];
-    NormalizeMVal := TStatHelper<Extended>.WirthMedian(FileDataTemp);
+    if NormalizeMedian then
+      NormalizeMVal := TStatHelper<Extended>.WirthMedian(FileDataTemp)
+    else
+      NormalizeMVal := TStatHelper<Extended>.Mean(FileDataTemp);
     FileDataTemp := nil;
   end;
 
@@ -361,6 +365,11 @@ begin
       SetLength(Comments, Length(Comments) + 1);
       Str(NormalizeMVal:0:2, S);
       Comments[Length(Comments) - 1] := 'Normalization value: ' + S;
+      SetLength(Comments, Length(Comments) + 1);
+      if NormalizeMedian then
+        Comments[Length(Comments) - 1] := 'Normalization of Medians'
+      else
+        Comments[Length(Comments) - 1] := 'Normalization of Means';
     end;
     DestObject := TFITSFileInfo(StackList.Objects[0]).ObjectName;
     DestTelescope := TFITSFileInfo(StackList.Objects[0]).Telescope;
@@ -436,6 +445,7 @@ begin
                                                FileToSubtractDataPtr,
                                                @NormalizationFactors,
                                                NormalizeMVal,
+                                               NormalizeMedian,
                                                UseFast16bitProcs,
                                                ProgressProcWrapper.ThreadProgressProc);
               // check for exception while creation (see FPC docs)
@@ -655,6 +665,7 @@ end;
 
 procedure DoStacking(StackMode: TStackMode;
                      NormalizeMVal: Extended;
+                     NormalizeMedian: Boolean;
                      const FileToSubtract: string;
                      OutFITSbitpix: TOutFITSbitpix;
                      const GenericName: string;
@@ -680,7 +691,7 @@ begin
     for I := 0 to FileListAllFiles.Count - 1 do begin
       StackList.AddObject(FileListAllFiles[I], FileListAllFiles.Objects[I]);
       if (StackSize > 0) and (StackList.Count = StackSize) then begin
-        DoStackProc(StackMode, NormalizeMVal, FileToSubtract, OutFITSbitpix,
+        DoStackProc(StackMode, NormalizeMVal, NormalizeMedian, FileToSubtract, OutFITSbitpix,
                     GenericName, OutputDir, OutputExt, Overwrite, StackNumber,
                     StackList, CmdLineNumberOfThreads, NormalizeFactorsFileName);
         StackList.Clear;
@@ -688,7 +699,7 @@ begin
       end;
     end;
     if StackList.Count > 0 then begin
-      DoStackProc(StackMode, NormalizeMVal, FileToSubtract, OutFITSbitpix,
+      DoStackProc(StackMode, NormalizeMVal, NormalizeMedian, FileToSubtract, OutFITSbitpix,
                   GenericName, OutputDir, OutputExt, Overwrite, StackNumber,
                   StackList, CmdLineNumberOfThreads, NormalizeFactorsFileName);
       StackList.Clear;
@@ -721,6 +732,7 @@ end;
 procedure ProcessInput(const FileMasks: array of string;
                        StackMode: TStackMode;
                        NormalizeMVal: Extended;
+                       NormalizeMedian: Boolean;
                        const FileToSubtract: string;
                        OutFITSbitpix: TOutFITSbitpix;
                        const GenericName: string;
@@ -756,9 +768,15 @@ begin
     else begin
       WriteLn(Ntotal, ' files to process. Mode: ', StackModeToString(StackMode));
       if FileToSubtract <> '' then WriteLn(ExtractFileName(FileToSubtract), ' will be subtracted first.');
-      if NormalizeMVal <> 0 then WriteLn('Stacking with Normalization.'); // if < 0, auto determined
+      if NormalizeMVal <> 0 then begin
+        WriteLn('Stacking with Normalization.'); // if < 0, auto determined
+        if NormalizeMedian then
+          WriteLn('Normalization of Medians.')
+        else
+          WriteLn('Normalization of Means.')
+      end;
       WriteLn;
-      DoStacking(StackMode, NormalizeMVal, FileToSubtract,
+      DoStacking(StackMode, NormalizeMVal, NormalizeMedian, FileToSubtract,
                  OutFITSbitpix, GenericName, OutputDir, OutputExt,
                  Overwrite, BaseNumber, StackSize, CmdLineNumberOfThreads,
                  DontAddNumberIfStackAll, NormalizeFactorsFileName);
@@ -787,6 +805,7 @@ var
   CmdLineNumberOfThreads: Integer;
   DontAddNumberIfStackAll: Boolean;
   NormalizeMVal: Double;
+  NormalizeMedian: Boolean;
   NormalizeFactorsFileName: string;
   FileToSubtract: string;
   S, S2: string;
@@ -826,6 +845,7 @@ begin
   CmdLineNumberOfThreads := 0;
   DontAddNumberIfStackAll := False;
   NormalizeMVal := 0;
+  NormalizeMedian := True;
   NormalizeFactorsFileName := '';
   FileToSubtract := '';
 
@@ -912,6 +932,10 @@ begin
         end;
       end
       else
+      if CmdObj.CmdLine.ParamIsKey(S, 'NORMMEAN') then begin
+        NormalizeMedian := False;
+      end
+      else
       if CmdObj.CmdLine.ExtractParamValue(S, 'SUB=', FileToSubtract) then begin
         FileToSubtract := Trim(FileToSubtract);
         if FileToSubtract <> '' then FileToSubtract := ChangeFileExt(FileToSubtract, '.fit');
@@ -977,7 +1001,7 @@ begin
   try
     FileList := TStringListNaturalSort.Create;
     try
-      ProcessInput(InputFileMasks, StackMode, NormalizeMVal, FileToSubtract,
+      ProcessInput(InputFileMasks, StackMode, NormalizeMVal, NormalizeMedian, FileToSubtract,
                    OutFITSbitpix,
                    GenericName, OutputDir, OutputExt, Overwrite, BaseNumber,
                    StackSize, CmdLineNumberOfThreads, DontAddNumberIfStackAll,
