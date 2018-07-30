@@ -228,8 +228,9 @@ additional options:
   /B=nn              base file number (default = 1); must be >= 0
   /X=<ext>           extension for output files (.fit by default)
   /FORMAT=<format>   Format of output FITS files. Can be U8, I16, I32, F32, F64
-  /NORM=<value>      If specified, medians of files to be stacked will be 
-                     normalized using this value
+  /NORM=<value>      If specified, medians (or means, see /NORMMEAN) of files
+                     to be stacked will be normalized using this value
+  /NORMMEAN          Normalize means instead of medians
   /SUB=<file[.fit]>  subtract an offset file before normalization and stacking
   /F                 overwrite existing files in output directory
   /V                 print version
