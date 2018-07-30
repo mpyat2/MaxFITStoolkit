@@ -15,7 +15,7 @@ ECHO MakePRscript creates IRIS "preprocess.pgm" script for a specified number
 ECHO of light images.
 ECHO To use the resulting script from within IRIS you should prepare
 ECHO master-frames by "MakeMasters" command.
-ECHO A sequence of yourlight images should have generic name "light"
+ECHO A sequence of your light images should have generic name "light"
 ECHO with numbering from 1 to N_of_images, i.e.:
 ECHO   light1.fit
 ECHO   light2.fit
