@@ -35,7 +35,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="/m=m c:\personal\sky2\flat1 /a /g=_flat_test /norm=10000 /sub=c:\personal\sky2\_offset /f"/>
+        <CommandLineParams Value="/f /a /m=m /o=. /g=_flat_mediannorm /norm=10000 /sub=_offset flat* /normfactors=mediannorm.txt /format=i16 /T=1"/>
       </local>
     </RunParams>
     <Units Count="1">

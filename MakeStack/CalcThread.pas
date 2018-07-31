@@ -304,6 +304,7 @@ begin
     end
     else
       SetLength(StackPixels, FStackList.Count);
+
     for II := FStartIndex to FStartIndex + FNumberOfItems - 1 do begin
       if Terminated or GlobalTerminateAllThreads then begin
 {$IFDEF DEBUG_OUTPUT}
@@ -315,39 +316,32 @@ begin
       if FUseFast16bitProcs then begin
         for I := 0 to FStackList.Count - 1 do
           StackPixels16bit[I] := GetFITSpixel16bitNoScale(FImages[I], II);
-        if (FNormalizationFactors <> nil) or (FFileToSubractDataPtr <> nil) then begin
+        if (FNormalizationFactors <> nil) or (FFileToSubractDataPtr <> nil) then
           for I := 0 to FStackList.Count - 1 do
             StackPixels[I] := StackPixels16bit[I];
-          if FFileToSubractDataPtr <> nil then begin
-            for I := 0 to FStackList.Count - 1 do
-              StackPixels[I] := StackPixels[I] - FFileToSubractDataPtr^[II];
-          end;
-          if FNormalizationFactors <> nil then begin
-            for I := 0 to FStackList.Count - 1 do
-              StackPixels[I] := StackPixels[I] * FNormalizationFactors[I];
-          end;
-          case FStackMode of
-            smAdd: StackedResult := TStatHelper<Extended>.Sum(StackPixels);
-            smAvg: StackedResult := TStatHelper<Extended>.Mean(StackPixels);
-            smMed: StackedResult := TStatHelper<Extended>.WirthMedian(StackPixels); // array is reordered!
-            else raise Exception.Create('Internal error: invalid Stack Mode');
-          end;
-        end
-        else begin
-          case FStackMode of
-            smAdd: StackedResult := TStatHelper<SmallInt>.Sum(StackPixels16bit);
-            smAvg: StackedResult := TStatHelper<SmallInt>.Mean(StackPixels16bit);
-            smMed: StackedResult := TStatHelper<SmallInt>.WirthMedian(StackPixels16bit); // array is reordered!
-            else raise Exception.Create('Internal error: invalid Stack Mode');
-          end;
-        end;
       end
       else begin
         for I := 0 to FStackList.Count - 1 do
           StackPixels[I] := GetFITSpixelAsExtended(FImages[I], II, TFITSFileInfo(FStackList.Objects[I]).BitPix, TFITSFileInfo(FStackList.Objects[I]).BScale, TFITSFileInfo(FStackList.Objects[I]).BZero);
-        if FNormalizationFactors <> nil then
+      end;
+
+      if FUseFast16bitProcs and (FNormalizationFactors = nil) and (FFileToSubractDataPtr = nil) then begin
+        case FStackMode of
+          smAdd: StackedResult := TStatHelper<SmallInt>.Sum(StackPixels16bit);
+          smAvg: StackedResult := TStatHelper<SmallInt>.Mean(StackPixels16bit);
+          smMed: StackedResult := TStatHelper<SmallInt>.WirthMedian(StackPixels16bit); // array is reordered!
+          else raise Exception.Create('Internal error: invalid Stack Mode');
+        end;
+      end
+      else begin
+        if FFileToSubractDataPtr <> nil then begin
+          for I := 0 to FStackList.Count - 1 do
+            StackPixels[I] := StackPixels[I] - FFileToSubractDataPtr^[II];
+        end;
+        if FNormalizationFactors <> nil then begin
           for I := 0 to FStackList.Count - 1 do
             StackPixels[I] := StackPixels[I] * FNormalizationFactors[I];
+        end;
         case FStackMode of
           smAdd: StackedResult := TStatHelper<Extended>.Sum(StackPixels);
           smAvg: StackedResult := TStatHelper<Extended>.Mean(StackPixels);
@@ -355,6 +349,7 @@ begin
           else raise Exception.Create('Internal error: invalid Stack Mode');
         end;
       end;
+
       if Counter = 0 then begin
         FStackedResultMax := StackedResult;
         FStackedResultMin := StackedResult;
@@ -374,6 +369,7 @@ begin
       if ((Counter + 1) mod (FNumberOfItems div 128) = 0) then
         Progress(Counter, FStartIndex, FNumberOfItems);
     end;
+
     Progress(Counter, FStartIndex, FNumberOfItems);
     FExecuteCompleted := True;
 {$IFDEF DEBUG_OUTPUT}
