@@ -1,0 +1,8 @@
+load _dark                                               
+add _offset                                             
+save __dark_with_offset                                 
+load _flat                                              
+grey_flat                                               
+save __flat_neutral                                     
+pr light __dark_with_offset __flat_neutral c_light $1  
+cosme_cfa2 c_light c_light _cosme                  $1                   

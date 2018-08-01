@@ -1,0 +1,11 @@
+smedian offset            $1
+save _offset
+sub2 dark _offset #dark 0 $2
+smedian #dark             $2
+save _dark
+sub2 flat _offset #flat 0 $3
+ngain2 #flat #flat 10000  $3
+smedian #flat             $3
+save _flat
+load _dark
+find_hot _cosme           $4
