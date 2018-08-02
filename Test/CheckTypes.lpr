@@ -1,7 +1,7 @@
 {$MODE DELPHI}
 program CheckTypes;
 
-uses SysUtils, StrUtils, FitsUtils, FITSStatUtils;
+uses Windows, SysUtils, StrUtils, FitsUtils, FITSStatUtils;
 
 type TIntegerArray = Array of Integer;
 var
@@ -14,6 +14,9 @@ var
 
   TestArray3: TIntegerArray;
   TestArray4: TIntegerArray;
+
+  Handle: THandle;
+  ConsoleScreenBufferInfo: TConsoleScreenBufferInfo;
 
 begin
 (*
@@ -120,7 +123,7 @@ begin
     WriteLn('Too large');
 *)
 
-
+(*
   for R := 0 to 10000 do begin
     SetLength(TestArray3, Random(20));
     for I := 0 to Length(TestArray3) - 1 do
@@ -138,6 +141,7 @@ begin
       Write(^I, FloatToStr(TestArray4[I]));
     WriteLn;
   end;
+*)
 
 //  SetLength(TestArray3, 7);
 //  TestArray3 := TIntegerArray.Create(121790187,	585524933,	638950699,	823434396,	939711377,	1915067938,	2069450027);
@@ -145,4 +149,18 @@ begin
 //  WriteLn(FloatToStr(TStatHelper<Integer>.SortAndMedian(TestArray3)));
   //Write('Press ENTER: ');
   //ReadLn;
+
+  Handle := GetStdHandle(STD_ERROR_HANDLE);
+  if (Handle <> INVALID_HANDLE_VALUE) and (Handle <> 0) then begin
+    getConsoleScreenBufferInfo(Handle, ConsoleScreenBufferInfo);
+    SetConsoleTextAttribute(Handle, FOREGROUND_RED + FOREGROUND_INTENSITY + BACKGROUND_RED + BACKGROUND_GREEN + BACKGROUND_BLUE);
+  end;
+  WriteLn(StdErr, 'Hello!');
+  WriteLn('Hello2!');
+  if (Handle <> INVALID_HANDLE_VALUE) and (Handle <> 0) then begin
+    SetConsoleTextAttribute(Handle, ConsoleScreenBufferInfo.wAttributes);
+  end;
+  WriteLn(StdErr, 'Hello3!');
+  ReadLn;
+
 end.

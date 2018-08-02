@@ -19,7 +19,7 @@ program MakeStack;
 
 uses
   SysUtils, Classes, Math, DateUtils, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles, 
-  FITScompatibility, FITSUtils, FITSStatUtils, FITSTimeUtils, StringListNaturalSort,
+  FITScompatibility, MiscUtils, FITSUtils, FITSStatUtils, FITSTimeUtils, StringListNaturalSort,
   FitsUtilsHelp, CalcThread, CommonIni;
 
 {$R *.res}
@@ -636,7 +636,7 @@ begin
       for I := 0 to Length(DestPixelArray) - 1 do
         SetFITSpixel(DestImage, I, DestBitPix, DestPixelArray[I], OutOfRangeErrorCount);
       if OutOfRangeErrorCount > 0 then
-        WriteLn('**** WARNING: overflow for ', OutOfRangeErrorCount, ' pixels (output BITPIX=', DestBitPix, ')');
+        PrintWarning('**** WARNING: overflow for ' + IntToStr(OutOfRangeErrorCount) + ' pixels (output BITPIX=' + IntToStr(DestBitPix) + ')'^M^J);
 
       DestHeader := MakeFITSHeader(DestBitPix, DestNaxis, 0, 1,
                                    DestDateObs, 'Stack Mid Time, fixed by Exposure Time',
@@ -763,7 +763,7 @@ begin
     end;
     WriteLn;
     if Ntotal < 1 then begin
-      WriteLn('**** No files found.');
+      PrintWarning('**** No files found.'^M^J);
     end
     else begin
       WriteLn(Ntotal, ' files to process. Mode: ', StackModeToString(StackMode));
@@ -783,9 +783,7 @@ begin
     end;
   except
     on E: Exception do begin
-      WriteLn;
-      WriteLn('**** Error:');
-      WriteLn(E.Message);
+      PrintError(^M^J'**** Error:'^M^J + E.Message + ^M^J);
       Halt(1);
     end;
   end;
@@ -825,7 +823,7 @@ begin
 
   if (CmdObj.CmdLine.FileCount < 1) then begin
     if not PrintVer then begin
-      WriteLn('**** At least one filemask must be specified');
+      PrintWarning('**** At least one filemask must be specified'^M^J);
       WriteLn;
       PrintHelp;
     end;
@@ -853,7 +851,7 @@ begin
     S := CmdObj.CmdLine.ParamStr(ParamN);
     if CmdObj.CmdLine.FirstCharIsSwitch(S) then begin
       if Length(S) = 1 then begin
-        WriteLn('**** Invalid command-line parameter: ' + S);
+        PrintError('**** Invalid command-line parameter: ' + S + ^M^J);
         Halt(1);
       end;
       if CmdObj.CmdLine.ParamIsKey(S, 'V') or CmdObj.CmdLine.ParamIsKey(S, 'version') then begin
@@ -875,7 +873,7 @@ begin
              (Pos('<', GenericName) <> 0) or
              (Pos('>', GenericName) <> 0)
           then begin
-            WriteLn('**** Generic name must not contain \/:*?<>');
+            PrintError('**** Generic name must not contain \/:*?<>'^M^J);
             Halt(1);
           end;
         end;
@@ -895,7 +893,7 @@ begin
           else
           if S2 = 'M' then StackMode := smMed
           else begin
-            WriteLn('**** Invalid stack mode. Can be S, A or M');
+            PrintError('**** Invalid stack mode. Can be S, A or M'^M^J);
             Halt(1);
           end;
         end;
@@ -914,7 +912,7 @@ begin
           else
           if S2 = 'F64' then OutFITSbitpix := bitpixF64
           else begin
-            WriteLn('**** Invalid output FORMAT. Allowed values: U8, I16, I32, F32, F64');
+            PrintError('**** Invalid output FORMAT. Allowed values: U8, I16, I32, F32, F64'^M^J);
             Halt(1);
           end;
         end;
@@ -926,7 +924,7 @@ begin
             NormalizeMVal := -1
           else
           if (not GetDouble(S2, NormalizeMVal)) or (NormalizeMVal <= 0) then begin
-            WriteLn('**** Normalization value must be > 0');
+            PrintError('**** Normalization value must be > 0'^M^J);
             Halt(1);
           end;
         end;
@@ -944,7 +942,7 @@ begin
       if CmdObj.CmdLine.ExtractParamValue(S, 'B=', S2) then begin
         if S2 <> '' then begin
           if (not GetInt(S2, BaseNumber)) or (BaseNumber < 0) then begin
-            WriteLn('**** Base filenumber must be an integer >= 0');
+            PrintError('**** Base filenumber must be an integer >= 0'^M^J);
             Halt(1);
           end;
         end;
@@ -955,7 +953,7 @@ begin
       else
       if CmdObj.CmdLine.ExtractParamValue(S, 'N=', S2) then begin
         if (not GetInt(S2, StackSize)) or (StackSize < 0) then begin
-          WriteLn('**** Stack size must be integer number >= 0 (0 stands for "all files")');
+          PrintError('**** Stack size must be integer number >= 0 (0 stands for "all files")'^M^J);
           Halt(1);
         end;
       end
@@ -965,7 +963,7 @@ begin
       else
       if CmdObj.CmdLine.ExtractParamValue(S, 'T=', S2) then begin
         if (not GetInt(S2, CmdLineNumberOfThreads)) or (CmdLineNumberOfThreads <= 0) or (CmdLineNumberOfThreads > MAX_THREADS) then begin
-          WriteLn('**** Number of threads must be in a range [1..' + IntToStr(MAX_THREADS) + ']');
+          PrintError('**** Number of threads must be in a range [1..' + IntToStr(MAX_THREADS) + ']'^M^J);
           Halt(1);
         end;
       end
@@ -974,7 +972,7 @@ begin
         NormalizeFactorsFileName := Trim(NormalizeFactorsFileName);
       end
       else begin
-        WriteLn('**** Invalid command-line parameter: ' + S);
+        PrintError('**** Invalid command-line parameter: ' + S + ^M^J);
         Halt(1);
       end;
     end
@@ -989,7 +987,7 @@ begin
   end;
 
   if GenericName = '' then begin
-    WriteLn('**** Generic name must be specified (by /G=<name> parameter)');
+    PrintError('**** Generic name must be specified (by /G=<name> parameter)'^M^J);
     Halt(1);
   end;
 
