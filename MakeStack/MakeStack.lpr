@@ -963,7 +963,7 @@ begin
       else
       if CmdObj.CmdLine.ExtractParamValue(S, 'T=', S2) then begin
         if (not GetInt(S2, CmdLineNumberOfThreads)) or (CmdLineNumberOfThreads <= 0) or (CmdLineNumberOfThreads > MAX_THREADS) then begin
-          PrintError('**** Number of threads must be in a range [1..' + IntToStr(MAX_THREADS) + ']'^M^J);
+          PrintError('**** Number of threads must be in the range [1..' + IntToStr(MAX_THREADS) + ']'^M^J);
           Halt(1);
         end;
       end
