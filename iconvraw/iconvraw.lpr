@@ -17,19 +17,23 @@ program iconvraw;
 
 uses 
   SysUtils, Variants, DateUtils, Classes, CmdObj, Version, EnumFiles,
-  FITScompatibility, StringListNaturalSort, LibRawMxWrapper, 
+  FITScompatibility, MiscUtils, StringListNaturalSort, LibRawMxWrapper,
   FITSUtils, FITSTimeUtils, ConvUtils, FitsUtilsHelp, CommonIni;
 
 {$R *.res}
+
+{$INCLUDE PrintVersion.inc}
+
+type
+  TPrintInfoMode = (infoNo, infoNormal, infoTable);
 
 var
   LibRawLoaded: Boolean = False;
   LibRawWrapperName: string = '';
 
-procedure PrintVersion;
+procedure PrintVersion2;
 begin
-  WriteLn('RAW -> CFA converter  Maksym Pyatnytskyy  2017');
-  WriteLn(GetVersionString(AnsiUpperCase(ParamStr(0))){$IFDEF WIN64}, ' WIN64'{$ENDIF}, ' ', {$I %DATE%}, ' ', {$I %TIME%});
+  PrintVersion('RAW -> CFA converter');
   if LibRawLoaded then begin
     WriteLn('Libraw Wrapper: ', LibRawWrapperName);
     WriteLn('Libraw Version: ', RawProcessorVersion);
@@ -63,7 +67,7 @@ begin
 end;
 
 procedure ConvertFile(const FileName: string;
-                      PrintInfo: Boolean;
+                      PrintInfo: TPrintInfoMode;
                       PrintTiming: Boolean;
                       const NewFileName: string;
                       CheckExistence: Boolean;
@@ -124,7 +128,7 @@ begin
   PixelAspect := 0;
   ImageFlip := 0;
 
-  if not PrintInfo then begin
+  if PrintInfo = infoNo then begin
     if CheckExistence and FileExists(NewFileName) then
       FileError('File already exists. Use /F switch to overwrite existing files.');
   end;
@@ -133,7 +137,7 @@ begin
   if RawProcessor = nil then FileError('Cannot create RawProcessor');
   try
     CheckLibRawError(RawProcessorOpenFile(RawProcessor, PChar(FileName)));
-    if not PrintInfo then
+    if PrintInfo = infoNo then
       CheckLibRawError(RawProcessorUnpack(RawProcessor))
     else
       CheckLibRawError(RawProcessorAdjustSizesInfoOnly(RawProcessor));
@@ -161,7 +165,7 @@ begin
     for I := 0 to StrLen(BayerPattern) - 1 do
       if (Ord(BayerPattern[I]) < 32) or (Ord(BayerPattern[I]) > 126) then BayerPattern[I] := '?';
 
-    if PrintInfo then begin
+    if PrintInfo = infoNormal then begin
       WriteLn;
       WriteLn('File          : ', ExtractFileName(FileName));
       WriteLn('Make          : ', Make);
@@ -179,6 +183,40 @@ begin
       WriteLn('Bayer Pattern : ', BayerPattern);
       //WriteLn;
       //WriteLn('Note: Time is a value of EXIF TimeStamp reported by LibRaw formatted by ctime()');
+      Exit;
+    end
+    else
+    if PrintInfo = infoTable then begin
+      Write(AnsiQuotedStr(ExtractFileName(FileName), '"'));
+      Write(^I);
+      Write(AnsiQuotedStr(Make, '"'));
+      Write(^I);
+      Write(AnsiQuotedStr(Model, '"'));
+      Write(^I);
+      Write(AnsiQuotedStr(Software, '"'));
+      Write(^I);
+      Write(AnsiQuotedStr(TrimRight(TimeStr), '"'));
+      Write(^I);
+      Write(AnsiQuotedStr(GetDayOfWeek(TimeStampD) + ' ' + GetMonth(TimeStampD) + ' ' + FormatDateTime('dd hh:nn:ss yyyy', TimeStampD), '"'));
+      Write(^I);
+      Str(ISO:0:0, S);
+      Write(AnsiQuotedStr(S, '"'));
+      Write(^I);
+      Str(ExposureTimeFloat:9:7, S);
+      Write(AnsiQuotedStr(S, '"'));
+      Write(^I);
+      Write(AnsiQuotedStr(IntToStr(_width) + 'x' + IntToStr(_height), '"'));
+      Write(^I);
+      Write(AnsiQuotedStr(IntToStr(RawFrameWidth) + 'x' + IntToStr(RawFrameHeight), '"'));
+      Write(^I);
+      Write(AnsiQuotedStr(IntToStr(RawFrameLeft), '"'));
+      Write(^I);
+      Write(AnsiQuotedStr(IntToStr(RawFrameTop), '"'));
+      Write(^I);
+      Write(AnsiQuotedStr(IntToStr(Iwidth) + 'x' + IntToStr(Iheight), '"'));
+      Write(^I);
+      Write(AnsiQuotedStr(BayerPattern, '"'));
+      WriteLn;
       Exit;
     end;
 
@@ -350,7 +388,7 @@ begin
               WriteLn('**** Keyword ', Name, ' cannot be set');
           end;
         end;
-        if FITSParams.Count <> 0 then WriteLn else Write(' ');
+        if FITSParams.Count <> 0 then WriteLn;
         Seek(FITSFile, FileSize(FITSFile));
         //
         BlockWrite(FITSFile, Image[0], ImageSize div SizeOf(FITSRecordType));
@@ -373,7 +411,7 @@ begin
 end;
 
 procedure ProcessInput(const FileMasks: array of string;
-                       PrintInfo: Boolean;
+                       PrintInfo: TPrintInfoMode;
                        PrintTiming: Boolean;
                        const GenericName: string;
                        const OutputDir: string;
@@ -397,8 +435,10 @@ begin
   try
     FileNumber := 0;
     for N := 0 to Length(FileMasks) - 1 do begin
-      WriteLn;
-      WriteLn('[', FileMasks[N], ']');
+      if PrintInfo <> infoTable then begin
+        WriteLn;
+        WriteLn('[', FileMasks[N], ']');
+      end;
       FileList.Clear;
       FileEnum(FileMasks[N], faArchive, False, TFileEnumClass.FileEnumProc);
       FileList.NaturalSort;
@@ -411,8 +451,8 @@ begin
         else
           NewFileName := TempOutputDir + FileName;
         NewFileName := ChangeFileExt(NewFileName, OutputExt);
-        if not PrintInfo then begin
-          Write(FileName, ^I'->'^I, NewFileName);
+        if PrintInfo = infoNo then begin
+          Write(FileName, ^I'->'^I, NewFileName, ^I);
         end;
         ConvertFile(FileList[I],
                     PrintInfo,
@@ -427,19 +467,19 @@ begin
                     TimeShiftInSecondsV,
                     TimeShifted);
         if TimeShifted then Write('DATE-OBS shifted by ', VarToStrDef(TimeShiftInSecondsV, 'NULL'), ' seconds');
-        WriteLn;
+        if PrintInfo <> infoTable then begin
+          WriteLn;
+        end;
         Inc(FileNumber);
       end;
     end;
     if FileNumber < 1 then begin
       WriteLn;
-      WriteLn('**** No files found');
+      PrintWarning('**** No files found.'^M^J);
     end;
   except
     on E: Exception do begin
-      WriteLn;
-      WriteLn('**** Error:');
-      WriteLn(E.Message);
+      PrintError(^M^J'**** Error:'^M^J + E.Message + ^M^J);
       Halt(1);
     end;
   end;
@@ -458,7 +498,7 @@ var
   BzeroShift: Boolean;
   DoFlip: Boolean;
   OutputExt: string;
-  PrintInfo: Boolean;
+  PrintInfo: TPrintInfoMode;
   PrintTiming: Boolean;
   FITSparams: TStringList;
   PrintVer: Boolean;
@@ -482,23 +522,25 @@ begin
     LibRawLoaded := True;
   except
     on E: Exception do
-      WriteLn(^M^J'**** Problem loading ' + LibRawWrapperName + '.'^M^J'**** Error: ' + E.Message + ^M^J);
+      PrintError(^M^J'**** Problem loading ' + LibRawWrapperName + '.'^M^J'**** Error: ' + E.Message + ^M^J);
   end;
 
   PrintVer := (CmdObj.CmdLine.IsCmdOption('V') or CmdObj.CmdLine.IsCmdOption('version'));
-  if PrintVer then PrintVersion;
+  if PrintVer then PrintVersion2;
 
   if (CmdObj.CmdLine.IsCmdOption('?') or CmdObj.CmdLine.IsCmdOption('H') or CmdObj.CmdLine.IsCmdOption('help')) then begin
     PrintHelp;
     Halt(1);
   end;
 
-  if not LibRawLoaded then
+  if not LibRawLoaded then begin
+    PrintError('**** LibRaw not loaded.'^M^J);
     Halt(1);
+  end;
 
   if (CmdObj.CmdLine.FileCount < 1) then begin
     if not PrintVer then begin
-      WriteLn('**** At least one filemask must be specified');
+      PrintWarning('**** At least one filemask must be specified'^M^J);
       WriteLn;
       PrintHelp;
     end;
@@ -518,7 +560,7 @@ begin
   BzeroShift := False;
   DoFlip := False;
   OutputExt := '.fit';
-  PrintInfo := False;
+  PrintInfo := infoNo;
   PrintTiming := False;
   FITSparams := TStringList.Create;
   try
@@ -526,7 +568,7 @@ begin
       S := CmdObj.CmdLine.ParamStr(ParamN);
       if CmdObj.CmdLine.FirstCharIsSwitch(S) then begin
         if Length(S) = 1 then begin
-          WriteLn('**** Invalid command-line parameter: ' + S);
+          PrintError('**** Invalid command-line parameter: ' + S + ^M^J);
           Halt(1);
         end;
         if CmdObj.CmdLine.ParamIsKey(S, 'V') or CmdObj.CmdLine.ParamIsKey(S, 'version') then begin
@@ -538,7 +580,10 @@ begin
         end
         else
         if CmdObj.CmdLine.ParamIsKey(S, 'I') then
-          PrintInfo := True
+          PrintInfo := infoNormal
+        else
+        if CmdObj.CmdLine.ParamIsKey(S, 'I2') then
+          PrintInfo := infoTable
         else
         if CmdObj.CmdLine.ParamIsKey(S, 'TIMING') then
           PrintTiming := True
@@ -572,7 +617,7 @@ begin
                (Pos('<', GenericName) <> 0) or
                (Pos('>', GenericName) <> 0)
             then begin
-              WriteLn('**** Generic name must not contain \/:*?<>');
+              PrintError('**** Generic name must not contain \/:*?<>'^M^J);
               Halt(1);
             end;
           end;
@@ -587,7 +632,7 @@ begin
           if S2 <> '' then begin
             Val(S2, BaseNumber, ErrorPos);
             if (ErrorPos <> 0) or (BaseNumber < 0) then begin
-              WriteLn('**** Base filenumber must be an integer >= 0');
+              PrintError('**** Base filenumber must be an integer >= 0'^M^J);
               Halt(1);
             end;
           end;
@@ -606,7 +651,7 @@ begin
             else begin
              Val(S2, TimeShift, ErrorPos);
               if ErrorPos <> 0 then begin
-                WriteLn('**** Time Shift must be an integer number or ''A'' for autoshift');
+                PrintError('**** Time Shift must be an integer number or ''A'' for autoshift'^M^J);
                 Halt(1);
               end;
               TimeShiftInSecondsV := TimeShift;
@@ -614,7 +659,7 @@ begin
           end;
         end
         else begin
-          WriteLn('**** Invalid command-line parameter: ' + S);
+          PrintError('**** Invalid command-line parameter: ' + S + ^M^J);
           Halt(1);
         end;
       end
@@ -628,6 +673,23 @@ begin
 
     FileList := TStringListNaturalSort.Create;
     try
+      if PrintInfo = infoTable then begin
+        Write('"File"'^I);
+        Write('"Make"'^I);
+        Write('"Model"'^I);
+        Write('"Software"'^I);
+        Write('"Time (local)"'^I);
+        Write('"TimeStamp (UT)"'^I);
+        Write('"ISO"'^I);
+        Write('"Exposure"'^I);
+        Write('"Raw Size"'^I);
+        Write('"Image Size"'^I);
+        Write('"Left Margin"'^I);
+        Write('"Top Margin"'^I);
+        Write('"Output Size"'^I);
+        Write('"Bayer Pattern"');
+        Writeln;
+      end;
       ProcessInput(InputFileMasks,
                    PrintInfo,
                    PrintTiming,
