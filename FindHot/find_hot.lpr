@@ -51,6 +51,8 @@ begin
         FileError('Not a valid FITS file: ' + AnsiQuotedStr(FITSFileName, '"'));
       Image := GetFITSimage(FITSFile, Width, Height, Layers, BitPix, Bscale, Bzero);
       try
+        if Layers <> 1 then
+          FileError('2D FITS is expected');
 {$IFNDEF range_check}{$R+}{$ENDIF}
 {$IFNDEF overflow_check}{$Q+}{$ENDIF}
         PixelNumber := Height * Width; // one layer
@@ -65,8 +67,6 @@ begin
     finally
       CloseFile(FITSFile);
     end;
-    if Layers <> 1 then
-      FileError('2D FITS is expected');
 
     Assign(ListFile, OutFileName);
     Rewrite(ListFile);
