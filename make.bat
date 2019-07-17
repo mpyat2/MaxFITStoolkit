@@ -64,7 +64,7 @@ REM iconvraw.exe: RAW->FITS converter
 %COMPILER% iconvraw\iconvraw.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
 IF "%COMPIL64%"=="%COMPILER%" GOTO :LIBRAW64
-copy iconvraw\LibRawMxWrapper_s_crt_0_19_0-beta1.dll bin-out\
+rem copy iconvraw\LibRawMxWrapper_s_crt_0_19_0-beta1.dll bin-out\
 copy iconvraw\librawmxwrapper_s_crt.dll              bin-out\
 :LIBRAW64
 IF "%COMPIL64%"=="%COMPILER%" copy iconvraw\librawmxwrapper_s_crt_64.dll bin-out\
