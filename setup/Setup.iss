@@ -7,7 +7,7 @@
 #define MyAppURL "https://sourceforge.net/projects/fits-command-line-utilities/"
 #define MyAppExeName "HelloIRISFITS.exe"
 
-#define WIN64ONLY
+#define WIN64OR32ONLY
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -51,10 +51,10 @@ Source: "..\bin-out\fitsrgb.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "..\bin-out\cfa2rgb.exe"; DestDir: "{app}"; Flags: ignoreversion
 
-#ifdef WIN64ONLY
+#ifdef WIN64OR32ONLY
 Source: "..\bin-out\makestack.exe"; DestDir: "{app}"; Flags: ignoreversion
 #else
-; 1.1.2: only makestack exists in 64 variant.
+; 1.1.2: only makestack exists in pure 32 or 64 variant.
 Source: "..\bin-out\makestack64.exe" ; DestDir: "{app}"; DestName: "makestack.exe"  ; Check: "IsWin64"     ; Flags: ignoreversion
 Source: "..\bin-out\makestack32.exe" ; DestDir: "{app}"; DestName: "makestack32.exe"; Check: "IsWin64"     ; Flags: ignoreversion
 Source: "..\bin-out\makestack32.exe" ; DestDir: "{app}"; DestName: "makestack.exe"  ; Check: "not IsWin64" ; Flags: ignoreversion

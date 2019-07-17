@@ -75,6 +75,7 @@ REM MakeStack
 %COMPILER% makestack\makestack.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
 IF "%COMPIL64%"=="%COMPILER%" GOTO :SKIP3264
+IF "%1"=="32" GOTO :SKIP3264
 REN bin-out\makestack.exe makestack32.exe
 IF ERRORLEVEL 1 GOTO :ERROR
 %COMPIL64% makestack\makestack.lpr
