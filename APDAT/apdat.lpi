@@ -23,7 +23,7 @@
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="1"/>
       <RevisionNr Value="4"/>
-      <BuildNr Value="17"/>
+      <BuildNr Value="20"/>
       <StringTable ProductVersion="0.0.0.0"/>
     </VersionInfo>
     <BuildModes Count="1">
@@ -53,8 +53,8 @@
       <Filename Value="apdat"/>
     </Target>
     <SearchPaths>
-      <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="..\Units"/>
+      <IncludeFiles Value="$(ProjOutDir);..\UnitsFits"/>
+      <OtherUnitFiles Value="..\UnitsCommon;..\UnitsFits"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

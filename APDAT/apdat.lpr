@@ -39,7 +39,7 @@ const
 
 const
   OutExt: array[Boolean] of string = ('.csv', '.txt');
-  Delimiter: array[Boolean] of char = (';', ^I);
+  Delimiter: array[Boolean] of char = (',', ^I);
 
 var
   InFileNamePrintable: string = '';
@@ -220,6 +220,9 @@ begin
     PrintHelp;
     Halt(1);
   end;
+
+  //!!
+  Delimiter[False] := SysUtils.FormatSettings.ListSeparator;
 
   Quiet := False;
   TabbedOutput := False;
