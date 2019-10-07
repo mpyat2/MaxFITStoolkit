@@ -17,16 +17,12 @@ program IDOBS;
 
 uses
   SysUtils, Classes, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles,
-  FITScompatibility, StringListNaturalSort, FITSUtils, FitsUtilsHelp, CommonIni;
+  FITScompatibility, MiscUtils, StringListNaturalSort, FITSUtils, FitsUtilsHelp,
+  CommonIni;
 
 {$R *.res}
 
-procedure PrintVersion;
-begin
-  WriteLn('Calculate mean DATE-OBS  Maksym Pyatnytskyy  2017');
-  WriteLn(GetVersionString(AnsiUpperCase(ParamStr(0))){$IFDEF WIN64}, ' WIN64'{$ENDIF}, ' ', {$I %DATE%}, ' ', {$I %TIME%});
-  WriteLn;
-end;
+{$INCLUDE PrintVersion.inc}
 
 procedure FileError(const S: string);
 begin
@@ -115,8 +111,7 @@ begin
     end;  
     
     if N < 1 then begin
-      WriteLn;
-      WriteLn('**** No files found.');
+      PrintWarning(^M^J'**** No files found.'^M^J);
     end
     else begin
       WriteLn;
@@ -125,9 +120,7 @@ begin
     end;
   except
     on E: Exception do begin
-      WriteLn;
-      WriteLn('**** Error:');
-      WriteLn(E.Message);
+      PrintError(^M^J'**** Error:'^M^J + E.Message + ^M^J);
       Halt(1);
     end;
   end;
@@ -145,7 +138,7 @@ begin
   FileMode := fmOpenRead;
   
   PrintVer := (CmdObj.CmdLine.IsCmdOption('V') or CmdObj.CmdLine.IsCmdOption('version'));
-  if PrintVer then PrintVersion;
+  if PrintVer then PrintVersion('Calculate mean DATE-OBS');
    
   if (CmdObj.CmdLine.IsCmdOption('?') or CmdObj.CmdLine.IsCmdOption('H') or CmdObj.CmdLine.IsCmdOption('help')) then begin
     PrintHelp;
@@ -154,7 +147,7 @@ begin
 
   if (CmdObj.CmdLine.FileCount < 1) then begin
     if not PrintVer then begin
-      WriteLn('**** At least one filemask must be specified');
+      PrintWarning('**** At least one filemask must be specified'^M^J);
       WriteLn;
       PrintHelp;
     end;
@@ -170,7 +163,7 @@ begin
     S := CmdObj.CmdLine.ParamStr(ParamN);
     if CmdObj.CmdLine.FirstCharIsSwitch(S) then begin
       if Length(S) = 1 then begin
-        WriteLn('**** Invalid command-line parameter: ' + S);
+        PrintError('**** Invalid command-line parameter: ' + S + ^M^J);
         Halt(1);
       end;
       if CmdObj.CmdLine.ParamIsKey(S, 'V') or CmdObj.CmdLine.ParamIsKey(S, 'version') then begin
@@ -183,7 +176,7 @@ begin
       if CmdObj.CmdLine.ParamIsKey(S, 'E') then
         CorrectByExposure := True
       else begin
-        WriteLn('**** Invalid command-line parameter: ' + S);
+        PrintError('**** Invalid command-line parameter: ' + S + ^M^J);
         Halt(1);
       end;
     end

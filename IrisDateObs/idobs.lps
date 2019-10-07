@@ -4,13 +4,14 @@
     <PathDelim Value="\"/>
     <Version Value="10"/>
     <BuildModes Active="Default"/>
-    <Units Count="25">
+    <Units Count="26">
       <Unit0>
         <Filename Value="idobs.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="IDOBS"/>
-        <TopLine Value="14"/>
-        <CursorPos X="2" Y="14"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="144"/>
+        <CursorPos X="14" Y="150"/>
         <UsageCount Value="35"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -174,158 +175,159 @@
       </Unit20>
       <Unit21>
         <Filename Value="..\UnitsFits\FITSUtils.pas"/>
-        <EditorIndex Value="1"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="102"/>
         <CursorPos Y="121"/>
         <UsageCount Value="11"/>
-        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit21>
       <Unit22>
         <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="99"/>
         <CursorPos Y="121"/>
         <UsageCount Value="11"/>
-        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit22>
       <Unit23>
         <Filename Value="..\..\..\..\lazarus64\fpc\3.0.4\source\rtl\objpas\sysutils\datih.inc"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="100"/>
         <CursorPos X="10" Y="118"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
       </Unit23>
       <Unit24>
         <Filename Value="..\..\..\..\lazarus64\fpc\3.0.4\source\rtl\objpas\sysutils\dati.inc"/>
-        <EditorIndex Value="4"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="98"/>
         <CursorPos X="10" Y="117"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
       </Unit24>
+      <Unit25>
+        <Filename Value="..\UnitsFits\FitsUtilsHelp.pas"/>
+        <UnitName Value="FITSUtilsHelp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="32"/>
+        <CursorPos X="11" Y="25"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit25>
     </Units>
-    <JumpHistory Count="30" HistoryIndex="29">
+    <JumpHistory Count="29" HistoryIndex="28">
       <Position1>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="110" TopLine="90"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="11" Column="10"/>
       </Position1>
       <Position2>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="111" TopLine="90"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="113" Column="27" TopLine="84"/>
       </Position2>
       <Position3>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="112" TopLine="90"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="123" Column="15" TopLine="93"/>
       </Position3>
       <Position4>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="113" TopLine="90"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Column="6"/>
       </Position4>
       <Position5>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="62" Column="17" TopLine="55"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="12" Column="10"/>
       </Position5>
       <Position6>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="113" Column="29" TopLine="83"/>
       </Position6>
       <Position7>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="62" Column="17" TopLine="31"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="122" TopLine="93"/>
       </Position7>
       <Position8>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="235" Column="19" TopLine="204"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="200" Column="5" TopLine="163"/>
       </Position8>
       <Position9>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Column="6"/>
       </Position9>
       <Position10>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="62" Column="17" TopLine="31"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="11" Column="10"/>
       </Position10>
       <Position11>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="235" Column="19" TopLine="192"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="113" Column="29" TopLine="83"/>
       </Position11>
       <Position12>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="122" Column="27" TopLine="93"/>
       </Position12>
       <Position13>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="109" TopLine="88"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="149" Column="25" TopLine="118"/>
       </Position13>
       <Position14>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="110" TopLine="88"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="165" Column="25" TopLine="134"/>
       </Position14>
       <Position15>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="111" TopLine="88"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="178" TopLine="147"/>
       </Position15>
       <Position16>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="112" TopLine="88"/>
+        <Filename Value="idobs.lpr"/>
       </Position16>
       <Position17>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="113" TopLine="88"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="11" Column="6"/>
       </Position17>
       <Position18>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="114" TopLine="88"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="113" Column="29" TopLine="83"/>
       </Position18>
       <Position19>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="101" TopLine="83"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="122" Column="27" TopLine="92"/>
       </Position19>
       <Position20>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="103" TopLine="83"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="149" Column="25" TopLine="118"/>
       </Position20>
       <Position21>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="101" TopLine="83"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="165" Column="25" TopLine="134"/>
       </Position21>
       <Position22>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="106" TopLine="83"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="178" Column="25" TopLine="147"/>
       </Position22>
       <Position23>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="107" TopLine="83"/>
+        <Filename Value="idobs.lpr"/>
       </Position23>
       <Position24>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="111" TopLine="83"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="63" Column="14" TopLine="32"/>
       </Position24>
       <Position25>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="115" TopLine="85"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="64" Column="14" TopLine="33"/>
       </Position25>
       <Position26>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="81" TopLine="62"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="99" Column="20" TopLine="69"/>
       </Position26>
       <Position27>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="117" TopLine="99"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="104" Column="20" TopLine="74"/>
       </Position27>
       <Position28>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="118" TopLine="99"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="116" Column="14" TopLine="86"/>
       </Position28>
       <Position29>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="119" TopLine="99"/>
+        <Filename Value="idobs.lpr"/>
+        <Caret Line="118" Column="14" TopLine="88"/>
       </Position29>
-      <Position30>
-        <Filename Value="..\UnitsFits\FITSTimeUtils.pas"/>
-        <Caret Line="120" TopLine="99"/>
-      </Position30>
     </JumpHistory>
   </ProjectSession>
   <Debugging>
