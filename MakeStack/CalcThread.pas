@@ -48,6 +48,7 @@ type
       FImages: TPCharArray;
       FFileToSubractDataPtr: PExtendedArray;
       FNormalizationFactors: TExtendedArray;
+      FOutputMultBy: Extended;
       FDestPixelArrayPtr: PDoubleArray;
       FUseFast16bitProcs: Boolean;
       FStackedResultMin: Extended;
@@ -62,6 +63,7 @@ type
                          const Images: TPCharArray;
                          FileToSubtractDataPtr: PExtendedArray;
                          const NormalizationFactors: TExtendedArray;
+                         OutputMultBy: Extended;
                          DestPixelArrayPtr: PDoubleArray;
                          UseFast16bitProcs: Boolean;
                          ProgressProc: TProgressProc);
@@ -258,6 +260,7 @@ constructor TCalcThread.Create(ThreadNo: Integer;
                                const Images: TPCharArray;
                                FileToSubtractDataPtr: PExtendedArray;
                                const NormalizationFactors: TExtendedArray;
+                               OutputMultBy: Extended;
                                DestPixelArrayPtr: PDoubleArray;
                                UseFast16bitProcs: Boolean;
                                ProgressProc: TProgressProc);
@@ -272,6 +275,7 @@ begin
   FImages := Images;
   FFileToSubractDataPtr := FileToSubtractDataPtr;
   FNormalizationFactors := NormalizationFactors;
+  FOutputMultBy := OutputMultBy;
   FDestPixelArrayPtr := DestPixelArrayPtr;
   FUseFast16bitProcs := UseFast16bitProcs;
   FProgressProc := ProgressProc;
@@ -349,6 +353,9 @@ begin
           else raise Exception.Create('Internal error: invalid Stack Mode');
         end;
       end;
+
+      // #Added 20191007
+      StackedResult := StackedResult * FOutputMultBy;
 
       if Counter = 0 then begin
         FStackedResultMax := StackedResult;

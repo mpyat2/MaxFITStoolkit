@@ -35,7 +35,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="c:\personal\sky2\c? /E /NOTIMEERROR"/>
+        <CommandLineParams Value="test.fit /E /NOTIMEERROR"/>
       </local>
     </RunParams>
     <Units Count="1">
@@ -53,8 +53,8 @@
       <Filename Value="idobs"/>
     </Target>
     <SearchPaths>
-      <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="..\Units"/>
+      <IncludeFiles Value="$(ProjOutDir);..\UnitsFits"/>
+      <OtherUnitFiles Value="..\UnitsCommon;..\UnitsFits"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

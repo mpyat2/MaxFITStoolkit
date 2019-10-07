@@ -97,8 +97,9 @@ begin
         if not (P in [0, 2, 3]) then Exit;
         MsPart := '';
         if (P > 0) then begin
-          MsPart := Copy(S, P+1, MaxInt);
-          if Length(MsPart) > 3 then Exit;
+          // Millisecond part can be longer then 3 chars. Truncate it to 3 symbols (do not round to avoid 1000 ms!)
+          MsPart := Copy(S, P+1, 3);
+          //if Length(MsPart) > 3 then Exit;
           S := Copy(S, 1, P-1);
         end;
         if (Length(S) < 1) or (Length(S) > 2) then Exit;

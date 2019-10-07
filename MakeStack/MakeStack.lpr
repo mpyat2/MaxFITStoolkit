@@ -227,7 +227,8 @@ procedure DoStackProc(StackMode: TStackMode;
                       StackNumber: Integer;
                       const StackList: TStringList;
                       CmdLineNumberOfThreads: Integer;
-                      const NormalizeFactorsFileName: string);
+                      const NormalizeFactorsFileName: string;
+                      OutputMultBy: Double);
 var
   FileName: string;
   OutFileName: string;
@@ -494,6 +495,7 @@ begin
         WriteFactorsToTextFile(NormalizeFactorsFileName, NormalizationFactors);
 
     end;
+
     // Stacking
 
     // DestNaxis[*] cannot be zero, see FITSUtils.GetBitPixAndNaxis
@@ -523,6 +525,7 @@ begin
                                              Images,
                                              FileToSubtractDataPtr,
                                              NormalizationFactors,
+                                             OutputMultBy,
                                              @DestPixelArray,
                                              UseFast16bitProcs,
                                              ProgressProcWrapper.ThreadProgressProc);
@@ -676,7 +679,8 @@ procedure DoStacking(StackMode: TStackMode;
                      StackSize: Integer;
                      CmdLineNumberOfThreads: Integer;
                      DontAddNumberIfStackAll: Boolean;
-                     const NormalizeFactorsFileName: string);
+                     const NormalizeFactorsFileName: string;
+                     OutputMultBy: Double);
 var
   StackList: TStringList;
   StackNumber: Integer;
@@ -693,7 +697,7 @@ begin
       if (StackSize > 0) and (StackList.Count = StackSize) then begin
         DoStackProc(StackMode, NormalizeMVal, NormalizeMedian, FileToSubtract, OutFITSbitpix,
                     GenericName, OutputDir, OutputExt, Overwrite, StackNumber,
-                    StackList, CmdLineNumberOfThreads, NormalizeFactorsFileName);
+                    StackList, CmdLineNumberOfThreads, NormalizeFactorsFileName, OutputMultBy);
         StackList.Clear;
         Inc(StackNumber);
       end;
@@ -701,7 +705,7 @@ begin
     if StackList.Count > 0 then begin
       DoStackProc(StackMode, NormalizeMVal, NormalizeMedian, FileToSubtract, OutFITSbitpix,
                   GenericName, OutputDir, OutputExt, Overwrite, StackNumber,
-                  StackList, CmdLineNumberOfThreads, NormalizeFactorsFileName);
+                  StackList, CmdLineNumberOfThreads, NormalizeFactorsFileName, OutputMultBy);
       StackList.Clear;
       Inc(StackNumber);
     end;
@@ -743,7 +747,8 @@ procedure ProcessInput(const FileMasks: array of string;
                        StackSize: Integer;
                        CmdLineNumberOfThreads: Integer;
                        DontAddNumberIfStackAll: Boolean;
-                       const NormalizeFactorsFileName: string);
+                       const NormalizeFactorsFileName: string;
+                       OutputMultBy: Double);
 var
   I, N, Ntotal: Integer;
 begin
@@ -779,7 +784,7 @@ begin
       DoStacking(StackMode, NormalizeMVal, NormalizeMedian, FileToSubtract,
                  OutFITSbitpix, GenericName, OutputDir, OutputExt,
                  Overwrite, BaseNumber, StackSize, CmdLineNumberOfThreads,
-                 DontAddNumberIfStackAll, NormalizeFactorsFileName);
+                 DontAddNumberIfStackAll, NormalizeFactorsFileName, OutputMultBy);
     end;
   except
     on E: Exception do begin
@@ -800,6 +805,7 @@ var
   StackSize: Integer;
   StackMode: TStackMode;
   OutFITSbitpix: TOutFITSbitpix;
+  OutputMultBy: Double;
   CmdLineNumberOfThreads: Integer;
   DontAddNumberIfStackAll: Boolean;
   NormalizeMVal: Double;
@@ -807,6 +813,7 @@ var
   NormalizeFactorsFileName: string;
   FileToSubtract: string;
   S, S2: string;
+  ValError: Integer;
   ParamN: Integer;
   I: Integer;
 
@@ -837,6 +844,7 @@ begin
   OutputExt := '.fit';
   StackMode := smAdd;
   OutFITSbitpix := bitpixDefault;
+  OutputMultBy := 1.0;
   Overwrite := False;
   BaseNumber := 1;
   StackSize := 0; // default value: all files to stack
@@ -971,6 +979,14 @@ begin
       if CmdObj.CmdLine.ExtractParamValue(S, 'NORMFACTORS=', NormalizeFactorsFileName) then begin
         NormalizeFactorsFileName := Trim(NormalizeFactorsFileName);
       end
+      else
+      if CmdObj.CmdLine.ExtractParamValue(S, 'MULT=', S2) then begin
+        Val(S2, OutputMultBy, ValError);
+        if (ValError <> 0) or (OutputMultBy <= 0) then begin
+          PrintError('**** MULT parameter must be positive floating-point value'^M^J);
+          Halt(1);
+        end;
+      end
       else begin
         PrintError('**** Invalid command-line parameter: ' + S + ^M^J);
         Halt(1);
@@ -1003,7 +1019,8 @@ begin
                    OutFITSbitpix,
                    GenericName, OutputDir, OutputExt, Overwrite, BaseNumber,
                    StackSize, CmdLineNumberOfThreads, DontAddNumberIfStackAll,
-                   NormalizeFactorsFileName);
+                   NormalizeFactorsFileName,
+                   OutputMultBy);
     finally
       FreeAndNil(FileList);
     end;
