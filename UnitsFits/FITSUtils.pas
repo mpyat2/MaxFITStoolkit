@@ -660,7 +660,7 @@ begin
 
   if DateObs <> 0 then begin
     SetLength(Result, N + 1);
-    TempS := 'DATE-OBS= ' + '''' + FormatDateTime('YYYY-MM-DD"T"hh:nn:ss', DateObs) + '''';
+    TempS := 'DATE-OBS= ' + '''' + FormatDateTime('YYYY-MM-DD"T"hh:nn:ss.zzz', DateObs) + '''';
     if DateObsComment <> '' then
       TempS := TempS + ' / ' + DateObsComment;
     StrToFITSRecord(TempS, Result[N]);

@@ -16,8 +16,8 @@
 program Template;
 
 uses
-  SysUtils, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles, FITScompatibility,
-  FITSUtils, StringListNaturalSort, FitsUtilsHelp, CommonIni;
+  SysUtils, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles, MiscUtils, 
+  FITScompatibility, FITSUtils, StringListNaturalSort, FitsUtilsHelp, CommonIni;
 
 //{$R *.res} // include version info!
 
@@ -86,13 +86,11 @@ begin
     end;
     if Ntotal < 1 then begin
       WriteLn;
-      WriteLn('**** No files found.');
+      PrintWarning('**** No files found.'^M^J);
     end
   except
     on E: Exception do begin
-      WriteLn;
-      WriteLn('**** Error:');
-      WriteLn(E.Message);
+      PrintError(^M^J'**** Error:'^M^J + E.Message + ^M^J);
       Halt(1);
     end;
   end;
@@ -117,7 +115,7 @@ begin
 
   if (CmdObj.CmdLine.FileCount < 1) then begin
     if not PrintVer then begin
-      WriteLn('**** At least one filemask must be specified');
+      PrintWarning('**** At least one filemask must be specified'^M^J);
       WriteLn;
       PrintHelp;
     end;
@@ -131,14 +129,14 @@ begin
     S := CmdObj.CmdLine.ParamStr(ParamN);
     if CmdObj.CmdLine.FirstCharIsSwitch(S) then begin
       if Length(S) = 1 then begin
-        WriteLn('**** Invalid command-line parameter: ' + S);
+        PrintError('**** Invalid command-line parameter: ' + S + ^M^J);
         Halt(1);
       end;
       if CmdObj.CmdLine.ParamIsKey(S, 'V') or CmdObj.CmdLine.ParamIsKey(S, 'version') then begin
         // nothing: already processed.
       end
       else begin
-        WriteLn('**** Invalid command-line parameter: ' + S);
+        PrintError('**** Invalid command-line parameter: ' + S + ^M^J);
         Halt(1);
       end;
     end
