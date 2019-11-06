@@ -23,9 +23,6 @@ uses
 
 {$INCLUDE PrintVersion.inc}
 
-const
-  defTimeShiftByExposureBackward = '-X';
-
 var
   FileList: TStringListNaturalSort;
 
@@ -34,14 +31,13 @@ begin
   raise Exception.Create(S);
 end;
 
-procedure ProcessFITSfile(var FITSfile: FITSRecordfile; TimeShiftValue: string);
+procedure ProcessFITSfile(var FITSfile: FITSRecordfile; TimeShift: Double; ShiftByExposureBackward: Boolean);
 var
   BitPix: Integer;
   NaxisN: TIntArray;
   StartOfImage: Integer;
   ImageMemSize: PtrUInt;
   DateObs: TDateTime;
-  TimeShift: Double; // Seconds
   Exposure: Double;
   Header, HeaderNew: TFITSRecordArray;
   FITSfileSize: Int64;
@@ -60,15 +56,11 @@ begin
   GetFITSproperties(FITSfile, BitPix, NaxisN, StartOfImage, ImageMemSize);
   DateObs := GetDateObs(FITSfile);
   Exposure := GetExposureTime(FITSfile);
-  if TimeShiftValue = defTimeShiftByExposureBackward then
-    TimeShift := -Exposure
-  else begin
-    Val(TimeShiftValue, TimeShift, ErrorPos);
-    if ErrorPos <> 0 then FileError('Invalid TimeShiftValue');
-  end;
+  if ShiftByExposureBackward then
+    TimeShift := TimeShift - Exposure;
   DateObs := DateObs + TimeShift / (24.0*60.0*60.0);
-  Str(TimeShift:0:1, TimeShiftValue);
-  DateObsHistory := 'DATE-OBS changed by ' + TimeShiftValue + ' seconds';
+  Str(TimeShift:0:1, TempS);
+  DateObsHistory := 'DATE-OBS changed by ' + TempS + ' seconds';
   GetHeader(FITSfile, Header);
   FITSfileSize := FileSize(FITSfile);
   SetLength(FileImageMinusHeader, FITSfileSize - StartOfImage);
@@ -130,23 +122,24 @@ begin
   Truncate(FITSfile);
   BlockWrite(FITSfile, HeaderNew[0], N);
   BlockWrite(FITSfile, FileImageMinusHeader[0], N);
+  Write(DateObsHistory);
 end;
 
-procedure ProcessFile(const FileName: string; TimeShiftValue: string);
+procedure ProcessFile(const FileName: string; TimeShift: Double; ShiftByExposureBackward: Boolean);
 var
   FITSfile: FITSRecordFile;
 begin
-  Write('Processing ', ExtractFileName(FileName) + '...');
+  Write('Processing ', ExtractFileName(FileName) + ': ');
   AssignFile(FITSfile, FileName);
   Reset(FITSfile);
   try
     if not IsFits(FITSfile) then
       FileError('Not a valid FITS file: ' + AnsiQuotedStr(FileName, '"'));
-    ProcessFITSfile(FITSfile, TimeShiftValue);
+    ProcessFITSfile(FITSfile, TimeShift, ShiftByExposureBackward);
   finally
     CloseFile(FITSfile);
   end;
-  WriteLn(' done.');
+  WriteLn('.');
 end;
 
 type
@@ -160,7 +153,7 @@ begin
   Result := True;
 end;
 
-procedure ProcessInput(const FileMasks: array of string; TimeShiftValue: string);
+procedure ProcessInput(const FileMasks: array of string; TimeShift: Double; ShiftByExposureBackward: Boolean);
 var
   I, N, Ntotal: Integer;
 begin
@@ -173,7 +166,7 @@ begin
       FileEnum(FileMasks[N], faArchive, False, TFileEnumClass.FileEnumProc);
       FileList.NaturalSort;
       for I := 0 to FileList.Count - 1 do begin
-        ProcessFile(FileList[I], TimeShiftValue);
+        ProcessFile(FileList[I], TimeShift, ShiftByExposureBackward);
         Inc(Ntotal);
       end;
     end;
@@ -195,7 +188,7 @@ var
   S, S2: string;
   ParamN: Integer;
   TimeShift: Double;
-  TimeShiftValue: string;
+  TimeShiftExposureBackward: boolean;
   ErrorPos: Integer;
 
 {$R *.res}
@@ -222,7 +215,8 @@ begin
 
   // Other options
   InputFileMasks := nil;
-  TimeShiftValue := '';
+  TimeShift := 0;
+  TimeShiftExposureBackward := False;
 
   for ParamN := 1 to CmdObj.CmdLine.ParamCount do begin
     S := CmdObj.CmdLine.ParamStr(ParamN);
@@ -237,18 +231,16 @@ begin
       else
       if CmdObj.CmdLine.ExtractParamValue(S, 'TS', S2) then begin
         if S2 <> '' then begin
-          if AnsiSameText(S2, defTimeShiftByExposureBackward) then begin
-            TimeShiftValue := defTimeShiftByExposureBackward;
-          end
-          else begin
-           Val(S2, TimeShift, ErrorPos);
-            if ErrorPos <> 0 then begin
-              PrintError('**** Time Shift must be a number or ''' + defTimeShiftByExposureBackward + ''' to change DATE-OBS by the exposure time backward'^M^J);
-              Halt(1);
-            end;
-            TimeShiftValue := S2;
+          Val(S2, TimeShift, ErrorPos);
+          if ErrorPos <> 0 then begin
+            PrintError('**** Time Shift must be a number'^M^J);
+            Halt(1);
           end;
         end;
+      end
+      else
+      if CmdObj.CmdLine.ExtractParamValue(S, '-E', S2) then begin
+        TimeShiftExposureBackward := True;
       end
       else begin
         PrintError('**** Invalid command-line parameter: ' + S + ^M^J);
@@ -265,17 +257,16 @@ begin
     end;
   end;
 
-  if TimeShiftValue = '' then begin
-    PrintError('**** Time shift must be specified by /TS parameter'^M^J);
-    Halt(1);
+  if (TimeShift = 0) and (not TimeShiftExposureBackward) then begin
+    PrintWarning('**** Nothing to do: /TS is missing or equals to 0, /-E is not specified'^M^J);
+  end
+  else begin
+    FileList := TStringListNaturalSort.Create;
+    try
+      ProcessInput(InputFileMasks, TimeShift, TimeShiftExposureBackward);
+    finally
+      FreeAndNil(FileList);
+    end;
   end;
-
-  FileList := TStringListNaturalSort.Create;
-  try
-    ProcessInput(InputFileMasks, TimeShiftValue);
-  finally
-    FreeAndNil(FileList);
-  end;
-
 end.
 
