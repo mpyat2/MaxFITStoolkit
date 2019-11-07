@@ -19,7 +19,7 @@ uses
   SysUtils, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles, MiscUtils,
   FITScompatibility, FITSUtils, StringListNaturalSort, FitsUtilsHelp, CommonIni;
 
-//{$R *.res} // include version info!
+{$R *.res} // include version info!
 
 {$INCLUDE PrintVersion.inc}
 
@@ -51,8 +51,6 @@ var
   I, N, N2: Integer;
   ErrorPos: Integer;
 begin
-  //WriteLn;
-  //WriteLn(FITSRecordTypeFileName(FITSfile));
   GetFITSproperties(FITSfile, BitPix, NaxisN, StartOfImage, ImageMemSize);
   DateObs := GetDateObs(FITSfile);
   Exposure := GetExposureTime(FITSfile);
@@ -190,8 +188,6 @@ var
   TimeShift: Double;
   TimeShiftExposureBackward: boolean;
   ErrorPos: Integer;
-
-{$R *.res}
 
 begin
   FileMode := fmOpenReadWrite;
