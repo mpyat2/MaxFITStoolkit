@@ -9,7 +9,8 @@
         <Filename Value="idfix.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <CursorPos X="37" Y="44"/>
+        <TopLine Value="93"/>
+        <CursorPos Y="124"/>
         <UsageCount Value="22"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -52,6 +53,86 @@
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit5>
     </Units>
-    <JumpHistory HistoryIndex="-1"/>
+    <JumpHistory Count="20" HistoryIndex="19">
+      <Position1>
+        <Filename Value="idfix.lpr"/>
+        <Caret Line="54" TopLine="47"/>
+      </Position1>
+      <Position2>
+        <Filename Value="idfix.lpr"/>
+        <Caret Line="55" TopLine="47"/>
+      </Position2>
+      <Position3>
+        <Filename Value="idfix.lpr"/>
+        <Caret Line="56" TopLine="47"/>
+      </Position3>
+      <Position4>
+        <Filename Value="idfix.lpr"/>
+        <Caret Line="57" TopLine="47"/>
+      </Position4>
+      <Position5>
+        <Filename Value="idfix.lpr"/>
+        <Caret Line="58" TopLine="47"/>
+      </Position5>
+      <Position6>
+        <Filename Value="idfix.lpr"/>
+        <Caret Line="59" TopLine="47"/>
+      </Position6>
+      <Position7>
+        <Filename Value="idfix.lpr"/>
+        <Caret Line="60" TopLine="47"/>
+      </Position7>
+      <Position8>
+        <Filename Value="idfix.lpr"/>
+        <Caret Line="61" TopLine="47"/>
+      </Position8>
+      <Position9>
+        <Filename Value="idfix.lpr"/>
+        <Caret Line="62" TopLine="47"/>
+      </Position9>
+      <Position10>
+        <Filename Value="idfix.lpr"/>
+        <Caret Line="63" TopLine="47"/>
+      </Position10>
+      <Position11>
+        <Filename Value="idfix.lpr"/>
+        <Caret Line="64" TopLine="47"/>
+      </Position11>
+      <Position12>
+        <Filename Value="idfix.lpr"/>
+        <Caret Line="65" TopLine="47"/>
+      </Position12>
+      <Position13>
+        <Filename Value="idfix.lpr"/>
+        <Caret Line="66" TopLine="47"/>
+      </Position13>
+      <Position14>
+        <Filename Value="idfix.lpr"/>
+        <Caret Line="67" TopLine="47"/>
+      </Position14>
+      <Position15>
+        <Filename Value="idfix.lpr"/>
+        <Caret Line="124" Column="44" TopLine="94"/>
+      </Position15>
+      <Position16>
+        <Filename Value="idfix.lpr"/>
+      </Position16>
+      <Position17>
+        <Filename Value="idfix.lpr"/>
+        <Caret Line="45" Column="23" TopLine="13"/>
+      </Position17>
+      <Position18>
+        <Filename Value="idfix.lpr"/>
+        <Caret Line="66" Column="33" TopLine="34"/>
+      </Position18>
+      <Position19>
+        <Filename Value="idfix.lpr"/>
+        <Caret Line="67" Column="32" TopLine="36"/>
+      </Position19>
+      <Position20>
+        <Filename Value="idfix.lpr"/>
+        <Caret Line="69" Column="43" TopLine="38"/>
+      </Position20>
+    </JumpHistory>
   </ProjectSession>
 </CONFIG>

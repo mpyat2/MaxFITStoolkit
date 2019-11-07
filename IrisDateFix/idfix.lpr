@@ -36,6 +36,7 @@ var
   BitPix: Integer;
   NaxisN: TIntArray;
   StartOfImage: Integer;
+  FITSImageSize: Integer;
   ImageMemSize: PtrUInt;
   DateObs: TDateTime;
   Exposure: Double;
@@ -61,10 +62,11 @@ begin
   DateObsHistory := 'DATE-OBS changed by ' + TempS + ' seconds';
   GetHeader(FITSfile, Header);
   FITSfileSize := FileSize(FITSfile);
-  SetLength(FileImageMinusHeader, FITSfileSize - StartOfImage);
-  FillChar(FileImageMinusHeader[0], (FITSfileSize - StartOfImage) * FITSRecordLen, 0);
+  FITSImageSize := FITSfileSize - StartOfImage;
+  SetLength(FileImageMinusHeader, FITSImageSize);
+  FillChar(FileImageMinusHeader[0], FITSImageSize * FITSRecordLen, 0);
   Seek(FITSfile, StartOfImage);
-  BlockRead(FITSfile, FileImageMinusHeader[0], FITSfileSize - StartOfImage);
+  BlockRead(FITSfile, FileImageMinusHeader[0], FITSImageSize);
 
   // Set new DATE-OBS.
   // Remove TIME-OBS, UT-START (IRIS-specific) if exist
@@ -119,7 +121,7 @@ begin
   Seek(FITSfile, 0);
   Truncate(FITSfile);
   BlockWrite(FITSfile, HeaderNew[0], N);
-  BlockWrite(FITSfile, FileImageMinusHeader[0], N);
+  BlockWrite(FITSfile, FileImageMinusHeader[0], FITSImageSize);
   Write(DateObsHistory);
 end;
 
