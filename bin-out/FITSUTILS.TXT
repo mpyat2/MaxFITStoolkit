@@ -15,6 +15,7 @@ Where:
   /X=<ext>         extension for output files (.fit by default)
   /TS<xxxxx>       shift DATE-OBS by xxxxx seconds (the value can be negative or positive)
                    Example: /TS-10800 shifts DATE-OBS by three hours backwards
+                   The value must be integer.
                    It is possible to specify /TSa value to attemt to auto-calculate time shift to UT.
   /F               overwrite existing files in output directory
   /L               do not truncate image (show full RAW image). WARNING: this could affect order of colors in bayer matrix!
@@ -50,6 +51,8 @@ fflip file_mask1[.fit] [file_mask2[.fit] ...] [/1]
   /1         Flip horizontally, if not specified -- vertically
   /V         print version
   /H         print this help and halt
+
+WARNING! This program rewrites original files.
 
 @apdat
 
@@ -149,12 +152,13 @@ idobs ser1\calib* ser2\calib* ser3\calib* /E
 @idfix
 
 Usage:
-idfix file_mask1[.fit] [file_mask2[.fit] ...] [/-E] [/TS<xxx>]
+idfix file_mask1[.fit] [file_mask2[.fit] ...] [/-E] [/TS<xxxx>]
 
 Where:
   file_maskX   mask of input files to be processed (several masks are allowed)
   /-E          shift DATE-OBS backwards by a length of the exposure
-  /TS<xxx>     shift DATE-OBS by <xxx> seconds
+  /TS<xxxxx>   shift DATE-OBS by xxxxx seconds (the value can be negative or positive)
+               Example: /TS-4.5 shifts DATE-OBS by 4.5 seconds backwards
   /V           print version
   /H           print this help and halt
 
