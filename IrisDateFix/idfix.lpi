@@ -11,7 +11,7 @@
       </Flags>
       <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
-      <Title Value="idatefix"/>
+      <Title Value="idfix"/>
       <UseAppBundle Value="False"/>
       <ResourceType Value="res"/>
     </General>
@@ -38,7 +38,7 @@
     </RunParams>
     <Units Count="1">
       <Unit0>
-        <Filename Value="idatefix.lpr"/>
+        <Filename Value="idfix.lpr"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
     </Units>
@@ -47,7 +47,7 @@
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="idatefix"/>
+      <Filename Value="idfix"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);..\UnitsFITS"/>

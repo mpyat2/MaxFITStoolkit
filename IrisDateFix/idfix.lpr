@@ -13,7 +13,7 @@
 {$MODE DELPHI}
 {$INCLUDE FITSUtils.inc}
 
-program idatefix;
+program idfix;
 
 uses
   SysUtils, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles, MiscUtils,

@@ -40,6 +40,7 @@ Source: "..\bin-out\HelloIRISFITS.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fihed.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\fflip.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\idobs.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin-out\idfix.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\ipdat.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\apdat.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin-out\iren.exe"; DestDir: "{app}"; Flags: ignoreversion

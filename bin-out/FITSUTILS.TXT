@@ -146,6 +146,23 @@ If TIME-OBS is missing, UT-START (IRIS-specific keyword) is searched.
 Example:
 idobs ser1\calib* ser2\calib* ser3\calib* /E
 
+@idfix
+
+Usage:
+idfix file_mask1[.fit] [file_mask2[.fit] ...] [/-E] [/TS<xxx>]
+
+Where:
+  file_maskX   mask of input files to be processed (several masks are allowed)
+  /-E          shift DATE-OBS backwards by a length of the exposure
+  /TS<xxx>     shift DATE-OBS by <xxx> seconds
+  /V           print version
+  /H           print this help and halt
+
+WARNING! This program rewrites original files.
+
+Example:
+idfix ser1\calib* ser2\calib* ser3\calib* /-E
+
 @ipdat
 
 Usage:

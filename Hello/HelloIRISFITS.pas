@@ -21,21 +21,22 @@ var
   I: Integer;
   
 const  
-  Programs: array [0..12] of string = 
+  Programs: array [0..13] of string = 
   (
-    'fihed',
+    'apdat',
+    'cfa2rgb',
     'fflip',
+    'fihed',
+    'find_hot',
     'fitscfa',
     'fitsrgb',
-    'cfa2rgb',
-    'idobs',
-    'iren',
-    'ipdat',
-    'apdat',
     'fitsstat',
-    'makestack',
-    'find_hot',
-    'iconvraw'
+    'iconvraw',
+    'idfix',
+    'idobs',
+    'ipdat',
+    'iren',
+    'makestack'
   );
 
 

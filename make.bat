@@ -29,6 +29,11 @@ REM idobs.exe: calculate mean DATE-OBS for set of files to be stacked
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
+REM FitsStat
+%COMPILER% IrisDateFix\idfix.lpr
+IF ERRORLEVEL 1 GOTO :ERROR
+ECHO .
+
 REM iren.exe: rename files according to IRIS naming convention
 %COMPILER% IrisRename\iren.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
@@ -111,6 +116,7 @@ echo FitsHeader2\fihed.*            >  ziplist.txt
 echo FitsHeader2\FihedSwitchChars.pas >>  ziplist.txt
 echo FitsFlip\fflip.*               >> ziplist.txt
 echo IrisDateObs\idobs.*            >> ziplist.txt
+echo IrisDateFix\idfix.*            >> ziplist.txt
 echo IrisRename\iren.*              >> ziplist.txt
 echo IPDAT\ipdat.*                  >> ziplist.txt
 echo IPDAT\testdata\*.dat           >> ziplist.txt
