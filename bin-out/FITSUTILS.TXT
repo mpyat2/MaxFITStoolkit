@@ -18,7 +18,7 @@ Where:
                    It is possible to specify /TSa value to attemt to auto-calculate time shift to UT.
   /F               overwrite existing files in output directory
   /L               do not truncate image (show full RAW image). WARNING: this could affect order of colors in bayer matrix!
-  /R               generate floating-point FITS. WARNING: resulted FITS could be incompatible with CFA2RGB
+  /R               generate floating-point FITS. WARNING: resulting FITS could be incompatible with CFA2RGB
   /S               generate fits with BZERO = 32768
   /Y               flip image by Y-axis. WARNING: this could affect order of colors in bayer matrix!
   /I               print image info only
@@ -39,7 +39,7 @@ Note: additional parameters are allowed in a form /$KEYWORD=VALUE
 Those parameters could be used to write additional keywords into FITS header,
 for example, one can specify TELESCOP and OBJECT this way:
 
-iconvraw *.CR2 [additional options] /$TELESCOP="MY SUPER SCDOPE" /$OBJECT="ALIEN's SHIP"
+iconvraw *.CR2 [additional options] /$TELESCOP="MY SUPER SCOPE" /$OBJECT="ALIEN's SHIP"
 
 
 @fflip
