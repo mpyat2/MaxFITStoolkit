@@ -47,7 +47,7 @@ begin
   Result := True;
 end;
   
-procedure ProcessInput(const FileMasks: array of string; const GenericName: string; const OutputDir: string; Overwrite: Boolean; BaseNumber: Integer);
+procedure ProcessInput(const FileMasks: array of string; const GenericName: string; const OutputDir: string; Overwrite: Boolean; BaseNumber: Integer; const OutputExt: string);
 var
   I, N: Integer;
   FileNumber: Integer;
@@ -75,7 +75,10 @@ begin
 {$IFNDEF range_check}{$R-}{$ENDIF}
 {$IFNDEF overflow_check}{$Q-}{$ENDIF}
         FileName := ExtractFileName(FileList[I]);
-        FileExt := ExtractFileExt(FileList[I]);
+        if OutputExt = '' then
+          FileExt := ExtractFileExt(FileList[I])
+        else
+          FileExt := OutputExt;
         NewFileName := OutputDir + GenericName + IntToStr(FileNumber) + FileExt;
         WriteLn(FileName, ^I'->'^I, NewFileName);
         if not CopyFile(PChar(FileList[I]), PChar(NewFileName), not Overwrite) then
@@ -100,6 +103,7 @@ var
   InputFileMasks: array of string;
   GenericName: string;
   OutputDir: string;
+  OutputExt: string;
   Overwrite: Boolean;
   BaseNumber: Integer;
   PrintVer: Boolean;
@@ -129,6 +133,7 @@ begin
   // Other options
   InputFileMasks := nil;
   OutputDir := '';
+  OutputExt := '';
   GenericName := '';
   Overwrite := False;
   BaseNumber := 1;
@@ -177,6 +182,13 @@ begin
       else
       if CmdObj.CmdLine.ParamIsKey(S, 'F') then
         Overwrite := True
+      else
+      if CmdObj.CmdLine.ExtractParamValue(S, 'X=', S2) then begin
+        if S2 <> '' then begin
+          OutputExt := S2;
+          if OutputExt[1] <> '.' then OutputExt := '.' + OutputExt;
+        end;
+      end
       else begin
         WriteLn('**** Invalid command-line parameter: ' + S);
         Halt(1);
@@ -204,7 +216,7 @@ begin
 
   FileList := TStringListNaturalSort.Create;
   try
-    ProcessInput(InputFileMasks, GenericName, OutputDir, Overwrite, BaseNumber);
+    ProcessInput(InputFileMasks, GenericName, OutputDir, Overwrite, BaseNumber, OutputExt);
   finally
     FreeAndNil(FileList);
   end;
