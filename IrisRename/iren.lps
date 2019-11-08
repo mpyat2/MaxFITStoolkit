@@ -10,6 +10,7 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="IREN"/>
         <IsVisibleTab Value="True"/>
+        <TopLine Value="8"/>
         <CursorPos X="2" Y="14"/>
         <UsageCount Value="21"/>
         <Loaded Value="True"/>
