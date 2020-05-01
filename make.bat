@@ -49,6 +49,11 @@ REM apdat.exe: Convert AIJ photometry output to csv-file
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
+REM igagen.exe: IrisScriptGroupAlign
+%COMPILER% IrisScriptGroupAlign\igagen.lpr
+IF ERRORLEVEL 1 GOTO :ERROR
+ECHO .
+
 REM fflip.exe: Flips 2-dimensional FITS
 %COMPILER% FitsFlip\fflip.lpr
 IF ERRORLEVEL 1 GOTO :ERROR
@@ -122,6 +127,7 @@ echo IPDAT\ipdat.*                  >> ziplist.txt
 echo IPDAT\testdata\*.dat           >> ziplist.txt
 echo APDAT\apdat.*                  >> ziplist.txt
 echo APDAT\testdata\*.dat           >> ziplist.txt
+echo IrisScriptGroupAlign\igagen.*  >> ziplist.txt
 echo FitsCfa\fitscfa.*              >> ziplist.txt
 echo FitsRGB\fitsrgb.*              >> ziplist.txt
 echo CFA2RGB\cfa2rgb.*              >> ziplist.txt

@@ -4,13 +4,11 @@
     <PathDelim Value="\"/>
     <Version Value="10"/>
     <BuildModes Active="Default"/>
-    <Units Count="4">
+    <Units Count="6">
       <Unit0>
         <Filename Value="Template.lpr"/>
         <IsPartOfProject Value="True"/>
-        <IsVisibleTab Value="True"/>
-        <TopLine Value="13"/>
-        <CursorPos Y="3"/>
+        <CursorPos X="63" Y="20"/>
         <UsageCount Value="20"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -36,8 +34,23 @@
         <UsageCount Value="10"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit3>
+      <Unit4>
+        <Filename Value="..\UnitsFits\StringListNaturalSort.pas"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
+        <CursorPos X="20" Y="20"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="..\UnitsFits\FITScompatibility.pas"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit5>
     </Units>
-    <JumpHistory Count="9" HistoryIndex="8">
+    <JumpHistory Count="10" HistoryIndex="9">
       <Position1>
         <Filename Value="Template.lpr"/>
         <Caret Line="2" Column="4"/>
@@ -72,8 +85,11 @@
       </Position8>
       <Position9>
         <Filename Value="Template.lpr"/>
-        <Caret Line="3" TopLine="13"/>
+        <Caret Line="20" Column="63"/>
       </Position9>
+      <Position10>
+        <Filename Value="..\UnitsFits\StringListNaturalSort.pas"/>
+      </Position10>
     </JumpHistory>
   </ProjectSession>
 </CONFIG>

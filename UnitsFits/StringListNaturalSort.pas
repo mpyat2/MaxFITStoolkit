@@ -17,7 +17,7 @@ unit StringListNaturalSort;
 interface
 
 uses
-  SysUtils, Classes, FITScompatibility;
+  SysUtils, Classes;
 
 function StrCmpLogicalW(P1, P2: PWideChar): Integer;  stdcall; external 'Shlwapi.dll';
   

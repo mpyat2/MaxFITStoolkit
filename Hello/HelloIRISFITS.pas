@@ -21,7 +21,7 @@ var
   I: Integer;
   
 const  
-  Programs: array [0..13] of string = 
+  Programs: array [0..14] of string = 
   (
     'apdat',
     'cfa2rgb',
@@ -33,6 +33,7 @@ const
     'fitsstat',
     'iconvraw',
     'idfix',
+    'igagen',
     'idobs',
     'ipdat',
     'iren',
