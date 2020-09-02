@@ -50,7 +50,6 @@ var
   UTstartKeyword: string; // IRIS-specific
   TempS: string;
   I, N, N2: Integer;
-  ErrorPos: Integer;
 begin
   GetFITSproperties(FITSfile, BitPix, NaxisN, StartOfImage, ImageMemSize);
   DateObs := GetDateObs(FITSfile);
@@ -75,7 +74,7 @@ begin
   UTstartKeyword := PadCh('UT-START', FITSKeywordLen, ' ');
   HeaderNew := nil;
   for I := 0 to Length(Header) - 1 do begin
-    Buf := Header[I];
+   Buf := Header[I];
    if Buf = recordEND then begin
       TempS := 'HISTORY ' + DateObsHistory;
       StrToFITSRecord(TempS, Buf);
@@ -83,11 +82,12 @@ begin
       HeaderNew[Length(HeaderNew) - 1] := Buf;
       SetLength(HeaderNew, Length(HeaderNew) + 1);
       HeaderNew[Length(HeaderNew) - 1] := recordEND;
+      Break;
     end
     else
     if Copy(Buf, 1, FITSKeywordLen) = DateObsKeyword then begin
       // New DATE-OBS
-      TempS := 'DATE-OBS= ' + '''' + FormatDateTime('YYYY-MM-DD"T"hh:nn:ss.zzz', DateObs) + '''';
+      TempS := DateObsKeyword + '= ' + '''' + FormatDateTime('YYYY-MM-DD"T"hh:nn:ss.zzz', DateObs) + '''';
       TempS := TempS + ' / Value changed. See HISTORY.';
       StrToFITSRecord(TempS, Buf);
       SetLength(HeaderNew, Length(HeaderNew) + 1);

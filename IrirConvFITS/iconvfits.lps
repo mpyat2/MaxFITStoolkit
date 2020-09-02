@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <PathDelim Value="\"/>
+    <Version Value="11"/>
+    <BuildModes Active="Default"/>
+    <Units Count="14">
+      <Unit0>
+        <Filename Value="iconvfits.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="43"/>
+        <CursorPos X="54" Y="268"/>
+        <UsageCount Value="25"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="..\UnitsFits\FITSUtils.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="541"/>
+        <CursorPos X="31" Y="560"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="..\UnitsFits\FITSUtils.inc"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos Y="8"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="..\Template\PrintVersion.inc"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="..\UnitsFits\StringListNaturalSort.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="10"/>
+        <CursorPos X="14" Y="39"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="..\UnitsFits\FITScompatibility.pas"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="..\UnitsFits\PrintVersion.inc"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="convutils.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ConvUtils"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="19"/>
+        <CursorPos X="11" Y="38"/>
+        <UsageCount Value="23"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="..\..\..\..\TOOLS\lazarus64\fpc\3.2.0\source\rtl\objpas\sysutils\finah.inc"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="29" Y="33"/>
+        <UsageCount Value="10"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="..\..\..\..\TOOLS\lazarus64\fpc\3.2.0\source\rtl\objpas\sysutils\fina.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="424"/>
+        <CursorPos X="3" Y="430"/>
+        <UsageCount Value="10"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="..\UnitsCommon\CmdObj.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="80"/>
+        <CursorPos X="34" Y="99"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="..\UnitsFits\FitsUtilsHelp.pas"/>
+        <UnitName Value="FITSUtilsHelp"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="22" Y="20"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="..\..\..\..\TOOLS\lazarus64\fpc\3.2.0\source\rtl\objpas\sysutils\sysstrh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="74"/>
+        <CursorPos X="10" Y="93"/>
+        <UsageCount Value="10"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="..\UnitsFits\MiscUtils.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="15"/>
+        <CursorPos X="25" Y="34"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit13>
+    </Units>
+    <JumpHistory Count="25" HistoryIndex="24">
+      <Position1>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="90" Column="74" TopLine="65"/>
+      </Position1>
+      <Position2>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="101" Column="68" TopLine="70"/>
+      </Position2>
+      <Position3>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="115" Column="29" TopLine="84"/>
+      </Position3>
+      <Position4>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="101" Column="24" TopLine="90"/>
+      </Position4>
+      <Position5>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="37" Column="56" TopLine="29"/>
+      </Position5>
+      <Position6>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="104" TopLine="81"/>
+      </Position6>
+      <Position7>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="105" Column="57" TopLine="83"/>
+      </Position7>
+      <Position8>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="31" TopLine="31"/>
+      </Position8>
+      <Position9>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="32" TopLine="19"/>
+      </Position9>
+      <Position10>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="34" Column="17" TopLine="25"/>
+      </Position10>
+      <Position11>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="100" TopLine="91"/>
+      </Position11>
+      <Position12>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="113" Column="12" TopLine="91"/>
+      </Position12>
+      <Position13>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="114" Column="21" TopLine="91"/>
+      </Position13>
+      <Position14>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="115" Column="34" TopLine="91"/>
+      </Position14>
+      <Position15>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="116" Column="19" TopLine="91"/>
+      </Position15>
+      <Position16>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="84" Column="3" TopLine="77"/>
+      </Position16>
+      <Position17>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="83" Column="33" TopLine="65"/>
+      </Position17>
+      <Position18>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="84" Column="14" TopLine="75"/>
+      </Position18>
+      <Position19>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="78" Column="111" TopLine="67"/>
+      </Position19>
+      <Position20>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="81" Column="68" TopLine="66"/>
+      </Position20>
+      <Position21>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="132" TopLine="124"/>
+      </Position21>
+      <Position22>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="139" Column="70" TopLine="124"/>
+      </Position22>
+      <Position23>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="127" TopLine="72"/>
+      </Position23>
+      <Position24>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="137" Column="33" TopLine="115"/>
+      </Position24>
+      <Position25>
+        <Filename Value="iconvfits.lpr"/>
+        <Caret Line="127" TopLine="107"/>
+      </Position25>
+    </JumpHistory>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes Count="0" ActiveMode="default"/>
+    </RunParams>
+  </ProjectSession>
+</CONFIG>
