@@ -25,7 +25,6 @@ uses
 {$INCLUDE PrintVersion.inc}
 
 {.DEFINE DEBUG_LOG}
-{$DEFINE IRIS_TEST} // make more IRIS-like
 
 var
   FileList: TStringListNaturalSort;
@@ -141,11 +140,7 @@ var
   N: Integer;
   BorderWidth: Integer;
 begin
-{$IFDEF IRIS_TEST}
-  BorderWidth := 2;
-{$ELSE}
   BorderWidth := 1;
-{$ENDIF}
   // TEST ADJACENT pixels!
   if (X >= BorderWidth) and (X < Width - BorderWidth) and (Y >= BorderWidth) and (Y < Height - BorderWidth) then begin
 {$IFDEF DEBUG_LOG}
@@ -228,12 +223,8 @@ var
 begin
   if not Assigned(CosmeArray) then
     Exit;
-{$IFDEF IRIS_TEST}
-  TempPixelArray := PixelArray;
-{$ELSE}
   SetLength(TempPixelArray, Length(PixelArray));
   Move(PixelArray[0], TempPixelArray[0], Length(PixelArray) * SizeOf(PixelArray[1]));
-{$ENDIF}
   Height := Length(PixelArray) div Width;
   for I := 0 to Length(CosmeArray) do begin
     if CosmeArray[I][2] = 0 then
@@ -244,11 +235,8 @@ begin
     else
       MakeLocalMeanForRow(TempPixelArray, Width, Height, CosmeArray[I][1])
   end;
-{$IFDEF IRIS_TEST}
-{$ELSE}
   Move(TempPixelArray[0], PixelArray[0], Length(PixelArray) * SizeOf(PixelArray[1]));
   TempPixelArray := nil;
-{$ENDIF}
 end;
 
 procedure ProcessFile(const FileName: string;
