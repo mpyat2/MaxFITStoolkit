@@ -21,7 +21,7 @@
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="1"/>
       <RevisionNr Value="6"/>
-      <BuildNr Value="4"/>
+      <BuildNr Value="7"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
@@ -31,13 +31,13 @@
     </PublishOptions>
     <RunParams>
       <local>
-        <CommandLineParams Value="ca1.fit /X=.fits /f /FORMAT=F32"/>
+        <CommandLineParams Value="/g=flat_flat _flat_fd.fit /flat=_flat_fd.fit /f"/>
       </local>
       <FormatVersion Value="2"/>
       <Modes Count="1">
         <Mode0 Name="default">
           <local>
-            <CommandLineParams Value="ca1.fit /X=.fits /f /FORMAT=F32"/>
+            <CommandLineParams Value="/g=flat_flat _flat_fd.fit /flat=_flat_fd.fit /f"/>
           </local>
         </Mode0>
       </Modes>

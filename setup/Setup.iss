@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "FITS utils"
-#define MyAppVersion "1.1.5"
+#define MyAppVersion "1.1.6"
 #define MyAppPublisher "mpyat2@gmail.com"
 #define MyAppURL "https://sourceforge.net/projects/fits-command-line-utilities/"
 #define MyAppExeName "HelloIRISFITS.exe"
@@ -66,6 +66,8 @@ Source: "..\bin-out\makestack32.exe" ; DestDir: "{app}"; DestName: "makestack.ex
 Source: "..\bin-out\find_hot.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "..\bin-out\fitsstat.exe"; DestDir: "{app}"; Flags: ignoreversion
+
+Source: "..\bin-out\iconvfits.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "..\bin-out\iconvraw.exe"; DestDir: "{app}"; Flags: ignoreversion
 

@@ -4,8 +4,8 @@ REM
 REM Use FPC [www.freepascal.org] in $DELPHI mode.
 REM 
 SET COMPILE_PARAMS=-MDELPHI -O2 -Xs -FuUnitsCommon\;UnitsFits\ -FiUnitsFits\ -FEbin-out\
-SET COMPILER="c:\personal\TOOLS\lazarus32\fpc\3.0.4\bin\i386-win32\fpc.exe"   %COMPILE_PARAMS% -FUbin-out\unit32
-SET COMPIL64="C:\Personal\TOOLS\lazarus64\fpc\3.0.4\bin\x86_64-win64\fpc.exe" %COMPILE_PARAMS% -FUbin-out\unit64
+SET COMPILER="c:\personal\TOOLS\lazarus32\fpc\3.2.0\bin\i386-win32\fpc.exe"   %COMPILE_PARAMS% -FUbin-out\unit32
+SET COMPIL64="C:\Personal\TOOLS\lazarus64\fpc\3.2.0\bin\x86_64-win64\fpc.exe" %COMPILE_PARAMS% -FUbin-out\unit64
 REM
 REM To make source-code ZIP, run this script with "AA" command-line option: make.bat AA
 REM WARNING: run clean.bat or clean2.bat first
@@ -111,6 +111,11 @@ IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
 
 REM ...
+%COMPILER% IrisConvFITS\iconvfits.lpr
+IF ERRORLEVEL 1 GOTO :ERROR
+ECHO .
+
+REM ...
 %COMPILER% Hello\HelloIRISFITS.pas
 IF ERRORLEVEL 1 GOTO :ERROR
 ECHO .
@@ -137,6 +142,8 @@ echo iconvraw\ConvUtils.pas         >> ziplist.txt
 echo iconvraw\LibRawMxWrapper*.dll  >> ziplist.txt
 echo makestack\makestack.*          >> ziplist.txt
 echo makestack\CalcThread.pas       >> ziplist.txt
+echo IrisConvFITS\iconvfits.*       >> ziplist.txt
+echo IrisConvFITS\convutils.pas     >> ziplist.txt
 echo FindHot\find_hot.*             >> ziplist.txt
 echo Hello\*.pas                    >> ziplist.txt
 echo UnitsCommon\*.pas              >> ziplist.txt

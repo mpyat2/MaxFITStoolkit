@@ -229,11 +229,14 @@ fitsstat file
 
 @makestack
 
+Stacks FITS files calculating sum, average or median.
+Can be used to prepare master calibration frames (see /SUB, /NORM options)
+
 Usage:
 makestack file_mask1[.fit] [file_mask2[.fit] ...] /G=generic_name [options]
 
 Where:
-  maskX              masks of input files to be processed (required)
+  file_maskX         masks of input files to be processed (required)
   /G=<generic_name>  prefix to be used to construct new file name (required)
 
 additional options:
@@ -261,6 +264,33 @@ additional options:
 There ia also "debug" option  /NORMFACTORS=<file>. If specified, normalization
 factors will be printed to this file.
 
+@iconvfits
+
+Utility to convert/calibrate FITS
+
+Usage:
+iconvfits file_mask1[.fit] [file_mask2[.fit] ...] [options]
+
+Where:
+  file_maskX         masks of input files to be processed (required)
+
+Options:
+  /G=generic_name    prefix to be used to construct new file name
+                     if omitted, original name will be used.
+  /B=nn              base file number (default = 1); must be >= 0
+  /O=out_dir         directory for output files
+  /X=<ext>           extension for output files (.fit by default)
+  /FORMAT=<format>   Format of output FITS files. Can be U8, I16, I32, F32, F64
+                     (current directory will be used if not specified)
+  /OFFSET=<fits>     FITS file to subtract from original images
+  /DARK=<fits>       FITS file to subtract from original images
+  /FLAT=<fits>       FITS file with flat field image.
+                     Original images will be divided by it and multiplied by
+  /COSME=<text>      Text file containing bad pixel map (IRIS-compatible)
+                     median value of the flat field image.
+  /F                 overwrite existing files in output directory
+  /V                 print version
+  /H                 print help and halt
 
 @find_hot
 
