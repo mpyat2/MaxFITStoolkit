@@ -9,7 +9,9 @@
         <Filename Value="iconvfits.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <UsageCount Value="45"/>
+        <TopLine Value="101"/>
+        <CursorPos X="18" Y="106"/>
+        <UsageCount Value="48"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
@@ -18,16 +20,17 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="ConvUtils"/>
         <EditorIndex Value="-1"/>
-        <CursorPos Y="23"/>
-        <UsageCount Value="43"/>
+        <TopLine Value="183"/>
+        <CursorPos X="3" Y="210"/>
+        <UsageCount Value="46"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit1>
       <Unit2>
         <Filename Value="..\UnitsFits\FITSUtils.pas"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="541"/>
-        <CursorPos X="31" Y="560"/>
-        <UsageCount Value="9"/>
+        <TopLine Value="891"/>
+        <CursorPos X="10" Y="904"/>
+        <UsageCount Value="10"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit2>
       <Unit3>
@@ -135,109 +138,115 @@
     <JumpHistory Count="28" HistoryIndex="27">
       <Position1>
         <Filename Value="iconvfits.lpr"/>
+        <Caret Line="421" TopLine="392"/>
       </Position1>
       <Position2>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="163" Column="11" TopLine="151"/>
+        <Caret Line="422" TopLine="392"/>
       </Position2>
       <Position3>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="171" Column="69" TopLine="152"/>
+        <Caret Line="423" TopLine="392"/>
       </Position3>
       <Position4>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="173" Column="49" TopLine="154"/>
+        <Caret Line="424" TopLine="393"/>
       </Position4>
       <Position5>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="227" Column="20" TopLine="206"/>
+        <Caret Line="425" TopLine="394"/>
       </Position5>
       <Position6>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="157" Column="5" TopLine="145"/>
+        <Caret Line="428" TopLine="397"/>
       </Position6>
       <Position7>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="28" Column="19"/>
+        <Caret Line="434" TopLine="403"/>
       </Position7>
       <Position8>
         <Filename Value="iconvfits.lpr"/>
+        <Caret Line="446" TopLine="427"/>
       </Position8>
       <Position9>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="28" Column="19"/>
+        <Caret Line="463" TopLine="432"/>
       </Position9>
       <Position10>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="139" Column="3" TopLine="124"/>
+        <Caret Line="469" TopLine="453"/>
       </Position10>
       <Position11>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="28" Column="19"/>
+        <Caret Line="470" TopLine="453"/>
       </Position11>
       <Position12>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="231" Column="18" TopLine="217"/>
+        <Caret Line="471" TopLine="453"/>
       </Position12>
       <Position13>
         <Filename Value="iconvfits.lpr"/>
+        <Caret Line="472" TopLine="453"/>
       </Position13>
       <Position14>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="28" Column="19"/>
+        <Caret Line="473" TopLine="453"/>
       </Position14>
       <Position15>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="144" Column="18" TopLine="112"/>
+        <Caret Line="474" TopLine="453"/>
       </Position15>
       <Position16>
         <Filename Value="iconvfits.lpr"/>
+        <Caret Line="475" TopLine="453"/>
       </Position16>
       <Position17>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="28" Column="19"/>
+        <Caret Line="476" TopLine="453"/>
       </Position17>
       <Position18>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="144" Column="18" TopLine="112"/>
+        <Caret Line="477" TopLine="453"/>
       </Position18>
       <Position19>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="231" Column="18" TopLine="199"/>
+        <Caret Line="270" TopLine="250"/>
       </Position19>
       <Position20>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="172" Column="35" TopLine="153"/>
+        <Caret Line="271" TopLine="250"/>
       </Position20>
       <Position21>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="172" Column="35" TopLine="153"/>
+        <Caret Line="271" TopLine="250"/>
       </Position21>
       <Position22>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="28"/>
+        <Caret Line="291" Column="12" TopLine="269"/>
       </Position22>
       <Position23>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="143" TopLine="130"/>
+        <Caret Line="32" Column="24" TopLine="25"/>
       </Position23>
       <Position24>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="163" TopLine="130"/>
+        <Caret Line="291" Column="138" TopLine="263"/>
       </Position24>
       <Position25>
         <Filename Value="iconvfits.lpr"/>
+        <Caret Line="305" Column="23" TopLine="277"/>
       </Position25>
       <Position26>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="138" Column="29" TopLine="137"/>
+        <Caret Line="105" Column="11" TopLine="106"/>
       </Position26>
       <Position27>
         <Filename Value="iconvfits.lpr"/>
+        <Caret Line="108" Column="51" TopLine="101"/>
       </Position27>
       <Position28>
         <Filename Value="iconvfits.lpr"/>
-        <Caret Line="240" TopLine="206"/>
+        <Caret Line="106" Column="18" TopLine="101"/>
       </Position28>
     </JumpHistory>
     <RunParams>

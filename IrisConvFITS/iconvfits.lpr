@@ -29,7 +29,7 @@ uses
 var
   FileList: TStringListNaturalSort;
 
-procedure MakeNewHeader(Header: TFITSRecordArray; DestBitPix: Integer; Offset, Dark, Flat, Cosme: Boolean; out HeaderNew: TFITSRecordArray);
+procedure MakeNewHeader(Header: TFITSRecordArray; DestBitPix: Integer; Offset, Dark, Flat, Cosme, Mult: Boolean; out HeaderNew: TFITSRecordArray);
 var
   KeyBITPIX, KeyBZERO, KeyBSCALE: string;
   Buf: FITSRecordType;
@@ -61,6 +61,11 @@ begin
       end;
       if Cosme then begin
         StrToFITSRecord('HISTORY HOT PIXEL map applied', Buf);
+        SetLength(HeaderNew, Length(HeaderNew) + 1);
+        HeaderNew[Length(HeaderNew) - 1] := Buf;
+      end;
+      if Mult then begin
+        StrToFITSRecord('HISTORY Data multiplied by a constant', Buf);
         SetLength(HeaderNew, Length(HeaderNew) + 1);
         HeaderNew[Length(HeaderNew) - 1] := Buf;
       end;
@@ -132,7 +137,7 @@ begin
 end;
 
 procedure MakeLocalMedian(const PixelArray, TempPixelArray: TExtendedArray; Width, Height, X, Y: Integer);
-// excluding border pixels (like IRIS does)
+// TempPixelArray is a copy of PixelArray.
 var
   I, J: Integer;
   A: array[0..7] of Extended;
@@ -140,8 +145,7 @@ var
   N: Integer;
   BorderWidth: Integer;
 begin
-  BorderWidth := 1;
-  // TEST ADJACENT pixels!
+  BorderWidth := 1; // excluding border pixels.
   if (X >= BorderWidth) and (X < Width - BorderWidth) and (Y >= BorderWidth) and (Y < Height - BorderWidth) then begin
 {$IFDEF DEBUG_LOG}
     WriteLn(^M^J'>>>>Bad Pixel'^I, X, '-', Y, ^I, PixelArray[Y * Width + X]);
@@ -195,12 +199,21 @@ begin
     PixelArray[I] := PixelArray[I] - Array2[I];
 end;
 
-procedure DivArray(const PixelArray, Array2: TExtendedArray; MultBy: Extended);
+procedure DivArrays(const PixelArray, Array2: TExtendedArray; MultBy: Extended);
 var
   I: Integer;
 begin
   for I := 0 to Length(PixelArray) - 1 do begin
     PixelArray[I] := MultBy * PixelArray[I] / Array2[I];
+  end;
+end;
+
+procedure MultArrayByConst(const PixelArray: TExtendedArray; MultBy: Extended);
+var
+  I: Integer;
+begin
+  for I := 0 to Length(PixelArray) - 1 do begin
+    PixelArray[I] := MultBy * PixelArray[I];
   end;
 end;
 
@@ -213,7 +226,7 @@ begin
   if Assigned(DarkArray) then
     SubtractArray(PixelArray, DarkArray);
   if Assigned(FlatArray) then
-    DivArray(PixelArray, FlatArray, FlatMedian);
+    DivArrays(PixelArray, FlatArray, FlatMedian);
 end;
 
 procedure ProcessCosme(const PixelArray: TExtendedArray; Width: Integer; const CosmeArray: T3IntegerArray);
@@ -249,7 +262,8 @@ procedure ProcessFile(const FileName: string;
                       const BiasArray, DarkArray, FlatArray: TExtendedArray;
                       FlatMedian: Extended;
                       const CosmeArray: T3IntegerArray;
-                      RequiredPixelNumber, RequiredWidth: Integer);
+                      RequiredPixelNumber, RequiredWidth: Integer;
+                      OutputMultBy: Double);
 var
   PixelArray: TExtendedArray;
   Header: TFITSRecordArray;
@@ -272,13 +286,21 @@ begin
       FileError('Dimensions of image file must be the same as calibration file(s) dimensions');
   end;
 
-  // make additional image transformation here! (i.e. calibration, cosmetic correction etc.)
   ProcessCalibration(PixelArray, BiasArray, DarkArray, FlatArray, FlatMedian);
   ProcessCosme(PixelArray, Width, CosmeArray);
+  if OutputMultBy <> 1.0 then
+    MultArrayByConst(PixelArray, OutputMultBy);
 
   DestBitPix := GetDestBitPix(BitPix, OutFITSbitpix);
 
-  MakeNewHeader(Header, DestBitPix, Assigned(BiasArray), Assigned(DarkArray), Assigned(FlatArray), Assigned(CosmeArray), HeaderNew);
+  MakeNewHeader(Header,
+                DestBitPix,
+                Assigned(BiasArray),
+                Assigned(DarkArray),
+                Assigned(FlatArray),
+                Assigned(CosmeArray),
+                OutputMultBy <> 1.0,
+                HeaderNew);
 
   CreateAndSaveOutputImage(OutFileName, DestBitPix, PixelArray, HeaderNew);
 
@@ -382,7 +404,8 @@ procedure ProcessInput(const FileMasks: array of string;
                        const BiasFile: string;
                        const DarkFile: string;
                        const FlatFile: string;
-                       const CosmeFile: string);
+                       const CosmeFile: string;
+                       OutputMultBy: Double);
 var
   BiasArray: TExtendedArray;
   DarkArray: TExtendedArray;
@@ -466,7 +489,8 @@ begin
         ProcessFile(FileList[I], OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, BaseNumber + Ntotal,
                     BiasArray, DarkArray, FlatArray,
                     FlatMedian,
-                    CosmeArray, RequiredPixelNumber, RequiredWidth);
+                    CosmeArray, RequiredPixelNumber, RequiredWidth,
+                    OutputMultBy);
         Inc(Ntotal);
       end;
     end;
@@ -486,6 +510,7 @@ var
   InputFileMasks: array of string;
   PrintVer: Boolean;
   S, S2: string;
+  ValError: Integer;
   ParamN: Integer;
   OutFITSbitpix: TOutFITSbitpix;
   OutputDir: string;
@@ -497,6 +522,7 @@ var
   DarkFile: string;
   FlatFile: string;
   CosmeFile: string;
+  OutputMultBy: Double;
 
 begin
   FileMode := fmOpenRead;
@@ -519,6 +545,7 @@ begin
   DarkFile := '';
   FlatFile := '';
   CosmeFile := '';
+  OutputMultBy := 1.0;
 
   if (CmdObj.CmdLine.FileCount < 1) then begin
     if not PrintVer then begin
@@ -623,6 +650,14 @@ begin
            CosmeFile := ExpandFileName(S2);
         end;
       end
+      else
+      if CmdObj.CmdLine.ExtractParamValue(S, 'MULT=', S2) then begin
+        Val(S2, OutputMultBy, ValError);
+        if (ValError <> 0) or (OutputMultBy <= 0) then begin
+          PrintError('**** MULT parameter must be positive floating-point value'^M^J);
+          Halt(1);
+        end;
+      end
       else begin
         PrintError('**** Invalid command-line parameter: ' + S + ^M^J);
         Halt(1);
@@ -650,7 +685,18 @@ begin
 
   FileList := TStringListNaturalSort.Create;
   try
-    ProcessInput(InputFileMasks, OutFITSbitpix, GenericName, OutputDir, OutputExt, Overwrite, BaseNumber, BiasFile, DarkFile, FlatFile, CosmeFile);
+    ProcessInput(InputFileMasks,
+                 OutFITSbitpix,
+                 GenericName,
+                 OutputDir,
+                 OutputExt,
+                 Overwrite,
+                 BaseNumber,
+                 BiasFile,
+                 DarkFile,
+                 FlatFile,
+                 CosmeFile,
+                 OutputMultBy);
   finally
     FreeAndNil(FileList);
   end;
