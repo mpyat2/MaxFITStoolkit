@@ -21,6 +21,7 @@ IF ERRORLEVEL 1 GOTO :ERROR
 GOTO :EOF
 
 :NOPARAM
+ECHO ===================== IRIS-style calibration frames ====================
 ECHO MakeMasters creates masters
 ECHO   _offset.fit
 ECHO   _dark.fit
