@@ -1,6 +1,6 @@
 @ECHO OFF
 REM Hot pixels (IRIS-compatible)
-REM _dark.fit must exist!
+REM _dark_b.fit must exist!
 IF [%1]==[] GOTO :NOPARAM
 find_hot _dark_b.fit /n=_cosme /l=%1
 GOTO :EOF
