@@ -2,7 +2,7 @@
 
 REM Conveerts FITS to IRIS format (signed integer)
 
-REM Configurateion -- begin
+REM Configuration -- begin
 
 SET OUT=C:\PERSONAL\SKY2
 SET BASEDIR=.
@@ -16,7 +16,7 @@ SET TELESCOP=Sky-Watcher 15075 OTAW
 REM DATE-OBS fix!
 SET IDFIX_PARAMS=/TS0
 
-REM Configurateion -- end
+REM Configuration -- end
 
 CLS
 PAUSE
