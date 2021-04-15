@@ -1,6 +1,7 @@
 @ECHO OFF
 
-REM Conveerts FITS to IRIS format (signed integer)
+REM This script copies FITS files (lights, flats, darks, flat darks)
+REM to the destination directory.
 
 REM Configuration -- begin
 
