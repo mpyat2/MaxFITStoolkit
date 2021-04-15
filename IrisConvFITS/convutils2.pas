@@ -6,7 +6,7 @@
 {                                                                             }
 {*****************************************************************************}
 
-unit ConvUtils;
+unit ConvUtils2;
 
 //{$R+}{$Q+} // can be commented out in release mode. Should be BEFORE {$INCLUDE FITSUtils.inc}!
 

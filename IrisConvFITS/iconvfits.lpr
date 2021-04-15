@@ -18,7 +18,7 @@ program iconvfits;
 uses
   SysUtils, CmdObj{, CmdObjStdSwitches}, Version, EnumFiles, MiscUtils, 
   FITScompatibility, FITSUtils, StringListNaturalSort, FitsUtilsHelp, CommonIni,
-  DateUtils, ConvUtils, FITSStatUtils;
+  DateUtils, ConvUtils2, FITSStatUtils;
 
 {$R *.res} // include version info!
 
