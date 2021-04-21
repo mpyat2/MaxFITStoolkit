@@ -279,9 +279,9 @@ Options:
                      If omitted, original name will be used.
   /B=nn              Base file number (default = 1); must be >= 0.
   /O=out_dir         Directory for output files.
+                     (current directory will be used if not specified).
   /X=<ext>           Extension for output files (original by default).
   /FORMAT=<format>   Format of output FITS files. Can be U8, I16, I32, F32, F64
-                     (current directory will be used if not specified).
   /OFFSET=<fits>     FITS file to subtract from original images.
   /DARK=<fits>       FITS file to subtract from original images.
   /FLAT=<fits>       FITS file with flat field image.
