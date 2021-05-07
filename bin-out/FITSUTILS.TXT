@@ -181,10 +181,12 @@ ipdat [options] input_filename[.dat]  [output_filename[.csv|.txt]]
 @iren
 
 Usage:
-iren in_file_mask1[.fit] [in_file_mask2[.fit] ...] /G=generic_name /O=out_dir [/X=ext] [/B=nn] [/F]
+iren in_file_mask1[.fit] [in_file_mask2[.fit] ...] [/S] [/D] /G=generic_name /O=out_dir [/X=ext] [/B=nn] [/F]
 
 Where:
   in_file_maskX    masks of input files to be processed, i.e. IMG*.CR2
+  /S               process subdirectories
+  /D               print source directories along with file names
   /G=generic_name  set prefix to be used to construct new file name
   /O=out_dir       set directory for files having new names
   /X=ext           set extension for output files

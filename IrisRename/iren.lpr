@@ -23,7 +23,7 @@ uses
 
 procedure PrintVersion;
 begin
-  WriteLn('Rename files accorting to IRIS standard  Maksym Pyatnytskyy  2017');
+  WriteLn('Rename files accorting to IRIS standard  Maksym Pyatnytskyy  2017-2021');
   WriteLn(GetVersionString(AnsiUpperCase(ParamStr(0))){$IFDEF WIN64}, ' WIN64'{$ENDIF}, ' ', {$I %DATE%}, ' ', {$I %TIME%});
   WriteLn;
 end;
@@ -47,7 +47,7 @@ begin
   Result := True;
 end;
   
-procedure ProcessInput(const FileMasks: array of string; const GenericName: string; const OutputDir: string; Overwrite: Boolean; BaseNumber: Integer; const OutputExt: string);
+procedure ProcessInput(const FileMasks: array of string; const GenericName: string; const OutputDir: string; Overwrite: Boolean; Recursively: Boolean; ShowSrcDirNames: Boolean; BaseNumber: Integer; const OutputExt: string);
 var
   I, N: Integer;
   FileNumber: Integer;
@@ -61,7 +61,7 @@ begin
       WriteLn;    
       WriteLn('[', FileMasks[N], ']');
       FileList.Clear;
-      FileEnum(FileMasks[N], faArchive, False, TFileEnumClass.FileEnumProc);
+      FileEnum(FileMasks[N], faArchive, Recursively, TFileEnumClass.FileEnumProc);
       FileList.NaturalSort;
       for I := 0 to FileList.Count - 1 do begin
 {$IFNDEF range_check}{$R+}{$ENDIF}
@@ -80,7 +80,11 @@ begin
         else
           FileExt := OutputExt;
         NewFileName := OutputDir + GenericName + IntToStr(FileNumber) + FileExt;
-        WriteLn(FileName, ^I'->'^I, NewFileName);
+        if ShowSrcDirNames then
+          Write(FileList[I])
+        else
+          Write(FileName);
+        WriteLn(^I'->'^I, NewFileName);
         if not CopyFile(PChar(FileList[I]), PChar(NewFileName), not Overwrite) then
           RaiseLastOSError;
       end;
@@ -105,6 +109,8 @@ var
   OutputDir: string;
   OutputExt: string;
   Overwrite: Boolean;
+  Recursively: Boolean;
+  ShowSrcDirNames: Boolean;
   BaseNumber: Integer;
   PrintVer: Boolean;
   S, S2: string;
@@ -136,6 +142,8 @@ begin
   OutputExt := '';
   GenericName := '';
   Overwrite := False;
+  Recursively := False;
+  ShowSrcDirNames := False;
   BaseNumber := 1;
 
   for ParamN := 1 to CmdObj.CmdLine.ParamCount do begin
@@ -189,6 +197,12 @@ begin
           if OutputExt[1] <> '.' then OutputExt := '.' + OutputExt;
         end;
       end
+      else
+      if CmdObj.CmdLine.ParamIsKey(S, 'S') then
+        Recursively := True
+      else
+      if CmdObj.CmdLine.ParamIsKey(S, 'D') then
+        ShowSrcDirNames := True
       else begin
         WriteLn('**** Invalid command-line parameter: ' + S);
         Halt(1);
@@ -216,7 +230,7 @@ begin
 
   FileList := TStringListNaturalSort.Create;
   try
-    ProcessInput(InputFileMasks, GenericName, OutputDir, Overwrite, BaseNumber, OutputExt);
+    ProcessInput(InputFileMasks, GenericName, OutputDir, Overwrite, Recursively, ShowSrcDirNames, BaseNumber, OutputExt);
   finally
     FreeAndNil(FileList);
   end;
