@@ -624,6 +624,8 @@ var
   I, N, N2: Integer;
   TempS: string;
 begin
+  Result := nil;
+
   N := 0;
 
   SetLength(Result, N + 1);

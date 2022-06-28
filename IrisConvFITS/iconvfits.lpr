@@ -29,13 +29,15 @@ uses
 var
   FileList: TStringListNaturalSort;
 
-procedure MakeNewHeader(Header: TFITSRecordArray; DestBitPix: Integer; Offset, Dark, Flat, Cosme, Mult: Boolean; out HeaderNew: TFITSRecordArray);
+procedure MakeNewHeader(Header: TFITSRecordArray; DestBitPix: Integer; Offset, Dark, Flat, Cosme, Mult: Boolean; Width, Height: Integer; Bin2: Boolean; out HeaderNew: TFITSRecordArray);
 var
-  KeyBITPIX, KeyBZERO, KeyBSCALE: string;
+  KeyNaxis1, KeyNaxis2, KeyBITPIX, KeyBZERO, KeyBSCALE: string;
   Buf: FITSRecordType;
-  TempS: string;
+  TempS, TempS2: string;
   I: Integer;
 begin
+  KeyNaxis1 := PadCh('NAXIS1', FITSKeywordLen, ' ');
+  KeyNaxis2 := PadCh('NAXIS2', FITSKeywordLen, ' ');
   KeyBITPIX := PadCh('BITPIX', FITSKeywordLen, ' ');
   KeyBZERO  := PadCh('BZERO', FITSKeywordLen, ' ');
   KeyBSCALE := PadCh('BSCALE', FITSKeywordLen, ' ');
@@ -69,6 +71,11 @@ begin
         SetLength(HeaderNew, Length(HeaderNew) + 1);
         HeaderNew[Length(HeaderNew) - 1] := Buf;
       end;
+      if Bin2 then begin
+        StrToFITSRecord('HISTORY Softbin 2 applied', Buf);
+        SetLength(HeaderNew, Length(HeaderNew) + 1);
+        HeaderNew[Length(HeaderNew) - 1] := Buf;
+      end;
       TempS := 'HISTORY Converted by iconvfits UT ' + FormatDateTime('YYYY-MM-DD"T"hh:nn:ss', LocalTimeToUniversal(Now()));
       StrToFITSRecord(TempS, Buf);
       SetLength(HeaderNew, Length(HeaderNew) + 1);
@@ -81,6 +88,24 @@ begin
     if Copy(Buf, 1, FITSKeywordLen) = KeyBITPIX then begin
       Str(DestBitPix : FITSNumericAlign - FITSKeywordLen - 2, TempS);
       TempS := KeyBITPIX + '= ' + TempS + ' / Converted by iconvfits';
+      StrToFITSRecord(TempS, Buf);
+      SetLength(HeaderNew, Length(HeaderNew) + 1);
+      HeaderNew[Length(HeaderNew) - 1] := Buf;
+    end
+    else
+    if (Copy(Buf, 1, FITSKeywordLen) = KeyNaxis1) and Bin2 then begin
+      Str(Width div 2 : FITSNumericAlign - FITSKeywordLen - 2, TempS);
+      Str(Width, TempS2);
+      TempS := KeyNaxis1 + '= ' + TempS + ' / ' + TempS2 + '; softbin 2 by iconvfits';
+      StrToFITSRecord(TempS, Buf);
+      SetLength(HeaderNew, Length(HeaderNew) + 1);
+      HeaderNew[Length(HeaderNew) - 1] := Buf;
+    end
+    else
+    if (Copy(Buf, 1, FITSKeywordLen) = KeyNaxis2) and Bin2 then begin
+      Str(Height div 2 : FITSNumericAlign - FITSKeywordLen - 2, TempS);
+      Str(Height, TempS2);
+      TempS := KeyNaxis2 + '= ' + TempS + ' / ' + TempS2 + '; softbin 2 by iconvfits';
       StrToFITSRecord(TempS, Buf);
       SetLength(HeaderNew, Length(HeaderNew) + 1);
       HeaderNew[Length(HeaderNew) - 1] := Buf;
@@ -252,6 +277,26 @@ begin
   TempPixelArray := nil;
 end;
 
+procedure ProcessBin2(var PixelArray: TExtendedArray; Width: Integer);
+var
+  Height, Width2, Height2, X, Y: Integer;
+begin
+  Height := Length(PixelArray) div Width;
+  Width2 := Width div 2;
+  Height2 := Height div 2;
+  Y := 0;
+  while Y < Height - 1 do begin
+    X := 0;
+    while X < Width - 1 do begin
+      PixelArray[(Y div 2) * Width2 + X div 2] := PixelArray[Y * Width + X] + PixelArray[Y * Width + X + 1] + PixelArray[(Y + 1) * Width + X] + PixelArray[(Y + 1) * Width + X + 1];
+      Inc(X, 2);
+    end;
+    Inc(Y, 2);
+  end;
+  SetLength(PixelArray, Width2 * Height2);
+end;
+
+
 procedure ProcessFile(const FileName: string;
                       OutFITSbitpix: TOutFITSbitpix;
                       const GenericName: string;
@@ -263,12 +308,13 @@ procedure ProcessFile(const FileName: string;
                       FlatMedian: Extended;
                       const CosmeArray: T3IntegerArray;
                       RequiredPixelNumber, RequiredWidth: Integer;
-                      OutputMultBy: Double);
+                      OutputMultBy: Double;
+                      Bin2: Boolean);
 var
   PixelArray: TExtendedArray;
   Header: TFITSRecordArray;
   BitPix: Integer;
-  Width, PixelNumber: Integer;
+  Width, Height, PixelNumber: Integer;
   OutFileName: string;
   HeaderNew: TFITSRecordArray;
   DestBitPix: Integer;
@@ -286,10 +332,15 @@ begin
       FileError('Dimensions of image file must be the same as calibration file(s) dimensions');
   end;
 
+  // PixelNumber can be changed if Bin2 = True.
+  Height := PixelNumber div Width;
+
   ProcessCalibration(PixelArray, BiasArray, DarkArray, FlatArray, FlatMedian);
   ProcessCosme(PixelArray, Width, CosmeArray);
   if OutputMultBy <> 1.0 then
     MultArrayByConst(PixelArray, OutputMultBy);
+  if Bin2 then
+    ProcessBin2(PixelArray, Width);
 
   DestBitPix := GetDestBitPix(BitPix, OutFITSbitpix);
 
@@ -300,6 +351,9 @@ begin
                 Assigned(FlatArray),
                 Assigned(CosmeArray),
                 OutputMultBy <> 1.0,
+                Width,
+                Height,
+                Bin2,
                 HeaderNew);
 
   CreateAndSaveOutputImage(OutFileName, DestBitPix, PixelArray, HeaderNew);
@@ -405,7 +459,8 @@ procedure ProcessInput(const FileMasks: array of string;
                        const DarkFile: string;
                        const FlatFile: string;
                        const CosmeFile: string;
-                       OutputMultBy: Double);
+                       OutputMultBy: Double;
+                       Bin2: Boolean);
 var
   BiasArray: TExtendedArray;
   DarkArray: TExtendedArray;
@@ -490,7 +545,7 @@ begin
                     BiasArray, DarkArray, FlatArray,
                     FlatMedian,
                     CosmeArray, RequiredPixelNumber, RequiredWidth,
-                    OutputMultBy);
+                    OutputMultBy, Bin2);
         Inc(Ntotal);
       end;
     end;
@@ -523,6 +578,7 @@ var
   FlatFile: string;
   CosmeFile: string;
   OutputMultBy: Double;
+  Bin2: Boolean;
 
 begin
   FileMode := fmOpenRead;
@@ -546,6 +602,7 @@ begin
   FlatFile := '';
   CosmeFile := '';
   OutputMultBy := 1.0;
+  Bin2 := False;
 
   if (CmdObj.CmdLine.FileCount < 1) then begin
     if not PrintVer then begin
@@ -658,6 +715,9 @@ begin
           Halt(1);
         end;
       end
+      else
+      if CmdObj.CmdLine.ParamIsKey(S, 'BIN2') then
+        Bin2 := True
       else begin
         PrintError('**** Invalid command-line parameter: ' + S + ^M^J);
         Halt(1);
@@ -696,7 +756,8 @@ begin
                  DarkFile,
                  FlatFile,
                  CosmeFile,
-                 OutputMultBy);
+                 OutputMultBy,
+                 Bin2);
   finally
     FreeAndNil(FileList);
   end;

@@ -7,21 +7,28 @@ iconvraw in_file_mask1 [in_file_mask2 ...] /I
 
 Where:
   in_file_maskX    masks of input files to be processed, i.e. IMG*.CR2
-  /G=generic_name  prefix to be used to construct new file name
-                   (original filename will be used if not specified)
+  /G=generic_name  prefix to be used to construct a new file name
+                   (the original filename will be used if not specified)
   /O=out_dir       directory for output files
                    (original directory will be used if not specified)
-  /B=nn            base file number (default = 1); must be >= 0 (only when generic_name is specified)
+  /B=nn            base file number (default = 1); must be >= 0 (only when 
+                   generic_name is specified)
   /X=<ext>         extension for output files (.fit by default)
-  /TS<xxxxx>       shift DATE-OBS by xxxxx seconds (the value can be negative or positive)
-                   Example: /TS-10800 shifts DATE-OBS by three hours backwards
-                   The value must be integer.
-                   It is possible to specify /TSa value to attemt to auto-calculate time shift to UT.
-  /F               overwrite existing files in output directory
-  /L               do not truncate image (show full RAW image). WARNING: this could affect order of colors in bayer matrix!
-  /R               generate floating-point FITS. WARNING: resulting FITS could be incompatible with CFA2RGB
-  /S               generate fits with BZERO = 32768
-  /Y               flip image by Y-axis. WARNING: this could affect order of colors in bayer matrix!
+  /TS<xxxxx>       shift DATE-OBS by xxxxx seconds (the value can be negative
+                   or positive)
+                   Example: /TS-10800 shifts DATE-OBS by three hours backward
+                   The value must be an integer
+                   It is possible to specify /TSa value to attempt to auto-
+                   calculate time shift to UT
+  /F               overwrite existing files in the output directory
+  /L               do not truncate image (show full RAW image). 
+                   WARNING: this could affect the order of colors in the Bayer
+                   matrix!
+  /R               generate floating-point FITS. WARNING: resulting FITS could
+                   be incompatible with CFA2RGB
+  /S               generate FITS with BZERO = 32768
+  /Y               flip image by Y-axis. WARNING: this could affect the order
+                   of colors in the Bayer matrix!
   /I               print image info only
   /V               print version (including libraw version)
   /H               print help and halt
@@ -29,15 +36,15 @@ Where:
 Example:
 iconvraw dir1\IMG*.CR2 dir2\IMG*.CR2 dir3\IMG*.CR2 /G=src /O=C:\SKY\ /F /B=1 /TS-7200 /X=fits
 
-In an example shown above, all files having .CR2 extensions
-in directories dir1, dir2, dir3 will be converted to files
-src1.fits, src2.fits, and so on.
+In the example shown above, all files having .CR2 extensions in directories 
+dir1, dir2, dir3 will be converted to files src1.fits, src2.fits, and so on.
 Output files will be placed in C:\SKY\ directory.
 Existing ones (if any) will be overwritten (due to /F switch).
-DATE-OBS will be shifted backwards by 2 hours (due to /TS-7200 option).
+DATE-OBS will be shifted backward by 2 hours (due to /TS-7200 option).
 
 Note: additional parameters are allowed in a form /$KEYWORD=VALUE
-Those parameters could be used to write additional keywords into FITS header,
+Those parameters could be used to write additional keywords into the FITS
+header,
 for example, one can specify TELESCOP and OBJECT this way:
 
 iconvraw *.CR2 [additional options] /$TELESCOP="MY SUPER SCOPE" /$OBJECT="ALIEN's SHIP"
@@ -72,11 +79,13 @@ or
 fihed file_mask1[.fit] [file_mask2[.fit] ...] //SET [/keyword1=value [/keyword2=value ...]]
 
   //CSV       prints header values as CSV table.
-              COMMENT, HISTORY and similar keywords without '='
+              COMMENT, HISTORY, and similar keywords without '='
               are ignored in this mode.
-              When //CSV parameter exists, at least one keyword should be specified
+              When the //CSV parameter exists, at least one keyword should be
+              specified
 
-  //TAB       the same as //CSV, tabs are used instead of semicolons to separate output columns
+  //TAB       the same as //CSV; tabs are used instead of semicolons to
+              separate output columns
 
   //SET       edit mode
 
@@ -94,16 +103,17 @@ or
 fitscfa /PI
 
 Where:
-  /O=<output_dir>    set output directory (instead of the current one)
+  /O=<output_dir>    set the output directory (instead of the current one)
   /F                 force overwrite existing files
   /P=<profile>       profile to be used (see below)
   /PI                print INI-file with profiles (see below)
 
 
 Correspondence between individual color channels and Buyer's pattern
-should be defined in FITSCFA.INI file.
+should be defined in the FITSCFA.INI file.
 For example, for RAW files converted by IRIS (or iconvraw) having RGGB pattern 
-one can define (in FITSCFA.INI) the following profile to generate R, G=(G1+G2)/2, and B layers:
+one can define (in FITSCFA.INI) the following profile to generate R,
+G=(G1+G2)/2, and B layers:
 
 [PROFILE1]
 1 = R
@@ -111,12 +121,14 @@ one can define (in FITSCFA.INI) the following profile to generate R, G=(G1+G2)/2
 3 = G
 4 = B
 
-Values to the right of equation sign are perfixes of individual output files.
-If some prefixes are the same, corresponding colors will be combined together (averaged)
+Values to the right of the equation sign are prefixes of individual output
+files.
+If some prefixes are the same, corresponding colors will be combined together
+(averaged).
 
-Name of a profile (INI-file's section) to be used should be specified in the command line
-by "/P=" option.
-If no profile specified, DEFAULT profile will be used.
+The name of a profile (INI-file's section) to be used should be specified in
+the command line by "/P=" option.
+If no profile is specified, DEFAULT profile will be used.
 
 When started with /PI switch, the program prints INI file and terminates.
 
@@ -126,7 +138,7 @@ Usage:
 fitsrgb file_mask1[.fit] [file_mask2[.fit] ...] [/O=<output_dir>] [/F]
 
 Where:
-  /O=<output_dir>    set output directory (instead of the current one)
+  /O=<output_dir>    set the output directory (instead of the current one)
   /F                 force overwrite existing files
 
 @idobs
@@ -143,7 +155,7 @@ Where:
 
 Date/Time is extracted from DATE-OBS first,
 if DATE-OBS does contain time part, time is extracted from it,
-otherwise TIME-OBS is used.
+otherwise, TIME-OBS is used.
 If TIME-OBS is missing, UT-START (IRIS-specific keyword) is searched.
 
 Example:
@@ -156,9 +168,10 @@ idfix file_mask1[.fit] [file_mask2[.fit] ...] [/-E] [/TS<xxxx>]
 
 Where:
   file_maskX   mask of input files to be processed (several masks are allowed)
-  /-E          shift DATE-OBS backwards by a length of the exposure
-  /TS<xxxxx>   shift DATE-OBS by xxxxx seconds (the value can be negative or positive)
-               Example: /TS-4.5 shifts DATE-OBS by 4.5 seconds backwards
+  /-E          shift DATE-OBS backward by a length of the exposure
+  /TS<xxxxx>   shift DATE-OBS by xxxxx seconds (the value can be negative or
+               positive)
+               Example: /TS-4.5 shifts DATE-OBS by 4.5 seconds backward
   /V           print version
   /H           print this help and halt
 
@@ -191,7 +204,7 @@ Where:
   /O=out_dir       set directory for files having new names
   /X=ext           set extension for output files
   /B=nn            set base file number (default = 1); must be >= 0
-  /F               overwrite existing files in output directory
+  /F               overwrite existing files in the output directory
   /V               print version
   /H               print this help and halt
 
@@ -217,12 +230,13 @@ additional options:
                   (cannot be specified if /P=prefix is specified)
   /B=nn           base file number (default = 1); must be >= 0 
                   (only when generic_name is specified)
-  /F              overwrite existing files in output directory
+  /F              overwrite existing files in the output directory
   /2              Use linear interpolation (superpixel by default)
 
-When /2 option is specified, output image has the same size as input one.
-Otherwise, the output is half-size of input (each 2x2 superpixel is converted
-to a single pixel).
+When the /2 option is specified, the output image has the same size as the
+input one.
+Otherwise, the output is half-size of the input (each 2x2 superpixel is
+converted to the single pixel).
 
 @fitsstat
 
@@ -231,7 +245,7 @@ fitsstat file
 
 @makestack
 
-Stacks FITS files calculating sum, average or median.
+Stacks FITS files calculating the sum, average or median.
 Can be used to prepare master calibration frames (see /SUB, /NORM options)
 
 Usage:
@@ -244,7 +258,7 @@ Where:
 additional options:
   /N=mm              number of files in stacking group. If not specified, 
                      all files will be stacked
-  /A                 if ALL files are to be stacked, do not append number to
+  /A                 if ALL files are to be stacked, do not append a number to
                      single output file
   /M=<mode>          stacking mode: 
                        /M=S (sum, default value); 
@@ -259,7 +273,7 @@ additional options:
                      to be stacked will be normalized using this value
   /NORMMEAN          Normalize means instead of medians
   /SUB=<file[.fit]>  subtract an offset file before normalization and stacking
-  /F                 overwrite existing files in output directory
+  /F                 overwrite existing files in the output directory
   /V                 print version
   /H                 print help and halt
 
@@ -277,7 +291,7 @@ Where:
   file_maskX         masks of input files to be processed (required)
 
 Options:
-  /G=generic_name    Prefix to be used to construct new file name.
+  /G=generic_name    Prefix to be used to construct a new file name.
                      If omitted, original name will be used.
   /B=nn              Base file number (default = 1); must be >= 0.
   /O=out_dir         Directory for output files.
@@ -288,10 +302,11 @@ Options:
   /DARK=<fits>       FITS file to subtract from original images.
   /FLAT=<fits>       FITS file with flat field image.
                      Original images will be divided by it and multiplied by
-                     median of the flat field image.
+                     the median of the flat field image.
   /COSME=<text>      Text file containing bad pixel map (IRIS-compatible).
   /MULT=<constant>   Multiply output by constant.
-  /F                 Overwrite existing files in output directory.
+  /BIN2              Apply software binning 2x2.
+  /F                 Overwrite existing files in the output directory.
   /V                 Print version.
   /H                 Print help and halt.
 
