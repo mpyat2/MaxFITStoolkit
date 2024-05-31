@@ -23,7 +23,7 @@ uses
 
 procedure PrintVersion;
 begin
-  WriteLn('AIJ photometry log parser  Maksym Pyatnytskyy  2017');
+  WriteLn('AIJ photometry log parser  Maksym Pyatnytskyy  2024');
   WriteLn(GetVersionString(AnsiUpperCase(ParamStr(0))){$IFDEF WIN64}, ' WIN64'{$ENDIF}, ' ', {$I %DATE%}, ' ', {$I %TIME%});
 end;
 
@@ -36,6 +36,9 @@ const
   Label_header = 'Label';
   JD_UTC_header = 'JD_UTC';
   SourceMinusSky_header = 'Source-Sky_';
+  AirMass_header = 'AIRMASS';
+  HJD_UTC_header = 'HJD_UTC';
+  BJD_TDB_header = 'BJD_TDB';
 
 const
   OutExt: array[Boolean] of string = ('.csv', '.txt');
@@ -102,12 +105,18 @@ var
   I, II: Integer;
   Label_Pos: Integer;
   JD_UTC_Pos: Integer;
+  HJD_UTC_Pos: Integer;
+  BJD_TDB_Pos: Integer;
+  AirMass_Pos: Integer;
   IntensityPos: array of Integer;
 begin
   try
     LineN := 0;
     Label_Pos := -1;
     JD_UTC_Pos := -1;
+    HJD_UTC_Pos := -1;
+    BJD_TDB_Pos := -1;
+    AirMass_Pos := -1;
     IntensityPos := nil;
     AssignFile(OutF, OutFile);
     Rewrite(OutF);
@@ -132,6 +141,18 @@ begin
             if AnsiSameText(Copy(TempS2, 1, Length(SourceMinusSky_header)), SourceMinusSky_header) then begin
               SetLength(IntensityPos, Length(IntensityPos) + 1);
               IntensityPos[Length(IntensityPos) - 1] := II;
+            end
+            else
+            if AnsiSameText(TempS2, HJD_UTC_header) then begin
+              HJD_UTC_Pos := II;
+            end
+            else
+            if AnsiSameText(TempS2, BJD_TDB_header) then begin
+              BJD_TDB_Pos := II;
+            end
+            else
+            if AnsiSameText(TempS2, AirMass_header) then begin
+              AirMass_Pos := II;
             end;
           end;
           S := '';
@@ -146,6 +167,18 @@ begin
           for II := 0 to Length(IntensityPos) - 1 do begin
             if S <> '' then S := S + Delimiter[TabbedOutput];
             S := S + 'Magnitude(' + ExtractWord1(IntensityPos[II], TempS, [^I]) + ')';
+          end;
+          if AirMass_Pos >= 0 then begin
+            if S <> '' then S := S + Delimiter[TabbedOutput];
+            S := S + ExtractWord1(AirMass_Pos, TempS, [^I]);
+          end;
+          if HJD_UTC_Pos >= 0 then begin
+            if S <> '' then S := S + Delimiter[TabbedOutput];
+            S := S + ExtractWord1(HJD_UTC_Pos, TempS, [^I]);
+          end;
+          if BJD_TDB_Pos >= 0 then begin
+            if S <> '' then S := S + Delimiter[TabbedOutput];
+            S := S + ExtractWord1(BJD_TDB_Pos, TempS, [^I]);
           end;
           WriteLn(OutF, S);
           for I := 1 to InputList.Count - 1 do begin
@@ -176,6 +209,30 @@ begin
                 else
                   S := S + AnsiQuotedStr('ERR:[' + TempS2 + ']', '"');
               end;
+            end;
+            if (AirMass_Pos >= 0) then begin
+              if S <> '' then S := S + Delimiter[TabbedOutput];
+              TempS2 := Trim(ExtractWord1(AirMass_Pos, TempS, [^I]));
+              Val(TempS2, TempF, ValError);
+              if ValError <> 0 then
+                InvalidFloatingPointValueError(TempS2);
+              S := S + FloatToStr(TempF);
+            end;
+            if (HJD_UTC_Pos >= 0) then begin
+              if S <> '' then S := S + Delimiter[TabbedOutput];
+              TempS2 := Trim(ExtractWord1(HJD_UTC_Pos, TempS, [^I]));
+              Val(TempS2, TempF, ValError);
+              if ValError <> 0 then
+                InvalidFloatingPointValueError(TempS2);
+              S := S + FloatToStr(TempF);
+            end;
+            if (BJD_TDB_Pos >= 0) then begin
+              if S <> '' then S := S + Delimiter[TabbedOutput];
+              TempS2 := Trim(ExtractWord1(BJD_TDB_Pos, TempS, [^I]));
+              Val(TempS2, TempF, ValError);
+              if ValError <> 0 then
+                InvalidFloatingPointValueError(TempS2);
+              S := S + FloatToStr(TempF);
             end;
             WriteLn(OutF, S);
           end;
