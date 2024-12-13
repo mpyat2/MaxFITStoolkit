@@ -19,6 +19,7 @@ procedure dcdft_proc(
           const t, mag: TFloatArray;
           lowfreq, hifreq: ArbFloat;
           n_freq: ArbInt;
+          mcv_mode: Boolean;
           out frequencies, periods, amp, power: TFloatArray);
 
 implementation
@@ -35,6 +36,7 @@ procedure dcdft_proc(
           const t, mag: TFloatArray;
           lowfreq, hifreq: ArbFloat;
           n_freq: ArbInt;
+          mcv_mode: Boolean;
           out frequencies, periods, amp, power: TFloatArray);
 var
   ndata: ArbInt;
@@ -90,8 +92,15 @@ begin
     power[I] := pwr;
     nu := nu + freq_step;
   end;
-  for I := 0 to n_freq do begin
-    power[I] := power[I] * (ndata - 1) / mag_var / 2.0; // (ndata - 1) instead of n data as in the R source
+  if mcv_mode then begin
+    for I := 0 to n_freq do begin
+      power[I] := power[I] / mag_var;
+    end;
+  end
+  else begin
+    for I := 0 to n_freq do begin
+      power[I] := power[I] * (ndata - 1) / mag_var / 2.0; // (ndata - 1) instead of n data as in the R source
+    end;
   end;
 end;
 

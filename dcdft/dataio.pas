@@ -12,7 +12,7 @@ type
 
 procedure ReadTable(const FileName: string; out X, Y: TFloatArray);
 
-procedure WriteTable(const FileName: string; const frequencies, periods, amp, power: TFloatArray);
+procedure WriteTable(const FileName: string; mcv_mode: boolean; const frequencies, periods, amp, power: TFloatArray);
 
 //procedure WriteCSV
 
@@ -71,14 +71,17 @@ begin
   end;
 end;
 
-procedure WriteTable(const FileName: string; const frequencies, periods, amp, power: TFloatArray);
+procedure WriteTable(const FileName: string; mcv_mode: boolean; const frequencies, periods, amp, power: TFloatArray);
 var
   OutFile: TextFile;
   I: Integer;
 begin
   Assign(OutFile, FileName);
   Rewrite(OutFile);
-  WriteLn(OutFile, '# freq'^I'per'^I'amp'^I'pow');
+  Write(OutFile, '# freq'^I'per'^I'amp'^I'pow');
+  if mcv_mode then
+    Write(OutFile, '(MCV)');
+  WriteLn(OutFile);
   for I := 0 to Length(frequencies) - 1 do begin
     WriteLn(OutFile, frequencies[I], ^I, periods[I], ^I, amp[I], ^I, power[I]);
   end;

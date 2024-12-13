@@ -30,7 +30,7 @@ end;
 procedure PrintHelp;
 begin
   WriteLn('Usage:');
-  WriteLn(ExtractFileName(ParamStr(0)) + ' /L=<lowfreq> /H=<hifreq> /N=<n_intervals> [Input file|~] [Output file] [/T]');
+  WriteLn(ExtractFileName(ParamStr(0)) + ' /L=<lowfreq> /H=<hifreq> /N=<n_intervals> [Input file|~] [Output file] [/T] [/MCV]');
 end;
 
 var
@@ -44,6 +44,7 @@ var
   lofreq, hifreq: ArbFloat;
   n_freq: ArbInt;
   ParamN: Integer;
+  mcv_mode: Boolean;
   CmdParam: string;
   CmdParamValue: string;
   Code: Integer;
@@ -81,6 +82,7 @@ begin
   lofreq := 0.0;
   hifreq := 0.0;
   n_freq := 0;
+  mcv_mode := False;
   for ParamN := 1 to CmdObj.CmdLine.ParamCount do begin
     CmdParam := CmdObj.CmdLine.ParamStr(ParamN);
     if CmdObj.CmdLine.FirstCharIsSwitch(CmdParam) then begin
@@ -94,6 +96,10 @@ begin
       else
       if CmdObj.CmdLine.ParamIsKey(CmdParam, 'T') then begin
         DisplayTime := True;
+      end
+      else
+      if CmdObj.CmdLine.ParamIsKey(CmdParam, 'MCV') then begin
+        mcv_mode := True;
       end
       else
       if CmdObj.CmdLine.ExtractParamValue(CmdParam, 'L=', CmdParamValue) then begin
@@ -152,11 +158,11 @@ begin
   ReadTable(InputFileName, Times, Magnitudes);
 
   t0 := Time_S();
-  dcdft_proc(Times, Magnitudes, lofreq, hifreq, n_freq, frequencies, periods, amp, power);
+  dcdft_proc(Times, Magnitudes, lofreq, hifreq, n_freq, mcv_mode, frequencies, periods, amp, power);
   if DisplayTime then
      WriteLn(Format('## DCDFT Time: %fs', [Time_S() - t0]));
 
-  WriteTable(OutFileName, frequencies, periods, amp, power);
+  WriteTable(OutFileName, mcv_mode, frequencies, periods, amp, power);
 
   //Write('Press ENTER: ');
   //ReadLn;
