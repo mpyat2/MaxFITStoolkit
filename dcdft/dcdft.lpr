@@ -30,7 +30,7 @@ end;
 procedure PrintHelp;
 begin
   WriteLn('Usage:');
-  WriteLn(ExtractFileName(ParamStr(0)) + ' /L=<lowfreq> /H=<hifreq> /N=<n_intervals> [Input file|~] [Output file] [/T] [/MCV]');
+  WriteLn(ExtractFileName(ParamStr(0)) + ' /L=<lowfreq> /H=<hifreq> /N=<n_intervals>|/S=<step> [Input file|~] [Output file] [/T] [/MCV]');
 end;
 
 var
@@ -41,7 +41,7 @@ var
   OutFileName: string;
   t0: Double;
   DisplayTime: Boolean;
-  lofreq, hifreq: ArbFloat;
+  lofreq, hifreq, freq_step: ArbFloat;
   n_freq: ArbInt;
   ParamN: Integer;
   mcv_mode: Boolean;
@@ -81,7 +81,8 @@ begin
   DisplayTime := False;
   lofreq := 0.0;
   hifreq := 0.0;
-  n_freq := 0;
+  freq_step := -1.0;
+  n_freq := -1;
   mcv_mode := False;
   for ParamN := 1 to CmdObj.CmdLine.ParamCount do begin
     CmdParam := CmdObj.CmdLine.ParamStr(ParamN);
@@ -104,7 +105,7 @@ begin
       else
       if CmdObj.CmdLine.ExtractParamValue(CmdParam, 'L=', CmdParamValue) then begin
         Val(CmdParamValue, lofreq, Code);
-        if Code <> 0 then begin
+        if (Code <> 0) or (lofreq <= 0.0) then begin
           PrintError('**** Invalid command-line parameter: ' + CmdParam);
           Halt(1);
         end;
@@ -112,7 +113,15 @@ begin
       else
       if CmdObj.CmdLine.ExtractParamValue(CmdParam, 'H=', CmdParamValue) then begin
         Val(CmdParamValue, hifreq, Code);
-        if Code <> 0 then begin
+        if (Code <> 0) or (hifreq <= 0.0) then begin
+          PrintError('**** Invalid command-line parameter: ' + CmdParam);
+          Halt(1);
+        end;
+      end
+      else
+      if CmdObj.CmdLine.ExtractParamValue(CmdParam, 'S=', CmdParamValue) then begin
+        Val(CmdParamValue, freq_step, Code);
+        if (Code <> 0) or (freq_step <= 0.0) then begin
           PrintError('**** Invalid command-line parameter: ' + CmdParam);
           Halt(1);
         end;
@@ -120,7 +129,7 @@ begin
       else
       if CmdObj.CmdLine.ExtractParamValue(CmdParam, 'N=', CmdParamValue) then begin
         Val(CmdParamValue, n_freq, Code);
-        if Code <> 0 then begin
+        if (Code <> 0) or (n_freq <= 0) then begin
           PrintError('**** Invalid command-line parameter: ' + CmdParam);
           Halt(1);
         end;
@@ -135,18 +144,13 @@ begin
     end;
   end;
 
-  if lofreq <= 0 then begin
-    PrintError('**** /L= parameter must specify a positive non-zero value (low frequency limit)');
+  if (freq_step <= 0.0) and (n_freq <= 0) then begin
+    PrintError('**** /N= or /S= must be specified');
     Halt(1);
   end;
 
-  if hifreq <= 0 then begin
-    PrintError('**** /H= parameter must specify a positive non-zero value (high frequency limit)');
-    Halt(1);
-  end;
-
-  if n_freq <= 0 then begin
-    PrintError('**** /N= parameter must specify a positive non-zero integer (number of frequency intervals)');
+  if (freq_step > 0.0) and (n_freq > 0) then begin
+    PrintError('**** /N= and /S= cannot be set simultaneously');
     Halt(1);
   end;
 
@@ -158,7 +162,7 @@ begin
   ReadTable(InputFileName, Times, Magnitudes);
 
   t0 := Time_S();
-  dcdft_proc(Times, Magnitudes, lofreq, hifreq, n_freq, mcv_mode, frequencies, periods, amp, power);
+  dcdft_proc(Times, Magnitudes, lofreq, hifreq, freq_step, n_freq, mcv_mode, frequencies, periods, amp, power);
   if DisplayTime then
      WriteLn(Format('## DCDFT Time: %fs', [Time_S() - t0]));
 

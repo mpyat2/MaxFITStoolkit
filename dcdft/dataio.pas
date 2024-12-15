@@ -78,12 +78,12 @@ var
 begin
   Assign(OutFile, FileName);
   Rewrite(OutFile);
-  Write(OutFile, '# freq'^I'per'^I'amp'^I'pow');
+  Write(OutFile, '# freq'^I'per'^I'pow'^I'amp');
   if mcv_mode then
     Write(OutFile, '(MCV)');
   WriteLn(OutFile);
   for I := 0 to Length(frequencies) - 1 do begin
-    WriteLn(OutFile, frequencies[I], ^I, periods[I], ^I, amp[I], ^I, power[I]);
+    WriteLn(OutFile, frequencies[I], ^I, periods[I], ^I, power[I], ^I, amp[I]);
   end;
   CloseFile(OutFile);
 end;

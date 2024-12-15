@@ -18,6 +18,7 @@ type
 procedure dcdft_proc(
           const t, mag: TFloatArray;
           lowfreq, hifreq: ArbFloat;
+          freq_step: ArbFloat;
           n_freq: ArbInt;
           mcv_mode: Boolean;
           out frequencies, periods, amp, power: TFloatArray);
@@ -35,13 +36,13 @@ implementation
 procedure dcdft_proc(
           const t, mag: TFloatArray;
           lowfreq, hifreq: ArbFloat;
+          freq_step: ArbFloat;
           n_freq: ArbInt;
           mcv_mode: Boolean;
           out frequencies, periods, amp, power: TFloatArray);
 var
   ndata: ArbInt;
   mag_var: ArbFloat;
-  freq_step: ArbFloat;
   nu: ArbFloat;
   angle: ArbFloat;
   term: ArbInt;
@@ -53,7 +54,10 @@ var
 begin
   ndata := Length(t);
   mag_var := PopnVariance(mag);
-  freq_step := (hifreq - lowfreq) / n_freq;
+  if freq_step <= 0.0 then
+    freq_step := (hifreq - lowfreq) / n_freq
+  else
+    n_freq := Floor((hifreq - lowfreq) / freq_step);
 
   SetLength(frequencies, n_freq + 1);
   SetLength(periods, n_freq + 1);

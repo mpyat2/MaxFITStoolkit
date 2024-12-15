@@ -18,6 +18,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
+      <MinorVersionNr Value="1"/>
       <BuildNr Value="11"/>
     </VersionInfo>
     <BuildModes>
