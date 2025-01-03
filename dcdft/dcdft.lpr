@@ -48,6 +48,7 @@ var
   CmdParam: string;
   CmdParamValue: string;
   Code: Integer;
+  Pause: Boolean;
 
 begin
   if CmdObj.CmdLine.ParamCount = 0 then begin
@@ -78,6 +79,7 @@ begin
      InputFileName := '';
   OutFileName := CmdObj.CmdLine.ParamFile(2);
 
+  Pause := False;
   DisplayTime := False;
   lofreq := 0.0;
   hifreq := 0.0;
@@ -101,6 +103,10 @@ begin
       else
       if CmdObj.CmdLine.ParamIsKey(CmdParam, 'MCV') then begin
         mcv_mode := True;
+      end
+      else
+      if CmdObj.CmdLine.ParamIsKey(CmdParam, 'PAUSE') then begin
+        Pause := True;
       end
       else
       if CmdObj.CmdLine.ExtractParamValue(CmdParam, 'L=', CmdParamValue) then begin
@@ -168,7 +174,9 @@ begin
 
   WriteTable(OutFileName, mcv_mode, frequencies, periods, amp, power);
 
-  //Write('Press ENTER: ');
-  //ReadLn;
+  if Pause then begin
+    Write('Press ENTER: ');
+    ReadLn;
+  end;
 end.
 
