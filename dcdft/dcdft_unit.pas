@@ -22,6 +22,7 @@ procedure dcdft_proc(
           freq_step: ArbFloat;
           n_freq: ArbInt;
           mcv_mode: Boolean;
+          CmdLineNumberOfThreads: Integer;
           out frequencies, periods, amp, power: TFloatArray);
 
 implementation
@@ -216,6 +217,7 @@ procedure dcdft_proc(
           freq_step: ArbFloat;
           n_freq: ArbInt;
           mcv_mode: Boolean;
+          CmdLineNumberOfThreads: Integer;
           out frequencies, periods, amp, power: TFloatArray);
 var
   ndata: ArbInt;
@@ -235,7 +237,13 @@ begin
   SetLength(amp, n_freq + 1);
   SetLength(power, n_freq + 1);
 
-  NumberOfThreads := GetLogicalCpuCount();
+  if CmdLineNumberOfThreads < 1 then
+    NumberOfThreads := GetLogicalCpuCount()
+  else
+    NumberOfThreads := CmdLineNumberOfThreads;
+
+  WriteLn('Number of threads: ', NumberOfThreads);
+
   StepsPerThread := (n_freq + 1) div NumberOfThreads;
   Remainder := (n_freq + 1) - StepsPerThread * NumberOfThreads;
 
@@ -249,6 +257,7 @@ begin
       StepsToDo := StepsPerThread;
       if I = NumberOfThreads - 1 then
         StepsToDo := StepsToDo + Remainder;
+      WriteLn('Thread ', I, '; steps: ', StepsToDo);
       Threads[I] := TCalcThread.Create(I, t, mag, startfreq, freq_step, StepsToDo, mcv_mode);
       // check for exception while creation (see FPC docs)
       if Assigned(Threads[I].FatalException) then begin

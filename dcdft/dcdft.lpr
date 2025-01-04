@@ -1,6 +1,6 @@
 {*****************************************************************************}
 {                                                                             }
-{ dcdft                                                                   }
+{ dcdft                                                                       }
 { (c) 2024 Maksym Pyatnytskyy                                                 }
 {                                                                             }
 { This program is distributed                                                 }
@@ -21,6 +21,9 @@ uses
   dataio, dcdft_unit;
 
 {$R *.res}
+
+const
+  MAX_THREADS = 128;
 
 function Time_S(): Double;
 begin
@@ -45,6 +48,7 @@ var
   n_freq: ArbInt;
   ParamN: Integer;
   mcv_mode: Boolean;
+  CmdLineNumberOfThreads: Integer;
   CmdParam: string;
   CmdParamValue: string;
   Code: Integer;
@@ -86,6 +90,7 @@ begin
   freq_step := -1.0;
   n_freq := -1;
   mcv_mode := False;
+  CmdLineNumberOfThreads := 0;
   for ParamN := 1 to CmdObj.CmdLine.ParamCount do begin
     CmdParam := CmdObj.CmdLine.ParamStr(ParamN);
     if CmdObj.CmdLine.FirstCharIsSwitch(CmdParam) then begin
@@ -107,6 +112,14 @@ begin
       else
       if CmdObj.CmdLine.ParamIsKey(CmdParam, 'PAUSE') then begin
         Pause := True;
+      end
+      else
+      if CmdObj.CmdLine.ExtractParamValue(CmdParam, 'T=', CmdParamValue) then begin
+        Val(CmdParamValue, CmdLineNumberOfThreads, Code);
+        if (Code <> 0) or (CmdLineNumberOfThreads <= 0) or (CmdLineNumberOfThreads > MAX_THREADS) then begin
+          PrintError('**** Number of threads must be in the range [1..' + IntToStr(MAX_THREADS) + ']');
+          Halt(1);
+        end;
       end
       else
       if CmdObj.CmdLine.ExtractParamValue(CmdParam, 'L=', CmdParamValue) then begin
@@ -168,7 +181,7 @@ begin
   ReadTable(InputFileName, Times, Magnitudes);
 
   t0 := Time_S();
-  dcdft_proc(Times, Magnitudes, lofreq, hifreq, freq_step, n_freq, mcv_mode, frequencies, periods, amp, power);
+  dcdft_proc(Times, Magnitudes, lofreq, hifreq, freq_step, n_freq, mcv_mode, CmdLineNumberOfThreads, frequencies, periods, amp, power);
   if DisplayTime then
      WriteLn(Format('## DCDFT Time: %fs', [Time_S() - t0]));
 
