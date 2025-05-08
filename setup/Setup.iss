@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "FITS utils"
-#define MyAppVersion "1.1.8"
+#define MyAppVersion "1.1.8a"
 #define MyAppPublisher "mpyat2@gmail.com"
 #define MyAppURL "https://sourceforge.net/projects/fits-command-line-utilities/"
 #define MyAppExeName "HelloIRISFITS.exe"

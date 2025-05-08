@@ -10,8 +10,7 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="APDAT"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="197"/>
-        <CursorPos X="15" Y="221"/>
+        <CursorPos Y="2"/>
         <UsageCount Value="24"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -91,6 +90,7 @@
         <TopLine Value="14"/>
         <CursorPos X="18" Y="41"/>
         <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit10>
     </Units>
     <JumpHistory Count="29" HistoryIndex="28">
@@ -207,7 +207,7 @@
       </Position28>
       <Position29>
         <Filename Value="apdat.lpr"/>
-        <Caret Line="221" Column="28" TopLine="197"/>
+        <Caret Line="221" Column="15" TopLine="119"/>
       </Position29>
     </JumpHistory>
     <RunParams>
@@ -215,13 +215,12 @@
       <Modes ActiveMode="default"/>
     </RunParams>
     <HistoryLists Count="3">
-      <List0 Name="WorkingDirectory" Type="File" Count="1"/>
-      <List1 Name="LaunchingApplication" Type="File" Count="1">
+      <List0 Name="LaunchingApplication" Type="File" Count="1">
         <Item1 Value="C:\WINDOWS\system32\cmd.exe /C ${TargetCmdLine}"/>
-      </List1>
-      <List2 Name="CommandLineParameters" Count="1">
+      </List0>
+      <List1 Name="CommandLineParameters" Count="1">
         <Item1 Value="testdata\Measurements1.dat"/>
-      </List2>
+      </List1>
     </HistoryLists>
   </ProjectSession>
   <Debugging>
