@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "MaxFITStoolkit (FITS Command-line Utilities)"
+version: "1.1.8a"
+doi: 10.5281/zenodo.15367007  # Optional, from Zenodo if archived
+date-released: 2025-05-08
+authors:
+  - family-names: Pyatnytskyy
+    given-names: Maksym
+    affiliation: Private Observatory "Osokorky"
+    orcid: https://orcid.org/0000-0002-0813-1000
