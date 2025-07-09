@@ -35,7 +35,7 @@ def deg_to_sexagesimal(ra_deg, dec_deg):
     dec = Angle(dec_deg, unit=u.deg).to_string(unit=u.deg, sep=':', precision=1, alwayssign=True, pad=True)
     return ra, dec
 
-def process_image(file_name, output_list, fwhm, plot_image):
+def process_image(file_name, output_list, fwhm, n_sigma, plot_image):
     # Load FITS image
     hdu = fits.open(file_name)[0]
     header = hdu.header
@@ -48,7 +48,7 @@ def process_image(file_name, output_list, fwhm, plot_image):
     
     # Estimate background and noise
     mean, median, std = sigma_clipped_stats(image_data, sigma=3.0)
-    threshold = median + (5. * std)
+    threshold = median + (n_sigma * std)
     print()
     print('Background Median    =', median)
     print('Background StDev     =', std)
@@ -102,6 +102,15 @@ def restricted_float(x):
         raise argparse.ArgumentTypeError(f"FWHM must be between 1 and 20 (got {x})")
     return x
 
+def restricted_float2(x):
+    try:
+        x = float(x)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"{x} is not a valid float")
+    if x < 3.0 or x > 7.0:
+        raise argparse.ArgumentTypeError(f"N_sigma must be between 3 and 7 (got {x})")
+    return x
+
 def parse_args():
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     # Required positional argument: input file
@@ -112,6 +121,9 @@ def parse_args():
     # Optional named argument: FWHM
     parser.add_argument("--fwhm", type=restricted_float, default=4.0,
                         help="Full Width at Half Maximum (FWHM) in pixels (1–20). Default: 4.0")
+    # Optional named argument: n_sigma
+    parser.add_argument("--n_sigma", type=restricted_float2, default=5.0,
+                        help="Threshold (3–7). Default: 5.0")
     # Optional boolean argument: show plot
     parser.add_argument('--plot', action='store_true', default=False,
                         help='Show the image with apertures. Default: do not show)')
@@ -122,8 +134,9 @@ def main():
     #print(f"Input file: {args.filename}")
     #print(f"Output file: {args.output}")
     #print(f"FWHM: {args.fwhm}")
+    #print(f"N_sigma: {args.n_sigma}")
     #print(f"Plot: {args.plot}")
-    process_image(args.filename, args.output, args.fwhm, args.plot)
+    process_image(args.filename, args.output, args.fwhm, args.n_sigma, args.plot)
 
 if __name__ == "__main__":
     try:
