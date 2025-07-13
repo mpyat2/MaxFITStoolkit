@@ -35,7 +35,7 @@ def deg_to_sexagesimal(ra_deg, dec_deg):
     dec = Angle(dec_deg, unit=u.deg).to_string(unit=u.deg, sep=':', precision=1, alwayssign=True, pad=True)
     return ra, dec
 
-def process_image(file_name, output_list, fwhm, n_sigma, plot_image):
+def process_image(file_name, output_list, fwhm, n_sigma, peakmax, plot_image):
     # Load FITS image
     hdu = fits.open(file_name)[0]
     header = hdu.header
@@ -55,7 +55,10 @@ def process_image(file_name, output_list, fwhm, n_sigma, plot_image):
     print('Detection Threshold  =', threshold)
     
     # Detect stars
-    daofind = DAOStarFinder(fwhm=fwhm, threshold=threshold)
+    if peakmax > 0:
+        daofind = DAOStarFinder(fwhm=fwhm, threshold=threshold, peakmax=peakmax)
+    else:
+        daofind = DAOStarFinder(fwhm=fwhm, threshold=threshold)
     sources = daofind(image_data - median)
     
     print()
@@ -124,6 +127,9 @@ def parse_args():
     # Optional named argument: n_sigma
     parser.add_argument("--n_sigma", type=restricted_float2, default=5.0,
                         help="Threshold (3–7). Default: 5.0")
+    # Optional named argument: peakmax
+    parser.add_argument("--peakmax", type=float, default=-1,
+                        help="Upper limit for peak pixel value (to exclude saturated stars). Ignored if it is <= 0. Default: -1 (i.e., ignored)")
     # Optional boolean argument: show plot
     parser.add_argument('--plot', action='store_true', default=False,
                         help='Show the image with apertures. Default: do not show)')
@@ -136,7 +142,8 @@ def main():
     #print(f"FWHM: {args.fwhm}")
     #print(f"N_sigma: {args.n_sigma}")
     #print(f"Plot: {args.plot}")
-    process_image(args.filename, args.output, args.fwhm, args.n_sigma, args.plot)
+    #print(f"Peakmax: {args.peakmax}")
+    process_image(args.filename, args.output, args.fwhm, args.n_sigma, args.peakmax, args.plot)
 
 if __name__ == "__main__":
     try:
