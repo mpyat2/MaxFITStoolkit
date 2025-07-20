@@ -21,7 +21,6 @@ DESCRIPTION = \
 ###############################################################################
 
 MAX_APERTURES = 1000
-N_SIGMA = 5
 N_CLIP = 5
 
 ###############################################################################
@@ -34,15 +33,15 @@ def hr_deg_to_sexagesimal(ra_hr, dec_deg):
     dec = Angle(dec_deg, unit=u.deg).to_string(unit=u.deg, sep=':', precision=1, alwayssign=True, pad=True)
     return ra, dec
 
-def median_clip_outliners(data1, mag_col):
+def median_clip_outliners(data1, mag_col, n_sigma_clip):
     # exclude outliers
     median_mag = data1[mag_col].mean()
     std_mag = data1[mag_col].std()
-    lower_bound = median_mag - N_SIGMA * std_mag
-    upper_bound = median_mag + N_SIGMA * std_mag
+    lower_bound = median_mag - n_sigma_clip * std_mag
+    upper_bound = median_mag + n_sigma_clip * std_mag
     return data1[(data1[mag_col] >= lower_bound) & (data1[mag_col] <= upper_bound)]
 
-def main(aij_photometry_file, output_file, saturation_limit):
+def main(aij_photometry_file, output_file, saturation_limit, n_sigma_clip):
     import pandas as pd
     import numpy as np
     import matplotlib.pyplot as plt
@@ -70,8 +69,9 @@ def main(aij_photometry_file, output_file, saturation_limit):
             data_clean = data_raw[np.isfinite(data_raw[mag_col])]
 
             # exclude outliers
-            for i in range(N_CLIP):
-                data_clean = median_clip_outliners(data_clean, mag_col)
+            if n_sigma_clip > 0.0:
+                for i in range(N_CLIP):
+                    data_clean = median_clip_outliners(data_clean, mag_col, n_sigma_clip)
             
             ra_mean = data_clean[ra_col].mean()
             dec_mean = data_clean[dec_col].mean()
@@ -133,6 +133,9 @@ def parse_args():
     # Optional named argument: Saturation limit
     parser.add_argument("--sat-lim", type=float, default=-1,
                         help="Saturation limit. Ignored if it is <= 0. Default: -1 (i.e., ignored)")
+    # Optional named argument: N of sigmas")
+    parser.add_argument("--n-sig-clip", type=float, default=5,
+                        help="N of sigmas for clipping outliers. Ignored if it is <= 0. Default: 5")
     return parser.parse_args()
 
 
@@ -145,7 +148,8 @@ if __name__ == "__main__":
         #print(f"Input file: {args.filename}")
         #print(f"Output file: {args.output}")
         #print(f"Saturation: {args.sat_lim}")
-        main(args.filename, args.output, args.sat_lim)
+        #print(f"N sigma clip: {args.n_sig_clip}")
+        main(args.filename, args.output, args.sat_lim, args.n_sig_clip)
     except Exception as e:
         print(f"Fatal Error: {e}.")
         print("Press ENTER to continue:")
