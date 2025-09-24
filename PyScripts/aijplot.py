@@ -4,12 +4,12 @@ Title: AstroImageJ photometry plot
 Description: see below.
 Author: Maksym Pyatnytskyy
 Email: mpyat2@gmail.com
-Date: 2025-07-17
-Version: 1.1
+Date: 2025-09-24
+Version: 1.1.1
 
 License: MIT License
 
-Usage: aijplot.py [-h] [--sat-lim SAT_LIM] filename [output]
+Usage: aijplot.py [-h] [--sat-lim SAT_LIM] [--bin BIN_SIZE] [--n-sig-clip SIG_CLIP] filename [output]
 
 Required packages: astropy, pandas, numpy, matplotlib, base64, argparse, io, sys
 
@@ -41,7 +41,27 @@ def median_clip_outliners(data1, mag_col, n_sigma_clip):
     upper_bound = median_mag + n_sigma_clip * std_mag
     return data1[(data1[mag_col] >= lower_bound) & (data1[mag_col] <= upper_bound)]
 
-def main(aij_photometry_file, output_file, saturation_limit, n_sigma_clip):
+def bin_data(time, mag, bin_size):
+    time_bin = []
+    mag_bin = []
+    t = 0.0
+    m = 0.0
+    c = 0
+    for i in range(len(time)):
+        t += time[i]
+        m += mag[i]
+        c += 1
+        if c >= bin_size:
+            time_bin.append(t / bin_size)
+            mag_bin.append(m / bin_size)
+            t = 0.0
+            m = 0.0
+            c = 0
+    return time_bin, mag_bin
+
+def main(aij_photometry_file, output_file, saturation_limit, n_sigma_clip, bin_size):
+    print("Starting...")
+    
     import pandas as pd
     import numpy as np
     import matplotlib.pyplot as plt
@@ -70,7 +90,7 @@ def main(aij_photometry_file, output_file, saturation_limit, n_sigma_clip):
 
             # exclude outliers
             if n_sigma_clip > 0.0:
-                for i in range(N_CLIP):
+                for j in range(N_CLIP):
                     data_clean = median_clip_outliners(data_clean, mag_col, n_sigma_clip)
             
             ra_mean = data_clean[ra_col].mean()
@@ -86,15 +106,25 @@ def main(aij_photometry_file, output_file, saturation_limit, n_sigma_clip):
             if is_saturated:
                 print('**** SATURATED ****')
             
-            time = data_clean[time_col]
-            mag = data_clean[mag_col]
-            #err = data_clean[err_col]            
+            time = list(data_clean[time_col])
+            mag = list(data_clean[mag_col])
+            #err = list(data_clean[err_col])
+            
+            if bin_size > 0:
+                time, mag = bin_data(time, mag, bin_size)
             
             fig, ax = plt.subplots()
+            mag_min = min(mag)
+            mag_max = max(mag)
+            if mag_max - mag_min < 0.1:
+                m0 = (mag_min + mag_max) / 2.0
+                mag_max = m0 + 0.05
+                mag_min = m0 - 0.05
             ax.scatter(time, mag)
-            ax.set_xlabel(time_col)            
+            ax.set_xlabel(time_col)
             ax.set_ylabel('Magnitude')
-            plt.gca().invert_yaxis()
+            ax.set_ylim(mag_min, mag_max)
+            ax.invert_yaxis()
             plt.suptitle(object_name)
             if is_saturated:
                 plt.title('**** SATURATED ****', color='red')
@@ -136,6 +166,9 @@ def parse_args():
     # Optional named argument: N of sigmas")
     parser.add_argument("--n-sig-clip", type=float, default=5,
                         help="N of sigmas for clipping outliers. Ignored if it is <= 0. Default: 5")
+    # Optional named argument: bin size")
+    parser.add_argument("--bin", type=int, default=1,
+                        help="Bin size. Ignored if it is <= 1. Default: 1")
     return parser.parse_args()
 
 
@@ -149,11 +182,13 @@ if __name__ == "__main__":
         #print(f"Output file: {args.output}")
         #print(f"Saturation: {args.sat_lim}")
         #print(f"N sigma clip: {args.n_sig_clip}")
-        main(args.filename, args.output, args.sat_lim, args.n_sig_clip)
+        #print(f"Bin size: {args.bin}")
+        main(args.filename, args.output, args.sat_lim, args.n_sig_clip, args.bin)
     except Exception as e:
         print(f"Fatal Error: {e}.")
         print("Press ENTER to continue:")
         input("")
     finally:
         print("End")
+        input("")
         sys.exit()
