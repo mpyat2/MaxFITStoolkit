@@ -190,5 +190,5 @@ if __name__ == "__main__":
         input("")
     finally:
         print("End")
-        input("")
+        #input("")
         sys.exit()
