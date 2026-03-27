@@ -19,6 +19,9 @@ DESCRIPTION = \
 """The script takes an input FITS image (which must contain WCS) and extracts
 the coordinates of the star-like sources into an output file."""
 
+N_SIGMA_MIN = 3
+N_SIGMA_MAX = 999
+
 from astropy.io import fits
 from astropy.wcs import WCS
 from astropy.stats import sigma_clipped_stats
@@ -48,18 +51,18 @@ def process_image(file_name, output_list, fwhm, n_sigma, peakmax, plot_image):
     
     # Estimate background and noise
     mean, median, std = sigma_clipped_stats(image_data, sigma=3.0)
-    threshold = median + (n_sigma * std)
+    data_sub = image_data - median
+    threshold = n_sigma * std
     print()
     print('Background Median    =', median)
     print('Background StDev     =', std)
     print('Detection Threshold  =', threshold)
     
     # Detect stars
-    if peakmax > 0:
-        daofind = DAOStarFinder(fwhm=fwhm, threshold=threshold, peakmax=peakmax)
-    else:
-        daofind = DAOStarFinder(fwhm=fwhm, threshold=threshold)
-    sources = daofind(image_data - median)
+    # We removed the median. So, we must also fix peakmax
+    peakmax = peakmax - median
+    daofind = DAOStarFinder(fwhm=fwhm, threshold=threshold, peakmax=peakmax if peakmax > 0 else None, exclude_border=True)
+    sources = daofind(data_sub)
     
     print()
     print(str(len(sources)) + ' sources found')
@@ -110,8 +113,8 @@ def restricted_float2(x):
         x = float(x)
     except ValueError:
         raise argparse.ArgumentTypeError(f"{x} is not a valid float")
-    if x < 3.0 or x > 7.0:
-        raise argparse.ArgumentTypeError(f"N_sigma must be between 3 and 7 (got {x})")
+    if x < N_SIGMA_MIN or x > N_SIGMA_MAX:
+        raise argparse.ArgumentTypeError(f"N_sigma must be between {N_SIGMA_MIN} and {N_SIGMA_MAX} (got {x})")
     return x
 
 def parse_args():
@@ -126,7 +129,7 @@ def parse_args():
                         help="Full Width at Half Maximum (FWHM) in pixels (1–20). Default: 4.0")
     # Optional named argument: n_sigma
     parser.add_argument("--n_sigma", type=restricted_float2, default=5.0,
-                        help="Threshold (3–7). Default: 5.0")
+                        help=f"Threshold ({N_SIGMA_MIN}–{N_SIGMA_MAX}). Default: 5.0")
     # Optional named argument: peakmax
     parser.add_argument("--peakmax", type=float, default=-1,
                         help="Upper limit for peak pixel value (to exclude saturated stars). Ignored if it is <= 0. Default: -1 (i.e., ignored)")
