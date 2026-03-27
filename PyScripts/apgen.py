@@ -61,6 +61,8 @@ def process_image(file_name, output_list, fwhm, n_sigma, peakmax, plot_image):
     # Detect stars
     # We removed the median. So, we must also fix peakmax
     peakmax = peakmax - median
+    if peakmax <= 0:
+        raise ValueError("The specified PEAKMAX is lower than the background median")
     daofind = DAOStarFinder(fwhm=fwhm, threshold=threshold, peakmax=peakmax if peakmax > 0 else None, exclude_border=True)
     sources = daofind(data_sub)
     
